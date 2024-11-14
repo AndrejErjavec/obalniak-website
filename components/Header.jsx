@@ -6,6 +6,7 @@ import { FaUser, FaSignInAlt, FaSignOutAlt, FaBuilding } from "react-icons/fa";
 import { toast } from "react-toastify";
 import destroySession from "@/app/actions/destroySession";
 import { useAuth } from "@/context/authContext";
+import { useEffect } from "react";
 
 const Header = () => {
   const router = useRouter();
@@ -49,7 +50,7 @@ const Header = () => {
                   Home
                 </Link>
                 {/* <!-- Logged In Only --> */}
-                {isAuthenticated && (
+                {/* {isAuthenticated && (
                   <>
                     <Link
                       href="/"
@@ -64,7 +65,7 @@ const Header = () => {
                       Auth Only 1
                     </Link>
                   </>
-                )}
+                )} */}
               </div>
             </div>
           </div>
@@ -78,27 +79,21 @@ const Header = () => {
                     href="/login"
                     className="mr-3 text-gray-800 hover:text-gray-600"
                   >
-                    <FaSignInAlt className="inline mr-1" /> Login
-                  </Link>
-                  <Link
-                    href="/register"
-                    className="mr-3 text-gray-800 hover:text-gray-600"
-                  >
-                    <FaUser className="inline mr-1" /> Register
+                    <FaSignInAlt className="inline mr-1" /> Prijava
                   </Link>
                 </>
               )}
 
-              {isAuthenticated && (
+              {isAuthenticated && currentUser && (
                 <>
-                  <Link href="/">
-                    <FaBuilding className="inline mr-1" /> My Profile
+                  <Link href="/profile">
+                    <FaUser className="inline mr-1" /> {currentUser.name}
                   </Link>
                   <button
                     onClick={handleLogout}
                     className="mx-3 text-gray-800 hover:text-gray-600"
                   >
-                    <FaSignOutAlt className="inline mr-1" /> Sign Out
+                    <FaSignOutAlt className="inline mr-1" /> Odjava
                   </button>
                 </>
               )}

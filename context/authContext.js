@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import checkAuth from '@/app/actions/checkAuth';
+import { createContext, useContext, useState, useEffect } from "react";
+import checkAuth from "@/app/actions/checkAuth";
 
 const AuthContext = createContext();
 
@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
     const checkAuthentication = async () => {
       const { isAuthenticated, user } = await checkAuth();
       setIsAuthenticated(isAuthenticated);
-      setCurrentUser(user);
+      setCurrentUser(JSON.parse(user));
     };
     checkAuthentication();
   }, []);
@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
