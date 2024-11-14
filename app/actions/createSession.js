@@ -1,39 +1,39 @@
-'use server';
+"use server";
 
-import clientPromise from '@/app/lib/mongodb';
-import bcrypt from 'bcryptjs';
-import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
+import clientPromise from "@/app/lib/mongodb";
+import bcrypt from "bcryptjs";
+import { cookies } from "next/headers";
+import jwt from "jsonwebtoken";
 
 async function createSession(previousState, formData) {
-  const email = formData.get('email');
-  const password = formData.get('password');
+  const email = formData.get("email");
+  const password = formData.get("password");
 
   if (!email || !password) {
     return {
-      error: 'Please fill out all fields',
+      error: "Please fill out all fields",
     };
   }
 
   try {
     // Connect to MongoDB
     const client = await clientPromise;
-    const db = client.db('bookit');
-    const usersCollection = db.collection('users');
+    const db = client.db("bookit");
+    const usersCollection = db.collection("users");
 
     // Find user by email
     const user = await usersCollection.findOne({ email });
     if (!user) {
       return {
-        error: 'Invalid Credentials',
+        error: "Invalid Credentials",
       };
     }
-    
+
     // Verify password
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
       return {
-        error: 'Invalid Credentials',
+        error: "Invalid Credentials",
       };
     }
 
@@ -41,24 +41,25 @@ async function createSession(previousState, formData) {
     const token = jwt.sign(
       { userId: user._id, email: user.email },
       process.env.JWT_SECRET, // Store this secret in .env.local
-      { expiresIn: '1h' }
+      { expiresIn: "1h" }
     );
     // Set JWT in a secure cookie
-    cookies().set('session-token', token, {
+    cookies().set("session-token", token, {
       httpOnly: true,
       secure: true,
-      sameSite: 'strict',
+      sameSite: "strict",
       maxAge: 60 * 60, // 1 hour in seconds
-      path: '/',
+      path: "/",
     });
 
     return {
       success: true,
+      user: JSON.stringify(user),
     };
   } catch (error) {
-    console.log('Authentication Error: ', error);
+    console.log("Authentication Error: ", error);
     return {
-      error: 'Invalid Credentials',
+      error: "Invalid Credentials",
     };
   }
 }
