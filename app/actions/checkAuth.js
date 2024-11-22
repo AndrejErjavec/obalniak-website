@@ -1,6 +1,6 @@
 "use server";
 
-import clientPromise from "@/app/lib/mongodb";
+import prisma from "@/app/lib/prisma";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 import { ObjectId } from "mongodb";
@@ -18,14 +18,11 @@ async function checkAuth() {
     // Verify the JWT using jsonwebtoken
     const decoded = jwt.verify(sessionToken.value, process.env.JWT_SECRET);
 
-    // Connect to MongoDB
-    const client = await clientPromise;
-    const db = client.db("bookit");
-    const usersCollection = db.collection("users");
-
     // Find the user in the database using the decoded userId
-    const user = await usersCollection.findOne({
-      _id: new ObjectId(decoded.userId),
+    const user = await prisma.user.findUnique({
+      where: {
+        id: decoded.id,
+      },
     });
     if (!user) {
       return {

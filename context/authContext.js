@@ -10,8 +10,11 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkAuthentication = async () => {
       const { isAuthenticated, user } = await checkAuth();
+      console.log("checkAuthentication", isAuthenticated, user);
       setIsAuthenticated(isAuthenticated);
-      setCurrentUser(JSON.parse(user));
+      if (user) {
+        setCurrentUser(JSON.parse(user));
+      }
     };
     checkAuthentication();
   }, []);
