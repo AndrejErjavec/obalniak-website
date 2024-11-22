@@ -1,6 +1,6 @@
 "use server";
 
-import clientPromise from "@/app/lib/mongodb";
+import prisma from "@/app/lib/prisma";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
@@ -16,13 +16,12 @@ async function createSession(previousState, formData) {
   }
 
   try {
-    // Connect to MongoDB
-    const client = await clientPromise;
-    const db = client.db("bookit");
-    const usersCollection = db.collection("users");
-
     // Find user by email
-    const user = await usersCollection.findOne({ email });
+    const user = await prisma.user.findUnique({
+      where: {
+        email: email,
+      },
+    });
     if (!user) {
       return {
         error: "Invalid Credentials",
@@ -39,7 +38,7 @@ async function createSession(previousState, formData) {
 
     // Generate JWT
     const token = jwt.sign(
-      { userId: user._id, email: user.email },
+      { id: user.id, email: user.email },
       process.env.JWT_SECRET, // Store this secret in .env.local
       { expiresIn: "1h" }
     );

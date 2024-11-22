@@ -87,7 +87,7 @@ const Header = () => {
               {isAuthenticated && currentUser && (
                 <>
                   <Link href="/profile">
-                    <FaUser className="inline mr-1" /> {currentUser.name}
+                    <FaUser className="inline mr-1" /> {currentUser.firstName}
                   </Link>
                   <button
                     onClick={handleLogout}
