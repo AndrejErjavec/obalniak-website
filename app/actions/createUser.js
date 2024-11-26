@@ -43,7 +43,9 @@ async function createUser(previousState, formData) {
     }
 
     // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const salt = bcrypt.genSaltSync(10);
+    const hashedPassword = bcrypt.hashSync(password, salt);
+    // const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create user document
     const result = await prisma.user.create({

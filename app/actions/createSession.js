@@ -29,7 +29,8 @@ async function createSession(previousState, formData) {
     }
 
     // Verify password
-    const passwordMatch = await bcrypt.compare(password, user.password);
+    // const passwordMatch = await bcrypt.compare(password, user.password);
+    const passwordMatch = bcrypt.compareSync(password, user.password);
     if (!passwordMatch) {
       return {
         error: "Invalid Credentials",
