@@ -2,29 +2,20 @@
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { FaUser, FaSignInAlt, FaSignOutAlt, FaBuilding } from "react-icons/fa";
-import { toast } from "react-toastify";
-import destroySession from "@/app/actions/destroySession";
+import {
+  FaUser,
+  FaSignInAlt,
+  FaSignOutAlt,
+  FaUserShield,
+} from "react-icons/fa";
 import { useAuth } from "@/context/authContext";
-import { useEffect } from "react";
+import UserDropdown from "./UserDropdown";
 
 const Header = () => {
   const router = useRouter();
 
   const { isAuthenticated, setIsAuthenticated, currentUser, setCurrentUser } =
     useAuth();
-
-  const handleLogout = async () => {
-    const { success, error } = await destroySession();
-
-    if (success) {
-      setIsAuthenticated(false);
-      setCurrentUser({});
-      router.push("/login");
-    } else {
-      toast.error(error);
-    }
-  };
 
   return (
     <header className="bg-gray-100">
@@ -49,29 +40,12 @@ const Header = () => {
                 >
                   Home
                 </Link>
-                {/* <!-- Logged In Only --> */}
-                {/* {isAuthenticated && (
-                  <>
-                    <Link
-                      href="/"
-                      className="rounded-md px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-700 hover:text-white"
-                    >
-                      Auth Only 1
-                    </Link>
-                    <Link
-                      href="/"
-                      className="rounded-md px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-700 hover:text-white"
-                    >
-                      Auth Only 1
-                    </Link>
-                  </>
-                )} */}
               </div>
             </div>
           </div>
           {/* <!-- Right Side Menu --> */}
           <div className="ml-auto">
-            <div className="ml-4 flex items-center md:ml-6">
+            <div className="ml-4 flex items-center gap-4 md:ml-6">
               {/* <!-- Logged Out Only --> */}
               {!isAuthenticated && (
                 <>
@@ -84,18 +58,17 @@ const Header = () => {
                 </>
               )}
 
+              {isAuthenticated && currentUser?.isAdmin && (
+                <Link
+                  href="/admin"
+                  className="mr-3 text-gray-800 hover:text-gray-600"
+                >
+                  <FaUserShield className="inline mr-1" /> Pogled skrbnika
+                </Link>
+              )}
+
               {isAuthenticated && currentUser && (
-                <>
-                  <Link href="/profile">
-                    <FaUser className="inline mr-1" /> {currentUser.firstName}
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="mx-3 text-gray-800 hover:text-gray-600"
-                  >
-                    <FaSignOutAlt className="inline mr-1" /> Odjava
-                  </button>
-                </>
+                <UserDropdown user={currentUser} />
               )}
             </div>
           </div>

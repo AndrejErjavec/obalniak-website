@@ -4,13 +4,14 @@ import { useRouter, redirect } from "next/navigation";
 import { useEffect } from "react";
 import { useFormState } from "react-dom";
 import { toast } from "react-toastify";
-import createSession from "../actions/createSession";
+import createSession from "../lib/actions/createSession";
 import { useAuth } from "@/context/authContext";
 
 const LoginPage = () => {
-  const [state, formAction] = useFormState(createSession, {});
   const { isAuthenticated, setIsAuthenticated, currentUser, setCurrentUser } =
     useAuth();
+
+  const [state, formAction] = useFormState(createSession, {});
 
   const router = useRouter();
 
@@ -75,10 +76,10 @@ const LoginPage = () => {
               Login
             </button>
 
-            <p>
-              No account?
+            <p className="text-center">
+              Še nimate uporabniškega računa?
               <Link href="/register" className="text-blue-500">
-                Register
+                Registracija
               </Link>
             </p>
           </div>
