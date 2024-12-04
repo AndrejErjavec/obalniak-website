@@ -5,8 +5,11 @@ import prisma from "@/app/lib/prisma";
 async function getPendingMembers() {
   try {
     const pendingMembers = await prisma.user.findMany({
-      where: {
-        accepted: false, // Adjust field name if it differs in your schema
+      // where: {
+      //   accepted: false,
+      // },
+      orderBy: {
+        accepted: "asc",
       },
     });
 

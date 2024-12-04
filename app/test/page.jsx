@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import getPendingMembers from "@/app/actions/getPendingMembers";
+import getPendingMembers from "@/app/lib/actions/getPendingMembers";
 
 export default function PendingMembers() {
   const [pendingMembers, setPendingMembers] = useState([]);
