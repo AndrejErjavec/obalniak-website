@@ -1,10 +1,11 @@
 "use client";
+
 import Link from "next/link";
 import { useRouter, redirect } from "next/navigation";
 import { useEffect } from "react";
 import { useFormState } from "react-dom";
 import { toast } from "react-toastify";
-import createSession from "../lib/actions/createSession";
+import { createSession } from "../lib/actions/auth";
 import { useAuth } from "@/context/authContext";
 
 const LoginPage = () => {
@@ -20,7 +21,8 @@ const LoginPage = () => {
     if (state.success) {
       toast.success("Logged in successfully!");
       setIsAuthenticated(true);
-      setCurrentUser(JSON.parse(state.user));
+      // setCurrentUser(JSON.parse(state.user));
+      setCurrentUser(state.user);
       // router.push("/");
       redirect("/");
     }

@@ -1,7 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import checkAuth from "@/app/lib/actions/checkAuth";
-import destroySession from "@/app/lib/actions/destroySession";
-import createSession from "@/app/lib/actions/createSession";
+import { checkAuth } from "@/app/lib/actions/auth";
 
 const AuthContext = createContext();
 
@@ -14,7 +12,8 @@ export const AuthProvider = ({ children }) => {
       const { isAuthenticated, user } = await checkAuth();
       setIsAuthenticated(isAuthenticated);
       if (user) {
-        setCurrentUser(JSON.parse(user));
+        // setCurrentUser(JSON.parse(user));
+        setCurrentUser(user);
       }
     };
     checkAuthentication();

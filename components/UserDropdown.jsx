@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
 import { FaUser, FaSignOutAlt } from "react-icons/fa";
-import destroySession from "@/app/lib/actions/destroySession";
+import { destroySession } from "@/app/lib/actions/auth";
 import Link from "next/link";
 import { useAuth } from "@/context/authContext";
-import { useRouter, redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import ProfileImage from "./ProfileImage";
 
 export default function UserDropdown({ user }) {
   const [isOpen, setIsOpen] = useState(false);
+
+  console.log(user);
 
   const { isAuthenticated, currentUser, setIsAuthenticated, setCurrentUser } =
     useAuth();
@@ -27,9 +29,6 @@ export default function UserDropdown({ user }) {
     }
   };
 
-  useEffect(() => {
-    console.log(isOpen);
-  }, [isOpen]);
 
   const handleToggleMenu = () => {
     setIsOpen((currentState) => !currentState);
@@ -38,8 +37,7 @@ export default function UserDropdown({ user }) {
   return (
     <div className="relative">
       <button onClick={handleToggleMenu} className="flex items-center">
-        {/* <FaUser className="inline mr-1" /> */}
-        <ProfileImage user={currentUser} />
+        <ProfileImage user={user} />
         {user.firstName}
       </button>
 

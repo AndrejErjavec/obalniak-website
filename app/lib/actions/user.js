@@ -3,7 +3,7 @@
 import prisma from "@/app/lib/prisma";
 import bcrypt from "bcryptjs";
 
-async function createUser(previousState, formData) {
+export async function createUser(previousState, formData) {
   const firstName = formData.get("firstName");
   const lastName = formData.get("lastName");
   const email = formData.get("email");
@@ -69,4 +69,67 @@ async function createUser(previousState, formData) {
   }
 }
 
-export default createUser;
+export async function acceptMember(id, experienceLevel) {
+  if (!experienceLevel) {
+    return {
+      error: "Izberite izkušenost",
+    };
+  }
+  try {
+    const acceptedMember = await prisma.user.update({
+      where: {
+        id: id,
+      },
+      data: {
+        experienceLevel: experienceLevel,
+        accepted: true,
+      },
+    });
+    return acceptedMember;
+  } catch (error) {
+    console.error("Error in accept member", error);
+    return { error: "Error in accept member" };
+  }
+}
+
+export async function getAllUsers() {
+  try {
+    const users = await prisma.user.findMany({
+      // where: {
+      //   accepted: false,
+      // },
+      orderBy: {
+        accepted: "asc",
+      },
+    });
+
+    return users;
+  } catch (error) {
+    console.error("Error fetching pending members:", error);
+    return { error: "Could not retrieve pending members" };
+  }
+}
+
+export async function getUsersByName(nameQuery) {
+  // if (nameQuery === "") {
+  //   return []
+  // }
+  try {
+    const users = await prisma.user.findMany({
+      where: {
+        OR: [
+          { firstName: { startsWith: nameQuery, mode: "insensitive" } },
+          { lastName: { startsWith: nameQuery, mode: "insensitive" } },
+        ],
+      },
+      orderBy: {
+        firstName: "asc",
+      },
+    });
+
+    return users;
+  } catch (error) {
+    console.error("Error fetching pending members:", error);
+    return { error: "Could not retrieve pending members" };
+  }
+}

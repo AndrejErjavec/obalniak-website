@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useFormState } from "react-dom";
 import { useRouter, redirect } from "next/navigation";
 import { toast } from "react-toastify";
-import createUser from "@/app/lib/actions/createUser";
+import { createUser } from "@/app/lib/actions/user";
 import Link from "next/link";
 
 const RegisterPage = () => {

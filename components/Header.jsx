@@ -10,6 +10,7 @@ import {
 } from "react-icons/fa";
 import { useAuth } from "@/context/authContext";
 import UserDropdown from "./UserDropdown";
+import {useEffect} from "react";
 
 const Header = () => {
   const router = useRouter();
@@ -19,10 +20,13 @@ const Header = () => {
 
   return (
     <header className="bg-gray-100">
-      <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <nav className="mx-auto container sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
-            <Link href="/">
+            <Link
+              href="/"
+              className="flex flex-row items-center gap-2 text-2xl font-bold"
+            >
               <Image
                 className="h-12 w-12"
                 src="/oak-logo.png"
@@ -31,16 +35,10 @@ const Header = () => {
                 alt="Bookit"
                 priority={true}
               />
+              <h1>Obalni alpinistični klub</h1>
             </Link>
             <div className="hidden md:block">
-              <div className="ml-10 flex items-baseline space-x-4">
-                <Link
-                  href="/"
-                  className="rounded-md px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-700 hover:text-white"
-                >
-                  Home
-                </Link>
-              </div>
+              <div className="ml-10 flex items-baseline space-x-4">{}</div>
             </div>
           </div>
           {/* <!-- Right Side Menu --> */}
@@ -63,7 +61,7 @@ const Header = () => {
                   href="/admin"
                   className="mr-3 text-gray-800 hover:text-gray-600"
                 >
-                  <FaUserShield className="inline mr-1" /> Pogled skrbnika
+                  <FaUserShield className="inline mr-1" size={20} /> Pogled skrbnika
                 </Link>
               )}
 
