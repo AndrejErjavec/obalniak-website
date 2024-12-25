@@ -2,8 +2,18 @@
 
 import prisma from "@/app/lib/prisma";
 import {checkAuth} from "./auth";
+import {uploadImages} from "@/app/lib/actions/image";
 
-export async function createAscent({title, route, difficulty, date, text, coClimbers, photos}) {
+export async function createAscent(formData) {
+
+  const title = formData.get("title");
+  const route = formData.get("route");
+  const difficulty = formData.get("difficulty");
+  const date = formData.get("date");
+  const text = formData.get("text");
+  const coClimbers = formData.getAll("coClimbers");
+  const photos = formData.getAll("photos");
+
   if (!title || !route || !difficulty || !date || !text) {
     return {
       error: "Manjkajoči podatki"
@@ -12,8 +22,6 @@ export async function createAscent({title, route, difficulty, date, text, coClim
 
   const { user } = await checkAuth();
 
-  console.log(user);
-
   if (!user) {
     return {
       error: 'Niste prijavljeni',
@@ -21,53 +29,60 @@ export async function createAscent({title, route, difficulty, date, text, coClim
   }
 
   try {
-    const ascent = await prisma.ascent.create({
-      data: {
-        title: title,
-        route: route,
-        difficulty: difficulty,
-        date: date,
-        text: text,
-        authorId: user.id,
+    let unregistered;
+    let registered;
+
+    if (coClimbers) {
+      registered = coClimbers.filter(c => typeof c == "object");
+      unregistered = coClimbers.filter(c => typeof c == "string");
+    }
+
+    await prisma.$transaction(async (prisma) => {
+      const ascent = await prisma.ascent.create({
+        data: {
+          title: title,
+          route: route,
+          difficulty: difficulty,
+          date: date,
+          text: text,
+          authorId: user.id,
+          unregisteredParticipants: unregistered,
+        }
+      });
+
+      if (registered) {
+        // store registered in separate table
+        await Promise.all(
+          registered.map(climber => (
+            prisma.userParticipatedAscent.create({
+              data: {
+                userId: climber.id,
+                ascentId: ascent.id
+              }
+            })
+        )));
       }
-    });
+
+      if (photos) {
+        // store photos in Cloudinary bucket and save links
+        const secureUrls = await uploadImages(photos);
+        await Promise.all(secureUrls.map(url => (
+          prisma.photo.create({
+            data: {
+              url: url,
+              ascentId: ascent.id,
+            }
+          })
+        )));
+      }
+    }, {timeout: 30000}); // end of transaction
+
     return {
       success: true,
     }
+
   } catch (error) {
     console.log(error);
     return {error: "Prišlo je do napake"}
   }
-
-
 }
-
-// TODO: fix for multiple photos
-async function uploadImage(image) {
-  try {
-    const buffer = await image.arrayBuffer(); // Read file data as an ArrayBuffer
-    const readableStream = new Readable();
-    readableStream._read = () => {}; // No-op
-    readableStream.push(Buffer.from(buffer));
-    readableStream.push(null); // End of stream
-
-    // Wrap Cloudinary upload_stream in a Promise
-    const result = await new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        { folder: 'rooms' },
-        (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
-        }
-      );
-      readableStream.pipe(uploadStream);
-    });
-
-    return result.secure_url; // This is the URL to store in MongoDB
-
-  } catch (error) {
-    console.error('Image upload error:', error);
-    throw new Error('Image upload failed');
-  }
-}
-

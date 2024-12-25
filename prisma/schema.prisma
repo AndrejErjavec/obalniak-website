@@ -56,10 +56,10 @@ model Comment {
 }
 
 model Photo {
-  id     String @id @default(auto()) @map("_id") @db.ObjectId
-  url    String
-  post   Ascent @relation(fields: [postId], references: [id])
-  postId String @db.ObjectId
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  url      String
+  ascent   Ascent @relation(fields: [ascentId], references: [id])
+  ascentId String @db.ObjectId
 }
 
 // enum ExperienceLevel {

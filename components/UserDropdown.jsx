@@ -10,8 +10,6 @@ import ProfileImage from "./ProfileImage";
 export default function UserDropdown({ user }) {
   const [isOpen, setIsOpen] = useState(false);
 
-  console.log(user);
-
   const { isAuthenticated, currentUser, setIsAuthenticated, setCurrentUser } =
     useAuth();
 

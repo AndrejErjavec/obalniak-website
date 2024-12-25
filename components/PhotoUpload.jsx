@@ -1,10 +1,9 @@
 "use client"
 
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import Image from "next/image";
 
-export default function PhotoUpload() {
-  const [selectedFiles, setSelectedFiles] = useState([]);
+export default function PhotoUpload({photos, setPhotos}) {
   const [previews, setPreviews] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -24,11 +23,9 @@ export default function PhotoUpload() {
     const files = event.dataTransfer.files;
     Array.from(files).forEach(file => {
       if (file.type.startsWith("image/")) {
-        setSelectedFiles(files => [...files, file]);
+        setPhotos(files => [...files, file]);
         const previewUrl = URL.createObjectURL(file);
         setPreviews(previewUrls => [...previewUrls, previewUrl]);
-      } else {
-        alert("Please upload an image file.");
       }
     });
   };
@@ -36,27 +33,15 @@ export default function PhotoUpload() {
   const handleFileChange = (event) => {
     const files = event.target.files;
     Array.from(files).forEach(file => {
-      setSelectedFiles(files => [...files, file]);
+      setPhotos(files => [...files, file]);
       const previewUrl = URL.createObjectURL(file);
       setPreviews(previewUrls => [...previewUrls, previewUrl]);
     });
   };
 
-  // TODO: popravi za multiple images
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    // if (selectedFile) {
-    //   alert(`Photo uploaded: ${selectedFile.name}`);
-    //   // Add further logic for file upload (e.g., to a server)
-    // } else {
-    //   alert("Please select a photo to upload.");
-    // }
-  };
-
   return (
     <div>
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form className="space-y-6">
         {/* Drag-and-Drop Area */}
         <div
           className={`border-2 ${
@@ -76,6 +61,7 @@ export default function PhotoUpload() {
             accept="image/*"
             className="hidden"
             id="fileInput"
+            name="photos"
             onChange={handleFileChange}
           />
           <label
@@ -90,7 +76,7 @@ export default function PhotoUpload() {
         {previews.length > 0 && (
           <div className="mt-4">
             <p className="text-sm text-gray-500">Preview</p>
-            <div className="grid grid-cols-3 md:grid-cols-2 gap-2">
+            <div className="grid grid-cols-5 md:grid-cols-2 gap-2">
               {previews.map(preview => (
                 <Image
                   src={preview}
