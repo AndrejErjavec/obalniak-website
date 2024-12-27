@@ -114,7 +114,7 @@ export default function Ascent() {
           {/* Gallery */}
           <div className="mt-10 px-5 md:px-20">
             <div>
-              <p className="text-xl font-medium mb-4">Galerija</p>
+              <p className="text-xl font-medium mb-4">Fotogalerija</p>
               <PhotoGallery photos={ascent.photos}/>
             </div>
           </div>
