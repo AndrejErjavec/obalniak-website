@@ -41,7 +41,7 @@ export default function PhotoUpload({photos, setPhotos}) {
 
   return (
     <div>
-      <form className="space-y-6">
+      <div className="space-y-6">
         {/* Drag-and-Drop Area */}
         <div
           className={`border-2 ${
@@ -61,7 +61,7 @@ export default function PhotoUpload({photos, setPhotos}) {
             accept="image/*"
             className="hidden"
             id="fileInput"
-            name="photos"
+            name="fileInput"
             onChange={handleFileChange}
           />
           <label
@@ -89,7 +89,7 @@ export default function PhotoUpload({photos, setPhotos}) {
             </div>
           </div>
         )}
-      </form>
+      </div>
     </div>
   );
 }

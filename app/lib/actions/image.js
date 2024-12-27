@@ -1,6 +1,7 @@
 "use server"
 
 import cloudinary from "../cloudinary";
+import prisma from "../prisma";
 
 export async function uploadImages(images) {
   if (images) {

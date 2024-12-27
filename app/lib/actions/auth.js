@@ -79,7 +79,7 @@ export async function createSession(previousState, formData) {
     const token = jwt.sign(
       { id: user.id, email: user.email },
       process.env.JWT_SECRET, // Store this secret in .env.local
-      { expiresIn: "1h" }
+      { expiresIn: "1d" }
     );
     // Set JWT in a secure cookie
     cookies().set("session-token", token, {

@@ -5,6 +5,7 @@ import {useEffect, useState} from "react";
 import UserSelect from "@/components/UserSelect";
 import {createAscent} from "@/app/lib/actions/ascent";
 import {toast} from "react-toastify";
+import * as form from "next/dist/lib/picocolors";
 
 export default function CreateClimb() {
   const difficulties = [
@@ -43,9 +44,9 @@ export default function CreateClimb() {
   const [photos, setPhotos] = useState([]);
 
   const handleSubmit = async (formData) => {
-    coClimbers.forEach((coClimber) => {
-      formData.append("coClimbers", coClimber);
-    });
+
+    const coClimbersString = JSON.stringify(coClimbers);
+    formData.append("coClimbers", coClimbersString);
 
     photos.forEach((photo) => {
       formData.append("photos", photo);
@@ -55,20 +56,26 @@ export default function CreateClimb() {
 
     if (result.success) {
       toast.success("objava ustvarjena");
+
+      for (let key of formData.keys()) {
+        formData.delete(key)
+      }
     } else {
       toast.error(result.error);
     }
   }
 
   return (
-    <div className="container mx-auto">
+    <div className="px-5 mx-auto md:container">
       <form action={handleSubmit}>
-        <div className="flex flex-row justify-between my-8">
+        <div className="flex flex-col py-6 gap-5 md:flex-row md:justify-between md:py-8">
           <h1 className="text-3xl font-semibold">Ustvari prispevek</h1>
-          <button type={"submit"} className="bg-blue-500 text-white font-medium px-4 py-2 rounded-md">Objavi</button>
+          <button type={"submit"}
+                  className="hidden md:block bg-blue-500 text-white font-medium px-4 py-2 rounded-md">Objavi
+          </button>
         </div>
-        <div className="flex flex-row gap-8">
-          <section className="flex flex-col gap-3 w-1/3">
+        <div className="flex flex-col gap-8 md:flex-row">
+          <section className="flex flex-col gap-3 md:w-1/3">
             <div>
               <label htmlFor="title">Naslov</label>
               <input
@@ -114,22 +121,24 @@ export default function CreateClimb() {
             </div>
             <UserSelect users={coClimbers} setUsers={setCoClimbers}/>
           </section>
-          <section className="flex flex-col gap-8 w-2/3">
+          <section className="flex flex-col gap-8 md:w-2/3">
             <div className="flex flex-col h-full">
               <label htmlFor="text">Opis vzpona/ture</label>
               <textarea
                 placeholder="besedilo..."
                 name="text"
-                className="border rounded h-full py-2 px-3 "
+                className="border rounded py-2 px-3 h-48 md:h-full"
               />
             </div>
           </section>
         </div>
+        <div className="mt-7">
+          <PhotoUpload photos={photos} setPhotos={setPhotos}/>
+        </div>
+        <button type={"submit"}
+                className="block md:hidden w-full mt-7 bg-blue-500 text-white font-medium px-4 py-2 rounded-md">Objavi
+        </button>
       </form>
-      <div className="mt-7">
-        <PhotoUpload photos={photos} setPhotos={setPhotos}/>
-      </div>
     </div>
-
   );
 }

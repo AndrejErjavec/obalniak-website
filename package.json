@@ -13,6 +13,7 @@
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.5.1",
     "jsonwebtoken": "^9.0.2",
+    "lightgallery": "^2.8.2",
     "luxon": "^3.5.0",
     "mongodb": "^6.11.0",
     "next": "14.2.13",

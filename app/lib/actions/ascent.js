@@ -5,13 +5,12 @@ import {checkAuth} from "./auth";
 import {uploadImages} from "@/app/lib/actions/image";
 
 export async function createAscent(formData) {
-
   const title = formData.get("title");
   const route = formData.get("route");
   const difficulty = formData.get("difficulty");
   const date = formData.get("date");
   const text = formData.get("text");
-  const coClimbers = formData.getAll("coClimbers");
+  const coClimbersString = formData.getAll("coClimbers");
   const photos = formData.getAll("photos");
 
   if (!title || !route || !difficulty || !date || !text) {
@@ -32,7 +31,8 @@ export async function createAscent(formData) {
     let unregistered;
     let registered;
 
-    if (coClimbers) {
+    const coClimbers = JSON.parse(coClimbersString);
+    if (coClimbers && coClimbers.length > 0) {
       registered = coClimbers.filter(c => typeof c == "object");
       unregistered = coClimbers.filter(c => typeof c == "string");
     }
@@ -63,7 +63,7 @@ export async function createAscent(formData) {
         )));
       }
 
-      if (photos) {
+      if (photos && photos.length > 0) {
         // store photos in Cloudinary bucket and save links
         const secureUrls = await uploadImages(photos);
         await Promise.all(secureUrls.map(url => (
@@ -84,5 +84,58 @@ export async function createAscent(formData) {
   } catch (error) {
     console.log(error);
     return {error: "Prišlo je do napake"}
+  }
+}
+
+export async function getAscents() {
+  try {
+    const ascents = await prisma.ascent.findMany({
+      include: {
+        photos: true,
+        author: true
+      },
+    });
+    return {
+      success: true,
+      data: ascents,
+    }
+  } catch (error) {
+    console.error(error);
+    return {
+      error: "Napaka pri nalaganju"
+    }
+  }
+}
+
+export async function getAscent(id) {
+  try {
+    const ascent = await prisma.ascent.findUnique({
+      where: {
+        id: id
+      },
+      include: {
+        photos: true,
+        author: true,
+        registeredParticipants: {
+          include: {
+            user: true
+          }
+        },
+      },
+    });
+
+
+    ascent.registeredParticipants = ascent.registeredParticipants.map((p) => p.user)
+
+
+    return {
+      success: true,
+      data: ascent,
+    }
+  } catch (error) {
+    console.error(error);
+    return {
+      error: "Napaka pri nalaganju"
+    }
   }
 }

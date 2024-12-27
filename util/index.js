@@ -30,3 +30,9 @@ export const experienceLevel = {
     colorBg: "#E57373",
   },
 };
+
+export const formatDate = (dateString) => {
+  const parts = dateString.split("-");
+  const [year, month, day] = parts;
+  return `${day}. ${month}. ${year}`;
+}
