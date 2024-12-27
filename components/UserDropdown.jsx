@@ -1,68 +1,48 @@
 import { useEffect, useState } from "react";
-import { FaUser, FaSignOutAlt } from "react-icons/fa";
-import destroySession from "@/app/lib/actions/destroySession";
+import {FaUser, FaSignOutAlt, FaUserShield} from "react-icons/fa";
+import { destroySession } from "@/app/lib/actions/auth";
 import Link from "next/link";
 import { useAuth } from "@/context/authContext";
-import { useRouter, redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import ProfileImage from "./ProfileImage";
 
-export default function UserDropdown({ user }) {
-  const [isOpen, setIsOpen] = useState(false);
-
+export default function UserDropdown({ user, setIsOpen, handleLogout }) {
   const { isAuthenticated, currentUser, setIsAuthenticated, setCurrentUser } =
     useAuth();
 
-  const router = useRouter();
-
-  const handleLogout = async () => {
-    const { success, error } = await destroySession();
-    if (success) {
-      setIsAuthenticated(false);
-      setCurrentUser({});
-      setIsOpen(false);
-      router.push("/login");
-    } else {
-      toast.error(error);
-    }
-  };
-
-  useEffect(() => {
-    console.log(isOpen);
-  }, [isOpen]);
-
-  const handleToggleMenu = () => {
-    setIsOpen((currentState) => !currentState);
-  };
-
   return (
     <div className="relative">
-      <button onClick={handleToggleMenu} className="flex items-center">
-        {/* <FaUser className="inline mr-1" /> */}
-        <ProfileImage user={currentUser} />
-        {user.firstName}
-      </button>
+      <ul className="absolute right-0 mt-2 w-52 bg-white border border-gray-200 rounded-md shadow-lg">
+          {user.isAdmin && (
+            <li className="px-4 py-2 text-gray-800 hover:bg-gray-100 cursor-pointer flex items-center">
+              <Link
+                href="/admin"
+                className="text-gray-800 hover:text-gray-600"
+                onClick={() => setIsOpen(false)}
+              >
+                <FaUserShield className="inline mr-1" size={20}/> Pogled skrbnika
+              </Link>
+            </li>
+          )}
 
-      {isOpen && (
-        <ul className="absolute right-0 mt-2 w-52 bg-white border border-gray-200 rounded-md shadow-lg">
-          <li className="px-4 py-2 text-gray-800 hover:bg-gray-100 cursor-pointer flex items-center">
-            <Link
-              onClick={handleToggleMenu}
-              href="/profile"
-              className=" text-gray-800 hover:text-gray-600"
-            >
-              <FaUser className="inline mr-1" /> Uporabniški profil
-            </Link>
-          </li>
-
-          <li
-            onClick={handleLogout}
-            className="px-4 py-2 text-gray-800 hover:bg-gray-100 cursor-pointer flex items-center"
+            <li className="px-4 py-2 text-gray-800 hover:bg-gray-100 cursor-pointer flex items-center">
+          <Link
+            href="/profile"
+            className=" text-gray-800 hover:text-gray-600"
+            onClick={() => setIsOpen(false)}
           >
-            <FaSignOutAlt className="inline mr-1" /> Odjava
-          </li>
-        </ul>
-      )}
+            <FaUser className="inline mr-1" /> Uporabniški profil
+          </Link>
+        </li>
+
+        <li
+          className="px-4 py-2 text-gray-800 hover:bg-gray-100 cursor-pointer flex items-center"
+          onClick={handleLogout}
+        >
+          <FaSignOutAlt className="inline mr-1" /> Odjava
+        </li>
+      </ul>
     </div>
   );
 }

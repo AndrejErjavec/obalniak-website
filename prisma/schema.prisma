@@ -8,38 +8,64 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  email     String   @unique
-  firstName String
-  lastName  String
-  password  String
-  experienceLevel ExperienceLevel?
-  accepted  Boolean  @default(false)
-  isAdmin   Boolean  @default(false)
-  createdAt DateTime @default(now())
-  posts     Post[]
+  id                  String                   @id @default(auto()) @map("_id") @db.ObjectId
+  email               String                   @unique
+  firstName           String
+  lastName            String
+  password            String
+  experienceLevel     String?
+  accepted            Boolean                  @default(false)
+  isAdmin             Boolean                  @default(false)
+  createdAt           DateTime                 @default(now())
+  authoredAscents     Ascent[]                 @relation("authoredAscents")
+  participatedAscents UserParticipatedAscent[] @relation("participatedAscents")
+  comments            Comment[]
 }
 
-model Post {
-  id        String  @id @default(auto()) @map("_id") @db.ObjectId
-  title     String
-  mountain  String
-  climb     String
-  content   String?
-  author    User    @relation(fields: [authorId], references: [id])
-  authorId  String  @db.ObjectId
-  photos    Photo[]
+model Ascent {
+  id                       String                   @id @default(auto()) @map("_id") @db.ObjectId
+  title                    String
+  route                    String
+  date                     String
+  text                     String
+  difficulty               String
+  author                   User                     @relation("authoredAscents", fields: [authorId], references: [id])
+  authorId                 String                   @db.ObjectId
+  photos                   Photo[]
+  comments                 Comment[]
+  registeredParticipants   UserParticipatedAscent[]
+  unregisteredParticipants String[]
+}
+
+model UserParticipatedAscent {
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  user     User    @relation("participatedAscents", fields: [userId], references: [id])
+  userId   String  @db.ObjectId
+  Ascent   Ascent? @relation(fields: [ascentId], references: [id])
+  ascentId String? @db.ObjectId
+}
+
+model Comment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  text      String
+  createdAt DateTime @default(now())
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  String   @db.ObjectId
+  ascent    Ascent   @relation(fields: [ascentId], references: [id])
+  ascentId  String   @db.ObjectId
 }
 
 model Photo {
-  id     String @id @default(auto()) @map("_id") @db.ObjectId
-  url    String
-  post   Post   @relation(fields: [postId], references: [id])
-  postId String @db.ObjectId
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  url      String
+  ascent   Ascent @relation(fields: [ascentId], references: [id])
+  ascentId String @db.ObjectId
 }
 
-enum ExperienceLevel {
-  BEGINNER
-  INTERMEDIATE
-  ADVANCED
-}
+// enum ExperienceLevel {
+//   TECAJNIK
+//   MLAJSI_PRIPRAVNIK
+//   STAREJSI_PRIPRAVNIK
+//   ALPINIST
+//   ALPINISTICNI_INSTRUKTOR
+// }

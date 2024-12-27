@@ -2,11 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/authContext";
-import getPendingMembers from "@/app/lib/actions/getPendingMembers";
-import acceptMember from "../lib/actions/acceptMember";
+import { acceptMember, getAllUsers } from "../lib/actions/user";
 import { FaCheckCircle, FaClock, FaSave } from "react-icons/fa";
 import { toast } from "react-toastify";
-import { ExperienceLevel } from "@prisma/client";
+import { experienceLevel } from "@/util";
 
 export default function AdminPage() {
   const [pendingMembers, setPendingMembers] = useState([]);
@@ -15,7 +14,7 @@ export default function AdminPage() {
     // Fetch pending members on component load
     const fetchPendingMembers = async () => {
       try {
-        const members = await getPendingMembers();
+        const members = await getAllUsers();
         if (members.error) {
           toast.error(members.error);
         } else {
@@ -106,15 +105,9 @@ export default function AdminPage() {
                             izberite izkušenost
                           </option>
                         )}
-                        <option value={ExperienceLevel.BEGINNER}>
-                          Začetnik
-                        </option>
-                        <option value={ExperienceLevel.INTERMEDIATE}>
-                          Srednje izkušen
-                        </option>
-                        <option value={ExperienceLevel.ADVANCED}>
-                          Zelo izkušen
-                        </option>
+                        {Object.entries(experienceLevel).map(([key, level]) => (
+                          <option value={key}>{level.name}</option>
+                        ))}
                       </select>
                     </td>
                     <td className="whitespace-nowrap bg-white px-4 py-5 text-sm">
