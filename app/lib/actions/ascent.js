@@ -87,18 +87,26 @@ export async function createAscent(formData) {
   }
 }
 
-export async function getAscents() {
+export async function getAscents(query) {
   try {
     const ascents = await prisma.ascent.findMany({
       include: {
         photos: true,
         author: true
       },
+      ...(!!query && {
+        where: {
+          title: {
+            contains: String(query),
+            mode: 'insensitive'
+          }
+        },
+        orderBy: {
+          createdAt: "desc",
+        }
+      })
     });
-    return {
-      success: true,
-      data: ascents,
-    }
+    return ascents
   } catch (error) {
     console.error(error);
     return {
@@ -124,9 +132,7 @@ export async function getAscent(id) {
       },
     });
 
-
     ascent.registeredParticipants = ascent.registeredParticipants.map((p) => p.user)
-
 
     return {
       success: true,

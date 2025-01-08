@@ -7,7 +7,8 @@ import bcrypt from "bcryptjs";
 
 export async function checkAuth() {
   // Retrieve JWT from cookies
-  const sessionToken = cookies().get("session-token");
+  const c = await cookies();
+  const sessionToken = c.get("session-token");
   if (!sessionToken) {
     return {
       isAuthenticated: false,
@@ -86,7 +87,7 @@ export async function createSession(previousState, formData) {
       httpOnly: true,
       secure: true,
       sameSite: "strict",
-      maxAge: 60 * 60, // 1 hour in seconds
+      // maxAge: 60 * 60, // 1 hour in seconds
       path: "/",
     });
 

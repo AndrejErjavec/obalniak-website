@@ -3,8 +3,8 @@
 import {useEffect, useState} from "react";
 import Image from "next/image";
 
-export default function PhotoUpload({photos, setPhotos}) {
-  const [previews, setPreviews] = useState([]);
+export default function PhotoUploadSingle({photo, setPhoto}) {
+  const [preview, setPreview] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
 
   const handleDragOver = (event) => {
@@ -20,23 +20,21 @@ export default function PhotoUpload({photos, setPhotos}) {
     event.preventDefault();
     setIsDragging(false);
 
-    const files = event.dataTransfer.files;
-    Array.from(files).forEach(file => {
-      if (file.type.startsWith("image/")) {
-        setPhotos(files => [...files, file]);
-        const previewUrl = URL.createObjectURL(file);
-        setPreviews(previewUrls => [...previewUrls, previewUrl]);
-      }
-    });
+    const file = event.target.files[0];
+    if (file.type.startsWith("image/")) {
+      setPhoto(file);
+      const previewUrl = URL.createObjectURL(file);
+      setPreview(previewUrl);
+    }
   };
 
   const handleFileChange = (event) => {
-    const files = event.target.files;
-    Array.from(files).forEach(file => {
-      setPhotos(files => [...files, file]);
+    const file = event.target.files[0];
+    if (file.type.startsWith("image/")) {
+      setPhoto(file);
       const previewUrl = URL.createObjectURL(file);
-      setPreviews(previewUrls => [...previewUrls, previewUrl]);
-    });
+      setPreview(previewUrl);
+    }
   };
 
   return (
@@ -57,7 +55,6 @@ export default function PhotoUpload({photos, setPhotos}) {
           </p>
           <input
             type="file"
-            multiple
             accept="image/*"
             className="hidden"
             id="fileInput"
@@ -73,20 +70,16 @@ export default function PhotoUpload({photos, setPhotos}) {
         </div>
 
         {/* Image Preview */}
-        {previews.length > 0 && (
+        {preview && (
           <div className="mt-4">
             <p className="text-sm text-gray-500">Preview</p>
-            <div className="grid grid-cols-5 md:grid-cols-2 gap-2">
-              {previews.map(preview => (
-                <Image
-                  src={preview}
-                  width={500}
-                  height={500}
-                  alt="Preview"
-                  className="w-full max-h-60 object-contain border border-gray-300 rounded-md shadow-sm"
-                />
-              ))}
-            </div>
+            <Image
+              src={preview}
+              width={500}
+              height={500}
+              alt="Preview"
+              className="w-full max-h-60 object-contain border border-gray-300 rounded-md shadow-sm"
+            />
           </div>
         )}
       </div>

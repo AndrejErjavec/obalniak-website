@@ -92,6 +92,25 @@ export async function acceptMember(id, experienceLevel) {
   }
 }
 
+export async function getUser(id) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: id
+      },
+      include: {
+        password: false
+      }
+    });
+    return user;
+  } catch (error) {
+    console.log("Error in getting user", error);
+    return {
+      error: "Error in getUser"
+    }
+  }
+}
+
 export async function getAllUsers() {
   try {
     const users = await prisma.user.findMany({

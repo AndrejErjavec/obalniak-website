@@ -1,6 +1,6 @@
 "use client"
 
-import PhotoUpload from "@/components/PhotoUpload";
+import PhotoUploadMulti from "@/components/photoUpload/PhotoUploadMulti";
 import {useEffect, useState} from "react";
 import UserSelect from "@/components/UserSelect";
 import {createAscent} from "@/app/lib/actions/ascent";
@@ -69,7 +69,7 @@ export default function CreateClimb() {
     <div className="px-5 mx-auto md:container">
       <form action={handleSubmit}>
         <div className="flex flex-col py-6 gap-5 md:flex-row md:justify-between md:py-8">
-          <h1 className="text-3xl font-semibold">Ustvari prispevek</h1>
+          <h1 className="text-3xl font-semibold">Ustvari poročilo o vzponu</h1>
           <button type={"submit"}
                   className="hidden md:block bg-blue-500 text-white font-medium px-4 py-2 rounded-md">Objavi
           </button>
@@ -133,7 +133,7 @@ export default function CreateClimb() {
           </section>
         </div>
         <div className="mt-7">
-          <PhotoUpload photos={photos} setPhotos={setPhotos}/>
+          <PhotoUploadMulti photos={photos} setPhotos={setPhotos}/>
         </div>
         <button type={"submit"}
                 className="block md:hidden w-full mt-7 bg-blue-500 text-white font-medium px-4 py-2 rounded-md">Objavi

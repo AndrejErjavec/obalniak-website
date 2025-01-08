@@ -5,10 +5,11 @@ import { toast } from "react-toastify";
 import {getAscent, getAscents} from "@/app/lib/actions/ascent";
 import { useParams } from "next/navigation";
 import Image from "next/image";
-import ProfileBanner from "@/components/ProfileBanner";
+import ProfileBanner from "@/components/profile/ProfileBanner";
 import { MdAltRoute, MdCalendarMonth } from "react-icons/md";
 import { formatDate } from "@/util";
 import PhotoGallery from "@/components/PhotoGallery";
+import CommentSection from "@/components/comments/CommentSection";
 
 export default function Ascent() {
   const params = useParams();
@@ -45,22 +46,20 @@ export default function Ascent() {
       {ascent && (
         <div>
           {/* Cover Photo */}
-          <section>
-            {ascent.photos && ascent.photos.length > 0 && (
-              <div className="w-full">
-                <Image
-                  src={ascent.photos[0].url}
-                  alt={"image"}
-                  width={1000}
-                  height={1000}
-                  className="w-full object-contain object-center"
-                />
-              </div>
-            )}
-          </section>
+          {ascent.photos && ascent.photos.length > 0 && (
+            <section className="w-full md:h-80">
+              <Image
+                src={ascent.photos[0].url}
+                alt={"image"}
+                width={1000}
+                height={1000}
+                className="w-full h-full object-cover object-center"
+              />
+            </section>
+          )}
 
           {/* Ascent header */}
-          <section className="flex flex-col py-5 bg-gray-100">
+          <section className="flex flex-col py-5 bg-gray-50">
             <div className="px-5 md:px-20">
               <h1 className="text-3xl font-medium">{ascent.title}</h1>
               <div className="flex flex-col">
@@ -83,7 +82,7 @@ export default function Ascent() {
                   {/* Author */}
                   <div>
                     <p className="font-medium mb-2">Avtor</p>
-                    <ProfileBanner user={ascent.author} size={25}/>
+                    <ProfileBanner firstName={ascent.author.firstName} lastName={ascent.author.lastName} userId={ascent.author.id} size={25}/>
                   </div>
                   {/* CoClimbers */}
                   <div>
@@ -91,7 +90,7 @@ export default function Ascent() {
                     <ul className="flex gap-5 flex-wrap items-center">
                       {ascent.registeredParticipants.map((participant) => (
                         <li>
-                          <ProfileBanner user={participant} size={25}/>
+                          <ProfileBanner firstName={participant.firstName} lastName={participant.lastName} userId={participant.id} size={25}/>
                         </li>
                       ))}
                       {ascent.unregisteredParticipants.map((participant) => (
@@ -112,12 +111,20 @@ export default function Ascent() {
           </section>
 
           {/* Gallery */}
-          <div className="mt-10 px-5 md:px-20">
-            <div>
-              <p className="text-xl font-medium mb-4">Fotogalerija</p>
-              <PhotoGallery photos={ascent.photos}/>
-            </div>
-          </div>
+          {ascent.photos && ascent.photos.length > 0 && (
+            <section className="mt-10 px-5 md:px-20">
+              <div>
+                <p className="text-xl font-medium mb-4">Fotogalerija</p>
+                <PhotoGallery photos={ascent.photos}/>
+              </div>
+            </section>
+          )}
+
+        {/* Comment section */}
+          <section className="mt-10 px-5 md:px-20">
+            <p className="text-xl font-medium mb-4">Komentarji</p>
+            <CommentSection ascentId={id} />
+          </section>
         </div>
       )}
     </>
