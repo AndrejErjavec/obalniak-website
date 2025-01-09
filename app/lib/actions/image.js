@@ -1,14 +1,24 @@
 "use server"
 
 import cloudinary from "../cloudinary";
-import prisma from "../prisma";
 
 export async function uploadImages(images) {
-  if (images) {
-    const result = await Promise.all(
-      images.map((image) => uploadImage(image)) // Return the promise
-    );
-    return result; // Each element is already a secure URL from uploadImage
+  if (!images) {
+    throw new Error("No images provided");
+  }
+
+  const imageArray = Array.isArray(images) ? images : [images];
+
+  if (imageArray.length === 0) {
+    return [];
+  }
+
+  try {
+    const result = await Promise.all(imageArray.map((image) => uploadImage(image)));
+    return result;
+  } catch (error) {
+    console.error("Error uploading images:", error);
+    throw new Error("Failed to upload images");
   }
 }
 

@@ -13,10 +13,11 @@ import { FaXmark } from "react-icons/fa6";
 import { useAuth } from "@/context/authContext";
 import UserDropdown from "./UserDropdown";
 import {useEffect, useState} from "react";
-import ProfileImage from "@/components/ProfileImage";
+import ProfileImage from "@/components/profile/ProfileImage";
 import {destroySession} from "@/app/lib/actions/auth";
 import {toast} from "react-toastify";
-import ProfileBanner from "@/components/ProfileBanner";
+import ProfileBanner from "@/components/profile/ProfileBanner";
+import DropdownMenu from "@/components/DropdownMenu";
 
 
 const Header = () => {
@@ -27,7 +28,17 @@ const Header = () => {
     },
     {
       title: "Novice",
-      href: "/news",
+      dropdown: true,
+      items: [
+        {
+          title: "Dogodki",
+          href: "/news/events",
+        },
+        {
+          title: "Alpinistična šola",
+          href: "/news/alpine-school",
+        }
+      ]
     },
     {
       title: "O nas",
@@ -73,7 +84,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-gray-100">
+    <header className="bg-white">
       <nav className=" hidden md:block mx-auto container sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
@@ -98,16 +109,20 @@ const Header = () => {
           {/* <!-- Right Side Menu --> */}
           <div className="">
             <div className="ml-4 flex items-center gap-4 md:ml-6">
-              {links.map((link) => (
-                <Link
-                  href={link.href}
-                  className="font-medium text-gray-800 hover:text-gray-600"
-                  key={link.href}
-                >
-                  <p>{link.title}</p>
-                </Link>
+              {links.map((link) =>
+                link.dropdown ? (
+                  <DropdownMenu title={link.title} items={link.items} key={link.title} setParentOpen={setMenuOpen} />
+                ) : (
+                  <Link
+                    href={link.href}
+                    className="font-medium text-gray-800 hover:text-gray-600"
+                    key={link.href}
+                  >
+                    {link.title}
+                  </Link>
+                )
+              )}
 
-              ))}
               {/* <!-- Logged Out Only --> */}
               {!isAuthenticated && (
                 <>
@@ -122,7 +137,7 @@ const Header = () => {
 
               {isAuthenticated && currentUser && (
                 <button onClick={handleToggleUserDropdown} className="flex items-center gap-2 ml-3">
-                  <ProfileImage user={currentUser} />
+                  <ProfileImage firstName={currentUser.firstName} lastName={currentUser.lastName} />
                   {currentUser.firstName} {currentUser.lastName}
                 </button>
               )}
@@ -138,7 +153,7 @@ const Header = () => {
         )}
       </nav>
 
-      {/* <!-- Mobile menu --> */}
+      {/* <!-- Mobile header --> */}
       <nav className="md:hidden mx-auto px-5">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
@@ -163,20 +178,23 @@ const Header = () => {
         </div>
         {/* Hamburger Menu */}
         {menuOpen && (
-          <div className="fixed absolute left-0 top-15 bg-gray-100 w-full border-10 border-gray-300 border-t">
+          <div className="fixed absolute left-0 top-15 bg-white w-full border-10 border-gray-300 border-t shadow-md">
             <div className="ml-auto">
               <div className="flex flex-col">
-                {links.map((link) => (
-                  <Link
-                    href={link.href}
-                    className="py-3 px-4 font-medium text-gray-800 hover:text-gray-600"
-                    key={link.href}
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    <p>{link.title}</p>
-                  </Link>
-
-                ))}
+                {links.map((link) =>
+                  link.dropdown ? (
+                    <DropdownMenu title={link.title} items={link.items} key={link.title} setParentOpen={setMenuOpen} />
+                  ) : (
+                    <Link
+                      href={link.href}
+                      className="py-3 px-4 font-medium text-gray-800 hover:text-gray-600"
+                      key={link.href}
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      {link.title}
+                    </Link>
+                  )
+                )}
                 {/* <!-- Logged Out Only --> */}
                 {!isAuthenticated && (
                   <div className="py-3 px-4 border-t border-gray-300">
@@ -206,11 +224,11 @@ const Header = () => {
                   <div className="flex flex-row items-center justify-between py-5 px-4 border-10 border-gray-300 border-t">
                     <div className="flex flex-row items-center">
                       <Link
-                        href="/profile"
+                        href={`/profile/${currentUser.id}`}
                         className="flex flex-row gap-2 items-center text-gray-800 hover:text-gray-600"
                         onClick={() => setMenuOpen(false)}
                       >
-                        <ProfileBanner user={currentUser} />
+                        <ProfileBanner firstName={currentUser.firstName} lastName={currentUser.lastName} />
                       </Link>
 
                     </div>
@@ -219,7 +237,6 @@ const Header = () => {
                       onClick={handleLogout}
                     />
                   </div>
-
                 )}
               </div>
             </div>

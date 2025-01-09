@@ -1,15 +1,7 @@
-import { useEffect, useState } from "react";
 import {FaUser, FaSignOutAlt, FaUserShield} from "react-icons/fa";
-import { destroySession } from "@/app/lib/actions/auth";
 import Link from "next/link";
-import { useAuth } from "@/context/authContext";
-import { useRouter } from "next/navigation";
-import { toast } from "react-toastify";
-import ProfileImage from "./ProfileImage";
 
 export default function UserDropdown({ user, setIsOpen, handleLogout }) {
-  const { isAuthenticated, currentUser, setIsAuthenticated, setCurrentUser } =
-    useAuth();
 
   return (
     <div className="relative">
@@ -28,7 +20,7 @@ export default function UserDropdown({ user, setIsOpen, handleLogout }) {
 
             <li className="px-4 py-2 text-gray-800 hover:bg-gray-100 cursor-pointer flex items-center">
           <Link
-            href="/profile"
+            href={`/profile/${user.id}`}
             className=" text-gray-800 hover:text-gray-600"
             onClick={() => setIsOpen(false)}
           >

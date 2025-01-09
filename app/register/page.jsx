@@ -1,23 +1,26 @@
 "use client";
 
-import { useEffect } from "react";
-import { useFormState } from "react-dom";
-import { useRouter, redirect } from "next/navigation";
+import {useActionState, useEffect} from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { createUser } from "@/app/lib/actions/user";
 import Link from "next/link";
 
 const RegisterPage = () => {
-  const [state, formAction] = useFormState(createUser, {});
+  const initialState = {
+    success: false,
+    error: false,
+  }
+
+  const [state, formAction, loading] = useActionState(createUser, initialState);
 
   const router = useRouter();
 
   useEffect(() => {
     if (state.error) toast.error(state.error);
     if (state.success) {
-      toast.success("You can now log in!");
-      // router.push('/login');
-      redirect("/login");
+      toast.success("Uporabniški račun je bil ustvarjen");
+      router.push('/login');
     }
   }, [state]);
 
@@ -26,7 +29,7 @@ const RegisterPage = () => {
       <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-sm mt-20">
         <form action={formAction}>
           <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
-            Register
+            Nov uporabniški račun
           </h2>
 
           <div className="mb-4">
@@ -34,7 +37,7 @@ const RegisterPage = () => {
               htmlFor="firstName"
               className="block text-gray-700 font-bold mb-2"
             >
-              First Name
+              Ime
             </label>
             <input
               type="text"
@@ -51,7 +54,7 @@ const RegisterPage = () => {
               htmlFor="lastName"
               className="block text-gray-700 font-bold mb-2"
             >
-              Last Name
+              Priimek
             </label>
             <input
               type="text"
@@ -85,7 +88,7 @@ const RegisterPage = () => {
               htmlFor="password"
               className="block text-gray-700 font-bold mb-2"
             >
-              Password
+              Geslo
             </label>
             <input
               type="password"
@@ -102,7 +105,7 @@ const RegisterPage = () => {
               htmlFor="confirm-password"
               className="block text-gray-700 font-bold mb-2"
             >
-              Confirm Password
+              Potrditev gesla
             </label>
             <input
               type="password"
@@ -119,7 +122,7 @@ const RegisterPage = () => {
               type="submit"
               className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
             >
-              Register
+              {loading ? (<>Ustvarjanje računa...</>) : <>Ustvarite račun</>}
             </button>
 
             <p className="text-center">

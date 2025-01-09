@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, redirect } from "next/navigation";
-import { useEffect } from "react";
-import { useFormState } from "react-dom";
+import { useRouter } from "next/navigation";
+import {useActionState, useEffect} from "react";
 import { toast } from "react-toastify";
 import { createSession } from "../lib/actions/auth";
 import { useAuth } from "@/context/authContext";
@@ -12,7 +11,12 @@ const LoginPage = () => {
   const { isAuthenticated, setIsAuthenticated, currentUser, setCurrentUser } =
     useAuth();
 
-  const [state, formAction] = useFormState(createSession, {});
+  const initialState = {
+    success: false,
+    error: false,
+  }
+
+  const [state, formAction, loading] = useActionState(createSession, initialState);
 
   const router = useRouter();
 
@@ -21,10 +25,8 @@ const LoginPage = () => {
     if (state.success) {
       toast.success("Logged in successfully!");
       setIsAuthenticated(true);
-      // setCurrentUser(JSON.parse(state.user));
       setCurrentUser(state.user);
-      // router.push("/");
-      redirect("/");
+      router.push("/");
     }
   }, [state]);
 
@@ -74,8 +76,9 @@ const LoginPage = () => {
             <button
               type="submit"
               className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700"
+              disabled={loading}
             >
-              Login
+              {loading ? (<>Prijavljanje...</>) : <>Prijava</>}
             </button>
 
             <p className="text-center">

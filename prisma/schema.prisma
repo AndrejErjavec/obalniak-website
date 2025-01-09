@@ -20,6 +20,7 @@ model User {
   authoredAscents     Ascent[]                 @relation("authoredAscents")
   participatedAscents UserParticipatedAscent[] @relation("participatedAscents")
   comments            Comment[]
+  Events              Event[]
 }
 
 model Ascent {
@@ -29,6 +30,7 @@ model Ascent {
   date                     String
   text                     String
   difficulty               String
+  createdAt                DateTime                 @default(now())
   author                   User                     @relation("authoredAscents", fields: [authorId], references: [id])
   authorId                 String                   @db.ObjectId
   photos                   Photo[]
@@ -56,10 +58,24 @@ model Comment {
 }
 
 model Photo {
-  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  id       String  @id @default(auto()) @map("_id") @db.ObjectId
   url      String
-  ascent   Ascent @relation(fields: [ascentId], references: [id])
-  ascentId String @db.ObjectId
+  ascent   Ascent? @relation(fields: [ascentId], references: [id])
+  ascentId String? @db.ObjectId
+  Event    Event[]
+}
+
+model Event {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  title        String
+  text         String
+  date         String
+  createdAt    DateTime @default(now())
+  author       User     @relation(fields: [authorId], references: [id])
+  authorId     String   @db.ObjectId
+  coverPhoto   Photo?   @relation(fields: [coverPhotoId], references: [id])
+  coverPhotoId String?  @db.ObjectId
+  type         String
 }
 
 // enum ExperienceLevel {
