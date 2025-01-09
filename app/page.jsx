@@ -18,7 +18,7 @@ export default async function Home() {
         </div>
       </div>
 
-      <div className="px-5 mx-auto md:container">
+      <div className="px-5 mx-auto md:container mb-10">
         <div className="flex flex-col md:flex-row gap-7 md:gap-10">
           {/* Events */}
           <div className="">
@@ -35,32 +35,33 @@ export default async function Home() {
             </div>
           </div>
         </div>
-
       </div>
-      {/* Links */}
-      <section>
+
+      <div className="px-5 mx-auto md:container mb-10">
+        {/* Facebook feed */}
         <iframe
           src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fprofile.php%3Fid%3D100086123649589&tabs=timeline&width=340&height=500&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true&appId=806201063924077"
-            width="340"
-            height="500"
-            style={{border: "none", overflow: "hidden"}}
-            scrolling="no"
-            frameBorder="0"
-            allowFullScreen={true}
-            allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
-        </section>
-        {/* Weather */}
-        <section>
-          <div className="w-full bg-[#0382bc]">
-            <div className="px-5 py-3 md:container">
-              <p className="text-xl font-medium text-white">Vremenska napoved</p>
-            </div>
+          width="340"
+          height="500"
+          style={{border: "none", overflow: "hidden"}}
+          scrolling="no"
+          frameBorder="0"
+          allowFullScreen={true}
+          allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share">
+        </iframe>
+      </div>
+      {/* Weather */}
+      <section>
+        <div className="w-full bg-[#0382bc]">
+          <div className="px-5 py-3 md:container">
+            <p className="text-xl font-medium text-white">Vremenska napoved</p>
           </div>
-          <iframe
-            src="https://vreme.arso.gov.si/widget/?&loc=Koper"
-            style={{border: "0", height: "185px", width: "100%"}}
-          />
-        </section>
-      </>
-      )
-      }
+        </div>
+        <iframe
+          src="https://vreme.arso.gov.si/widget/?&loc=Koper"
+          style={{border: "0", height: "185px", width: "100%"}}
+        />
+      </section>
+    </>
+  )
+}

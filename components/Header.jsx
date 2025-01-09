@@ -111,7 +111,7 @@ const Header = () => {
             <div className="ml-4 flex items-center gap-4 md:ml-6">
               {links.map((link) =>
                 link.dropdown ? (
-                  <DropdownMenu title={link.title} items={link.items} key={link.title} />
+                  <DropdownMenu title={link.title} items={link.items} key={link.title} setParentOpen={setMenuOpen} />
                 ) : (
                   <Link
                     href={link.href}
@@ -183,7 +183,7 @@ const Header = () => {
               <div className="flex flex-col">
                 {links.map((link) =>
                   link.dropdown ? (
-                    <DropdownMenu title={link.title} items={link.items} key={link.title} />
+                    <DropdownMenu title={link.title} items={link.items} key={link.title} setParentOpen={setMenuOpen} />
                   ) : (
                     <Link
                       href={link.href}

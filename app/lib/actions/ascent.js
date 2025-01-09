@@ -145,3 +145,51 @@ export async function getAscent(id) {
     }
   }
 }
+
+export async function getUserAscents(userId) {
+  try {
+    // const ascents = await prisma.ascent.findMany({
+    //   where: {
+    //     authorId: userId
+    //   },
+    //   include: {
+    //     author: true
+    //   }
+    // });
+    //
+    // const ascents2 = await prisma.ascent.findMany({
+    //   where: {
+    //     registeredParticipants: {
+    //       some: {
+    //         userId: userId,
+    //       },
+    //     },
+    //   },
+    // });
+
+    const ascents = await prisma.ascent.findMany({
+      where: {
+        OR: [
+          {
+            authorId: userId, // User is the author
+          },
+          {
+            registeredParticipants: {
+              some: {
+                userId: userId, // User participated
+              },
+            },
+          },
+        ],
+      },
+      include: {
+        author: true,
+      }
+    });
+
+    return ascents;
+  } catch (error) {
+    console.log(error);
+    return {error: "Napaka pri nalaganju"}
+  }
+}

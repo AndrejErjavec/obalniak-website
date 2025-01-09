@@ -22,11 +22,11 @@ export default function EventCard({event}) {
           <div className="flex flex-col gap-5 px-5 py-5">
             {/* Head */}
             <div className="flex flex-col gap-2">
-              <h3 className="text-xl font-semibold">{event.title}</h3>
+              <h3 className="text-xl font-medium">{event.title}</h3>
               {/* Event date */}
               <div className="flex flex-row items-center gap-1">
                 <MdCalendarMonth size={24}/>
-                <p className="text-lg">{format(event.date, "EEEE, dd. MMMM yyyy", {locale: sl})}</p>
+                <p className="">{format(event.date, "EEEE, dd. MMMM yyyy", {locale: sl})}</p>
               </div>
             </div>
             <div className="border-b border-gray-300"></div>

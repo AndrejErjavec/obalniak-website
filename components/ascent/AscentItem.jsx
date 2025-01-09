@@ -27,7 +27,7 @@ export default function AscentItem({ascent}) {
             <div className="flex flex-col gap-3 md:gap-5">
               {/* Header row */}
               <div className="flex flex-col md:flex-row gap-1 md:gap-10">
-                <p className=" text-xl font-medium">{ascent.title}</p>
+                <p className="text-lg font-medium">{ascent.title}</p>
                 <ProfileBanner firstName={ascent.author.firstName} lastName={ascent.author.lastName} iconSize={25}/>
               </div>
               {/* Details row */}

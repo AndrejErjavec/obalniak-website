@@ -2,17 +2,22 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from "next/link";
 import { MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md";
 
-function DropdownMenu({title, items}) {
+function DropdownMenu({title, items, setParentOpen}) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
+  const closeMenu = () => {
+    setIsOpen(false);
+    setParentOpen(false);
+  }
+
   // Close the menu if you click outside of it
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
+        closeMenu();
       }
     };
 
@@ -43,7 +48,7 @@ function DropdownMenu({title, items}) {
                 <Link
                   href={item.href}
                   className="block px-4 py-2 font-medium text-gray-800"
-                  onClick={toggleMenu}
+                  onClick={closeMenu}
                 >
                   {item.title}
                 </Link>
@@ -58,7 +63,7 @@ function DropdownMenu({title, items}) {
                 <Link
                   href={item.href}
                   className="block px-4 py-2 font-medium text-gray-800"
-                  onClick={toggleMenu}
+                  onClick={closeMenu}
                 >
                   {item.title}
                 </Link>
