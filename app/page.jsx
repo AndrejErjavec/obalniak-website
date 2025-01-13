@@ -61,6 +61,7 @@ export default async function Home() {
               >
                 <Image
                   src="/grb_pzs-tisk.jpg"
+                  alt="grb-pzs"
                   width={30}
                   height={30}
                 />
@@ -72,6 +73,7 @@ export default async function Home() {
               >
                 <Image
                   src="/sloalp-logo.gif"
+                  alt="aloalp-logo"
                   width={40}
                   height={40}
                 />
