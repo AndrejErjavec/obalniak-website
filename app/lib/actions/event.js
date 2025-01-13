@@ -71,7 +71,7 @@ export async function getUpcomingEvents() {
         }
       },
       orderBy: {
-        date: "desc"
+        date: "asc"
       },
       include: {
         coverPhoto: true
