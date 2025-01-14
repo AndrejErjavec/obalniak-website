@@ -148,25 +148,6 @@ export async function getAscent(id) {
 
 export async function getUserAscents(userId) {
   try {
-    // const ascents = await prisma.ascent.findMany({
-    //   where: {
-    //     authorId: userId
-    //   },
-    //   include: {
-    //     author: true
-    //   }
-    // });
-    //
-    // const ascents2 = await prisma.ascent.findMany({
-    //   where: {
-    //     registeredParticipants: {
-    //       some: {
-    //         userId: userId,
-    //       },
-    //     },
-    //   },
-    // });
-
     const ascents = await prisma.ascent.findMany({
       where: {
         OR: [
@@ -184,6 +165,7 @@ export async function getUserAscents(userId) {
       },
       include: {
         author: true,
+        photos: true,
       }
     });
 
