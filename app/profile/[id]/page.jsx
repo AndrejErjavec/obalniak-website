@@ -6,6 +6,7 @@ import {getUserAscents} from "@/app/lib/actions/ascent";
 import {Suspense} from "react";
 import AscentSkeleton from "@/components/ascent/AscentSkeleton";
 import AscentItem from "@/components/ascent/AscentItem";
+import ProfileCard from "@/components/profile/ProfileCard";
 
 export default async function Profile(props) {
   const params = await props.params;
@@ -26,21 +27,8 @@ export default async function Profile(props) {
           </p>
         </div>
       )}
-      <div className="flex items-center gap-3 pb-10 border-b border-gray-300">
-        <ProfileImage firstName={user.firstName} lastName={user.lastName} size={60} />
-        <div className="flex flex-col gap-1 items-start">
-          <p className="text-xl font-semibold">
-            {user.firstName} {user.lastName}
-          </p>
-          <p className="text-xl font-semibold">{user.name}</p>
-          <p>{user.email}</p>
-
-          {user.experienceLevel ? (
-            <ExperienceLevelTicket level={user.experienceLevel} />
-          ) : (
-            <></>
-          )}
-        </div>
+      <div className="pb-10 border-b border-gray-300">
+        <ProfileCard user={user}/>
       </div>
       {/* Ascents */}
       <section>
