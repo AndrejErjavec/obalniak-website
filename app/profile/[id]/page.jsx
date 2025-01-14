@@ -17,7 +17,7 @@ export default async function Profile(props) {
   ]);
 
   return (
-    <div className="container mx-auto h-screen mt-8">
+    <div className="px-5 mx-auto md:container mt-8">
       {!user.accepted && (
         <div className="flex flex-row items-center gap-1">
           <FaExclamationCircle className="text-orange-600 text-xl" />

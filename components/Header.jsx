@@ -178,67 +178,65 @@ const Header = () => {
         </div>
         {/* Hamburger Menu */}
         {menuOpen && (
-          <div className="fixed absolute left-0 top-15 bg-white w-full border-10 border-gray-300 border-t shadow-md">
-            <div className="ml-auto">
-              <div className="flex flex-col">
-                {links.map((link) =>
-                  link.dropdown ? (
-                    <DropdownMenu title={link.title} items={link.items} key={link.title} setParentOpen={setMenuOpen} />
-                  ) : (
+          <div className="absolute z-50 left-0 top-15 bg-white w-full border-10 border-gray-300 border-t shadow-md">
+            <div className="flex flex-col">
+              {links.map((link) =>
+                link.dropdown ? (
+                  <DropdownMenu title={link.title} items={link.items} key={link.title} setParentOpen={setMenuOpen} />
+                ) : (
+                  <Link
+                    href={link.href}
+                    className="py-3 px-4 font-medium text-gray-800 hover:text-gray-600"
+                    key={link.href}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    {link.title}
+                  </Link>
+                )
+              )}
+              {/* <!-- Logged Out Only --> */}
+              {!isAuthenticated && (
+                <div className="py-3 px-4 border-t border-gray-300">
+                  <Link
+                    href="/login"
+                    className="text-gray-800 hover:text-gray-600"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    <FaSignInAlt className="inline mr-1"/> Prijava
+                  </Link>
+                </div>
+              )}
+
+              {isAuthenticated && currentUser?.isAdmin && (
+                <div className="py-5 px-4 border-t border-gray-300">
+                  <Link
+                    href="/admin"
+                    className="text-gray-800 hover:text-gray-600"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    <FaUserShield className="inline mr-1" size={20}/> Pogled skrbnika
+                  </Link>
+                </div>
+              )}
+
+              {isAuthenticated && currentUser && (
+                <div className="flex flex-row items-center justify-between py-5 px-4 border-10 border-gray-300 border-t">
+                  <div className="flex flex-row items-center">
                     <Link
-                      href={link.href}
-                      className="py-3 px-4 font-medium text-gray-800 hover:text-gray-600"
-                      key={link.href}
+                      href={`/profile/${currentUser.id}`}
+                      className="flex flex-row gap-2 items-center text-gray-800 hover:text-gray-600"
                       onClick={() => setMenuOpen(false)}
                     >
-                      {link.title}
+                      <ProfileBanner firstName={currentUser.firstName} lastName={currentUser.lastName} />
                     </Link>
-                  )
-                )}
-                {/* <!-- Logged Out Only --> */}
-                {!isAuthenticated && (
-                  <div className="py-3 px-4 border-t border-gray-300">
-                    <Link
-                      href="/login"
-                      className="text-gray-800 hover:text-gray-600"
-                      onClick={() => setMenuOpen(false)}
-                    >
-                      <FaSignInAlt className="inline mr-1"/> Prijava
-                    </Link>
-                  </div>
-                )}
 
-                {isAuthenticated && currentUser?.isAdmin && (
-                  <div className="py-5 px-4 border-t border-gray-300">
-                    <Link
-                      href="/admin"
-                      className="text-gray-800 hover:text-gray-600"
-                      onClick={() => setMenuOpen(false)}
-                    >
-                      <FaUserShield className="inline mr-1" size={20}/> Pogled skrbnika
-                    </Link>
                   </div>
-                )}
-
-                {isAuthenticated && currentUser && (
-                  <div className="flex flex-row items-center justify-between py-5 px-4 border-10 border-gray-300 border-t">
-                    <div className="flex flex-row items-center">
-                      <Link
-                        href={`/profile/${currentUser.id}`}
-                        className="flex flex-row gap-2 items-center text-gray-800 hover:text-gray-600"
-                        onClick={() => setMenuOpen(false)}
-                      >
-                        <ProfileBanner firstName={currentUser.firstName} lastName={currentUser.lastName} />
-                      </Link>
-
-                    </div>
-                    <FaSignOutAlt
-                      size={18}
-                      onClick={handleLogout}
-                    />
-                  </div>
-                )}
-              </div>
+                  <FaSignOutAlt
+                    size={18}
+                    onClick={handleLogout}
+                  />
+                </div>
+              )}
             </div>
           </div>
         )}
