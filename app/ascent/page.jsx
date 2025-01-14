@@ -4,8 +4,11 @@ import Link from "next/link";
 import Search from "@/components/Search";
 import { Suspense } from "react";
 import AscentSkeleton from "@/components/ascent/AscentSkeleton";
+import {checkAuth} from "@/app/lib/actions/auth";
 
 export default async function Ascents({searchParams}) {
+  const {user, isAuthenticated} = await checkAuth();
+
   const query = searchParams.query ?? "";
 
   const ascents = await getAscents(query);
@@ -15,9 +18,14 @@ export default async function Ascents({searchParams}) {
       <div className="flex flex-col gap-5">
         <div className="flex flex-row items-center justify-between mt-8">
           <h1 className="text-3xl font-semibold">Naši vzponi</h1>
-          <Link href="/ascent/create">
-            <button className="px-3 py-2 rounded-md bg-blue-500 text-white">Novo poročilo</button>
-          </Link>
+          {isAuthenticated && (
+            <Link
+              href="/ascent/create"
+              className="px-3 py-2 rounded-md bg-blue-500 text-white"
+            >
+              Novo poročilo
+            </Link>
+          )}
         </div>
         <Search />
         <Suspense fallback={<AscentSkeleton />}>
