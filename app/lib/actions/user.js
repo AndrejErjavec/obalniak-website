@@ -92,6 +92,18 @@ export async function acceptMember(id, experienceLevel) {
   }
 }
 
+export async function getUsers() {
+  try {
+    const users = await prisma.user.findMany();
+    return users;
+  } catch (error) {
+    console.log(error);
+    return {
+      error: "Napaka pri pridobivanju podatkov"
+    }
+  }
+}
+
 export async function getUser(id) {
   try {
     const user = await prisma.user.findUnique({
