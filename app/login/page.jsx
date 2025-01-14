@@ -23,7 +23,7 @@ const LoginPage = () => {
   useEffect(() => {
     if (state.error) toast.error(state.error);
     if (state.success) {
-      toast.success("Logged in successfully!");
+      toast.success("Prijava uspešna");
       setIsAuthenticated(true);
       setCurrentUser(state.user);
       router.push("/");

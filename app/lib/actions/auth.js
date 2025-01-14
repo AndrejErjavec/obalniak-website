@@ -50,7 +50,7 @@ export async function createSession(previousState, formData) {
 
   if (!email || !password) {
     return {
-      error: "Please fill out all fields",
+      error: "Manjkajoči podatki",
     };
   }
 
@@ -63,7 +63,7 @@ export async function createSession(previousState, formData) {
     });
     if (!user) {
       return {
-        error: "Invalid Credentials",
+        error: "Uporabnik ne obstaja",
       };
     }
 
@@ -72,7 +72,7 @@ export async function createSession(previousState, formData) {
     const passwordMatch = bcrypt.compareSync(password, user.password);
     if (!passwordMatch) {
       return {
-        error: "Invalid Credentials",
+        error: "Napačno geslo",
       };
     }
 
@@ -98,7 +98,7 @@ export async function createSession(previousState, formData) {
   } catch (error) {
     console.log("Authentication Error: ", error);
     return {
-      error: "Login error",
+      error: "Napaka pri prijavi",
     };
   }
 }
@@ -109,7 +109,7 @@ export async function destroySession() {
 
   if (!sessionCookie) {
     return {
-      error: "No session cookie found",
+      error: "Ni piškotov",
     };
   }
 
@@ -123,7 +123,7 @@ export async function destroySession() {
   } catch (error) {
     console.log("Error deleting session cookie: ", error);
     return {
-      error: "Error deleting session",
+      error: "Napaka pri odjavi",
     };
   }
 }
