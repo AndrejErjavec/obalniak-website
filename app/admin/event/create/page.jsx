@@ -52,7 +52,7 @@ export default function CreateEvent() {
                 id="title"
                 name="title"
                 className="border rounded w-full py-2 px-3"
-                placeholder="npr. Vzpon na Malo Mojstrovko"
+                placeholder="Naziv dogodka"
               />
             </div>
             <div>
@@ -68,7 +68,7 @@ export default function CreateEvent() {
             <div className="flex flex-col h-full">
               <label htmlFor="text">Opis</label>
               <textarea
-                placeholder="besedilo..."
+                placeholder="Besedilo..."
                 name="text"
                 className="border rounded py-2 px-3 h-48 md:h-full"
               />

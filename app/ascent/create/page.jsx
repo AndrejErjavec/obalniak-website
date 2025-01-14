@@ -6,6 +6,7 @@ import UserSelect from "@/components/UserSelect";
 import {createAscent} from "@/app/lib/actions/ascent";
 import {toast} from "react-toastify";
 import * as form from "next/dist/lib/picocolors";
+import {useAuth} from "@/context/authContext";
 
 export default function CreateClimb() {
   const difficulties = [
@@ -44,7 +45,6 @@ export default function CreateClimb() {
   const [photos, setPhotos] = useState([]);
 
   const handleSubmit = async (formData) => {
-
     const coClimbersString = JSON.stringify(coClimbers);
     formData.append("coClimbers", coClimbersString);
 
@@ -83,7 +83,7 @@ export default function CreateClimb() {
                 id="title"
                 name="title"
                 className="border rounded w-full py-2 px-3"
-                placeholder="npr. Vzpon na Malo Mojstrovko"
+                placeholder="Ime vzpona/ture"
               />
             </div>
             <div>
@@ -93,7 +93,7 @@ export default function CreateClimb() {
                 id="route"
                 name="route"
                 className="border rounded w-full py-2 px-3"
-                placeholder="npr. Hanzona pot"
+                placeholder="Naziv smeri/poti"
               />
             </div>
             <div>
@@ -125,7 +125,7 @@ export default function CreateClimb() {
             <div className="flex flex-col h-full">
               <label htmlFor="text">Opis vzpona/ture</label>
               <textarea
-                placeholder="besedilo..."
+                placeholder="Besedilo..."
                 name="text"
                 className="border rounded py-2 px-3 h-48 md:h-full"
               />
