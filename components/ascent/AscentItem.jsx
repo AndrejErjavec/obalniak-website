@@ -8,7 +8,7 @@ import Link from "next/link";
 export default function AscentItem({ascent}) {
   return (
     <Link href={`/ascent/${ascent.id}`}>
-      <div className="flex flex-row border rounded h-32 cursor-pointer">
+      <div className="flex flex-row rounded-lg shadow h-32 cursor-pointer">
           {ascent.photos?.length > 0 ? (
             <Image
               src={ascent.photos[0].url}
@@ -27,7 +27,7 @@ export default function AscentItem({ascent}) {
             <div className="flex flex-col gap-3 md:gap-5">
               {/* Header row */}
               <div className="flex flex-col md:flex-row gap-1 md:gap-10">
-                <p className="text-lg font-medium">{ascent.title}</p>
+                <p className="text-xl font-medium">{ascent.title}</p>
                 <ProfileBanner firstName={ascent.author.firstName} lastName={ascent.author.lastName} iconSize={25}/>
               </div>
               {/* Details row */}

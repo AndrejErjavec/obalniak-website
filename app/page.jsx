@@ -21,7 +21,7 @@ export default async function Home() {
       <div className="px-5 mx-auto md:container mb-10">
         <div className="flex flex-col md:flex-row gap-7 md:gap-10">
           {/* Events */}
-          <div className="">
+          <div className="flex flex-col">
             <h3 className="text-xl font-semibold py-5">Prihajajoči dogodki</h3>
             <EventsGrid />
           </div>

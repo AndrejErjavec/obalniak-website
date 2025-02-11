@@ -65,11 +65,11 @@ export async function createEvent(formData) {
 export async function getUpcomingEvents() {
   try {
     const events = await prisma.event.findMany({
-      where: {
-        date: {
-          gte: new Date().toISOString()
-        }
-      },
+      // where: {
+      //   date: {
+      //     gte: new Date().toISOString()
+      //   }
+      // },
       orderBy: {
         date: "asc"
       },
