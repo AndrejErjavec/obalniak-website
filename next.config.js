@@ -1,4 +1,5 @@
 module.exports = {
+  output: "standalone",
   experimental: {
     serverActions: {
       bodySizeLimit: '200mb',
