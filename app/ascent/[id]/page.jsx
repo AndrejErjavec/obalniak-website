@@ -1,4 +1,4 @@
-import { getAscent, getAscents } from "@/app/lib/actions/ascent";
+import { getAscent, getAscents } from "@/lib/actions/ascent";
 import Image from "next/image";
 import ProfileBanner from "@/components/profile/ProfileBanner";
 import { MdAltRoute, MdCalendarMonth } from "react-icons/md";
@@ -100,11 +100,9 @@ export default async function Ascent(props) {
                           />
                         </li>
                       ))}
-                      {ascent.unregisteredParticipants.map(
-                        (participant, index) => (
-                          <li key={index}>{participant}</li>
-                        )
-                      )}
+                      {ascent.unregisteredParticipants.map((participant, index) => (
+                        <li key={index}>{participant}</li>
+                      ))}
                     </ul>
                   </div>
                 </div>

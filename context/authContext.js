@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { checkAuth } from "@/app/lib/actions/auth";
+import { checkAuth } from "@/lib/actions/auth";
 
 const AuthContext = createContext();
 

@@ -1,13 +1,13 @@
-import {getAscents} from "@/app/lib/actions/ascent";
+import { getAscents } from "@/lib/actions/ascent";
 import AscentItem from "@/components/ascent/AscentItem";
 import Link from "next/link";
 import Search from "@/components/Search";
 import { Suspense } from "react";
 import AscentSkeleton from "@/components/ascent/AscentSkeleton";
-import {checkAuth} from "@/app/lib/actions/auth";
+import { checkAuth } from "@/lib/actions/auth";
 
-export default async function Ascents({searchParams}) {
-  const {user, isAuthenticated} = await checkAuth();
+export default async function Ascents({ searchParams }) {
+  const { user, isAuthenticated } = await checkAuth();
 
   const query = searchParams.query ?? "";
 
@@ -19,10 +19,7 @@ export default async function Ascents({searchParams}) {
         <div className="flex flex-row items-center justify-between mt-8">
           <h1 className="text-3xl font-semibold">Naši vzponi</h1>
           {isAuthenticated && (
-            <Link
-              href="/ascent/create"
-              className="px-3 py-2 rounded-md bg-blue-500 text-white"
-            >
+            <Link href="/ascent/create" className="px-3 py-2 rounded-md bg-blue-500 text-white">
               Novo poročilo
             </Link>
           )}
@@ -41,5 +38,5 @@ export default async function Ascents({searchParams}) {
         </Suspense>
       </div>
     </div>
-  )
+  );
 }

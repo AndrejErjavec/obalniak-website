@@ -1,9 +1,9 @@
 import ProfileImage from "@/components/profile/ProfileImage";
 import { FaExclamationCircle } from "react-icons/fa";
 import ExperienceLevelTicket from "@/components/ExperienceLevelTicket";
-import {getUser} from "@/app/lib/actions/user";
-import {getUserAscents} from "@/app/lib/actions/ascent";
-import {Suspense} from "react";
+import { getUser } from "@/lib/actions/user";
+import { getUserAscents } from "@/lib/actions/ascent";
+import { Suspense } from "react";
 import AscentSkeleton from "@/components/ascent/AscentSkeleton";
 import AscentItem from "@/components/ascent/AscentItem";
 import ProfileCard from "@/components/profile/ProfileCard";
@@ -12,10 +12,7 @@ export default async function Profile(props) {
   const params = await props.params;
   const id = params.id;
 
-  const [user, ascents] = await Promise.all([
-    getUser(id),
-    getUserAscents(id)
-  ]);
+  const [user, ascents] = await Promise.all([getUser(id), getUserAscents(id)]);
 
   return (
     <div className="px-5 mx-auto md:container mt-8">
@@ -28,7 +25,7 @@ export default async function Profile(props) {
         </div>
       )}
       <div className="pb-10 border-b border-gray-300">
-        <ProfileCard user={user}/>
+        <ProfileCard user={user} />
       </div>
       {/* Ascents */}
       <section>
@@ -42,7 +39,7 @@ export default async function Profile(props) {
           {ascents.length > 0 ? (
             <div className="flex flex-col gap-3">
               {ascents.map((ascent) => (
-                <AscentItem ascent={ascent} key={ascent.id}/>
+                <AscentItem ascent={ascent} key={ascent.id} />
               ))}
             </div>
           ) : (

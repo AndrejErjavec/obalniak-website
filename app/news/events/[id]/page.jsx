@@ -1,9 +1,9 @@
 import Image from "next/image";
 import ProfileBanner from "@/components/profile/ProfileBanner";
 import { MdAltRoute, MdCalendarMonth } from "react-icons/md";
-import { format } from 'date-fns'
-import { sl } from 'date-fns/locale';
-import {getEvent} from "@/app/lib/actions/event";
+import { format } from "date-fns";
+import { sl } from "date-fns/locale";
+import { getEvent } from "@/lib/actions/event";
 
 export default async function Event(props) {
   const params = await props.params;
@@ -20,7 +20,7 @@ export default async function Event(props) {
   // }
 
   if (!event) {
-    return (<div>No event</div>)
+    return <div>No event</div>;
   }
 
   return (
@@ -48,8 +48,8 @@ export default async function Event(props) {
                 {/* Date and route */}
                 <div className="flex flex-row gap-5 py-5">
                   <div className="flex gap-1 items-center">
-                    <MdCalendarMonth size={24}/>
-                    <p className="text-lg font-medium">{format(event.date, "EEEE, dd. MMMM yyyy", {locale: sl})}</p>
+                    <MdCalendarMonth size={24} />
+                    <p className="text-lg font-medium">{format(event.date, "EEEE, dd. MMMM yyyy", { locale: sl })}</p>
                   </div>
                 </div>
 
@@ -58,7 +58,12 @@ export default async function Event(props) {
                   {/* Author */}
                   <div>
                     <p className="font-medium mb-2">Avtor</p>
-                    <ProfileBanner firstName={event.author.firstName} lastName={event.author.lastName} userId={event.author.id} size={25}/>
+                    <ProfileBanner
+                      firstName={event.author.firstName}
+                      lastName={event.author.lastName}
+                      userId={event.author.id}
+                      size={25}
+                    />
                   </div>
                 </div>
               </div>

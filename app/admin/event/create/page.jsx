@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
 import PhotoUploadSingle from "@/components/photoUpload/PhotoUploadSingle";
-import {useEffect, useState} from "react";
-import {toast} from "react-toastify";
-import {createEvent} from "@/app/lib/actions/event";
+import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import { createEvent } from "@/lib/actions/event";
 
 export default function CreateEvent() {
   const [photo, setPhoto] = useState(null);
@@ -24,7 +24,7 @@ export default function CreateEvent() {
       toast.error(result.error);
     }
     setLoading(false);
-  }
+  };
 
   useEffect(() => {
     console.log(loading);
@@ -40,7 +40,7 @@ export default function CreateEvent() {
             className="hidden md:block bg-blue-500 text-white font-medium px-4 py-2 rounded-md disabled:bg-blue-300 min-w-20"
             disabled={loading}
           >
-            {loading ? (<>...</>) : <>Objavi</>}
+            {loading ? <>...</> : <>Objavi</>}
           </button>
         </div>
         <div className="flex flex-col gap-8 md:flex-row">
@@ -57,29 +57,24 @@ export default function CreateEvent() {
             </div>
             <div>
               <label htmlFor="date">Datum</label>
-              <input
-                type="date"
-                name="date"
-                className="border rounded w-full py-2 px-3"
-              />
+              <input type="date" name="date" className="border rounded w-full py-2 px-3" />
             </div>
           </section>
           <section className="flex flex-col gap-8 md:w-2/3">
             <div className="flex flex-col h-full">
               <label htmlFor="text">Opis</label>
-              <textarea
-                placeholder="Besedilo..."
-                name="text"
-                className="border rounded py-2 px-3 h-48 md:h-full"
-              />
+              <textarea placeholder="Besedilo..." name="text" className="border rounded py-2 px-3 h-48 md:h-full" />
             </div>
           </section>
         </div>
         <div className="mt-7">
           <PhotoUploadSingle photo={photo} setPhoto={setPhoto} />
         </div>
-        <button type={"submit"}
-                className="block md:hidden w-full mt-7 bg-blue-500 text-white font-medium px-4 py-2 rounded-md">Objavi
+        <button
+          type={"submit"}
+          className="block md:hidden w-full mt-7 bg-blue-500 text-white font-medium px-4 py-2 rounded-md"
+        >
+          Objavi
         </button>
       </form>
     </div>

@@ -2,23 +2,16 @@
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  FaUser,
-  FaSignInAlt,
-  FaSignOutAlt,
-  FaUserShield,
-  FaBars
-} from "react-icons/fa";
+import { FaUser, FaSignInAlt, FaSignOutAlt, FaUserShield, FaBars } from "react-icons/fa";
 import { FaXmark } from "react-icons/fa6";
 import { useAuth } from "@/context/authContext";
 import UserDropdown from "./UserDropdown";
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import ProfileImage from "@/components/profile/ProfileImage";
-import {destroySession} from "@/app/lib/actions/auth";
-import {toast} from "react-toastify";
+import { destroySession } from "@/lib/actions/auth";
+import { toast } from "react-toastify";
 import ProfileBanner from "@/components/profile/ProfileBanner";
 import DropdownMenu from "@/components/DropdownMenu";
-
 
 const Header = () => {
   const links = [
@@ -37,8 +30,8 @@ const Header = () => {
         {
           title: "Alpinistična šola",
           href: "/news/alpine-school",
-        }
-      ]
+        },
+      ],
     },
     {
       title: "O nas",
@@ -50,17 +43,16 @@ const Header = () => {
     },
     {
       title: "Pravila",
-      href: "/rules"
-    }
-  ]
+      href: "/rules",
+    },
+  ];
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
   const router = useRouter();
 
-  const { isAuthenticated, setIsAuthenticated, currentUser, setCurrentUser } =
-    useAuth();
+  const { isAuthenticated, setIsAuthenticated, currentUser, setCurrentUser } = useAuth();
 
   const handleToggleMenu = () => {
     setMenuOpen((currentState) => !currentState);
@@ -68,7 +60,7 @@ const Header = () => {
 
   const handleToggleUserDropdown = () => {
     setUserDropdownOpen((currentState) => !currentState);
-  }
+  };
 
   const handleLogout = async () => {
     const { success, error } = await destroySession();
@@ -88,10 +80,7 @@ const Header = () => {
       <nav className=" hidden md:block mx-auto container sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
-            <Link
-              href="/"
-              className="flex flex-row items-center gap-2 text-2xl font-bold"
-            >
+            <Link href="/" className="flex flex-row items-center gap-2 text-2xl font-bold">
               <Image
                 className="h-12 w-12"
                 src="/oak-logo.png"
@@ -113,24 +102,17 @@ const Header = () => {
                 link.dropdown ? (
                   <DropdownMenu title={link.title} items={link.items} key={link.title} setParentOpen={setMenuOpen} />
                 ) : (
-                  <Link
-                    href={link.href}
-                    className="font-medium text-gray-800 hover:text-gray-600"
-                    key={link.href}
-                  >
+                  <Link href={link.href} className="font-medium text-gray-800 hover:text-gray-600" key={link.href}>
                     {link.title}
                   </Link>
-                )
+                ),
               )}
 
               {/* <!-- Logged Out Only --> */}
               {!isAuthenticated && (
                 <>
-                  <Link
-                    href="/login"
-                    className="text-gray-800 hover:text-gray-600 ml-3"
-                  >
-                    <FaSignInAlt className="inline mr-1"/> Prijava
+                  <Link href="/login" className="text-gray-800 hover:text-gray-600 ml-3">
+                    <FaSignInAlt className="inline mr-1" /> Prijava
                   </Link>
                 </>
               )}
@@ -145,11 +127,7 @@ const Header = () => {
           </div>
         </div>
         {userDropdownOpen && (
-          <UserDropdown
-            user={currentUser}
-            setIsOpen={setUserDropdownOpen}
-            handleLogout={handleLogout}
-          />
+          <UserDropdown user={currentUser} setIsOpen={setUserDropdownOpen} handleLogout={handleLogout} />
         )}
       </nav>
 
@@ -157,10 +135,7 @@ const Header = () => {
       <nav className="md:hidden mx-auto px-5">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
-            <Link
-              href="/"
-              className="flex flex-row items-center gap-2 text-2xl font-bold"
-            >
+            <Link href="/" className="flex flex-row items-center gap-2 text-2xl font-bold">
               <Image
                 className="h-12 w-12"
                 src="/oak-logo.png"
@@ -172,9 +147,7 @@ const Header = () => {
               <h1 className="text-xl">Obalni alpinistični klub</h1>
             </Link>
           </div>
-          <div onClick={handleToggleMenu}>
-            {menuOpen ? <FaXmark size={24} /> : <FaBars size={24} />}
-          </div>
+          <div onClick={handleToggleMenu}>{menuOpen ? <FaXmark size={24} /> : <FaBars size={24} />}</div>
         </div>
         {/* Hamburger Menu */}
         {menuOpen && (
@@ -192,29 +165,21 @@ const Header = () => {
                   >
                     {link.title}
                   </Link>
-                )
+                ),
               )}
               {/* <!-- Logged Out Only --> */}
               {!isAuthenticated && (
                 <div className="py-3 px-4 border-t border-gray-300">
-                  <Link
-                    href="/login"
-                    className="text-gray-800 hover:text-gray-600"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    <FaSignInAlt className="inline mr-1"/> Prijava
+                  <Link href="/login" className="text-gray-800 hover:text-gray-600" onClick={() => setMenuOpen(false)}>
+                    <FaSignInAlt className="inline mr-1" /> Prijava
                   </Link>
                 </div>
               )}
 
               {isAuthenticated && currentUser?.isAdmin && (
                 <div className="py-5 px-4 border-t border-gray-300">
-                  <Link
-                    href="/admin"
-                    className="text-gray-800 hover:text-gray-600"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    <FaUserShield className="inline mr-1" size={20}/> Pogled skrbnika
+                  <Link href="/admin" className="text-gray-800 hover:text-gray-600" onClick={() => setMenuOpen(false)}>
+                    <FaUserShield className="inline mr-1" size={20} /> Pogled skrbnika
                   </Link>
                 </div>
               )}
@@ -229,12 +194,8 @@ const Header = () => {
                     >
                       <ProfileBanner firstName={currentUser.firstName} lastName={currentUser.lastName} />
                     </Link>
-
                   </div>
-                  <FaSignOutAlt
-                    size={18}
-                    onClick={handleLogout}
-                  />
+                  <FaSignOutAlt size={18} onClick={handleLogout} />
                 </div>
               )}
             </div>

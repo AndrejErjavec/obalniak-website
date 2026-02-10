@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import {useEffect, useState} from "react";
-import {toast} from "react-toastify";
+import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 import { MdSend } from "react-icons/md";
-import {addComment} from "@/app/lib/actions/comment";
-import {getComments} from "@/app/lib/actions/comment";
-import {useAuth} from "@/context/authContext";
+import { addComment } from "@/lib/actions/comment";
+import { getComments } from "@/lib/actions/comment";
+import { useAuth } from "@/context/authContext";
 import CommentItem from "@/components/comments/CommentItem";
 
-export default function CommentSection({ascentId}) {
+export default function CommentSection({ ascentId }) {
   const [comments, setComments] = useState([]);
   const [text, setText] = useState("");
 
-  const {user, isAuthenticated} = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
   const fetchComments = async (ascentId) => {
     const result = await getComments(ascentId);
@@ -21,7 +21,7 @@ export default function CommentSection({ascentId}) {
     } else {
       setComments(result.data);
     }
-  }
+  };
 
   useEffect(() => {
     fetchComments(ascentId);
@@ -32,7 +32,7 @@ export default function CommentSection({ascentId}) {
     if (!text.trim()) {
       return;
     }
-    const result = await addComment({text, ascentId});
+    const result = await addComment({ text, ascentId });
     console.log(result);
     if (result.error) {
       toast.error(result.error);
@@ -40,11 +40,11 @@ export default function CommentSection({ascentId}) {
       setText("");
       setComments((prevComments) => [result.data, ...prevComments]);
     }
-  }
+  };
 
   return (
     <section className="flex flex-col gap-5">
-      { isAuthenticated ? (
+      {isAuthenticated ? (
         <form onSubmit={handleSubmit}>
           <div className="w-full flex items-center gap-2">
             <input
@@ -58,12 +58,10 @@ export default function CommentSection({ascentId}) {
             <button
               type="submit"
               className={`flex items-center justify-center rounded-full w-10 h-10 ${
-                text.trim()
-                  ? "bg-gray-800 text-white"
-                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                text.trim() ? "bg-gray-800 text-white" : "bg-gray-300 text-gray-500 cursor-not-allowed"
               }`}
             >
-              <MdSend size={20}/>
+              <MdSend size={20} />
             </button>
           </div>
         </form>
@@ -81,5 +79,5 @@ export default function CommentSection({ascentId}) {
         <p>Ni komentarjev</p>
       )}
     </section>
-  )
+  );
 }

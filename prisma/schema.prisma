@@ -1,15 +1,15 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  output   = "../app/generated/prisma"
   binaryTargets = ["darwin-arm64", "debian-openssl-1.1.x", "debian-openssl-3.0.x"]
 }
 
 datasource db {
-  provider = "mongodb"
-  url      = env("MONGODB_URI")
+  provider  = "postgresql"
 }
 
 model User {
-  id                  String                   @id @default(auto()) @map("_id") @db.ObjectId
+  id                  String                   @id @default(cuid())
   email               String                   @unique
   firstName           String
   lastName            String
@@ -25,7 +25,7 @@ model User {
 }
 
 model Ascent {
-  id                       String                   @id @default(auto()) @map("_id") @db.ObjectId
+  id                       String                   @id @default(cuid())
   title                    String
   route                    String
   date                     String
@@ -33,50 +33,64 @@ model Ascent {
   difficulty               String
   createdAt                DateTime                 @default(now())
   author                   User                     @relation("authoredAscents", fields: [authorId], references: [id])
-  authorId                 String                   @db.ObjectId
+  authorId                 String
   photos                   Photo[]
   comments                 Comment[]
   registeredParticipants   UserParticipatedAscent[]
   unregisteredParticipants String[]
+
+  @@index([authorId])
 }
 
 model UserParticipatedAscent {
-  id       String  @id @default(auto()) @map("_id") @db.ObjectId
-  user     User    @relation("participatedAscents", fields: [userId], references: [id])
-  userId   String  @db.ObjectId
-  Ascent   Ascent? @relation(fields: [ascentId], references: [id])
-  ascentId String? @db.ObjectId
+  id       String @id @default(cuid())
+  user     User   @relation("participatedAscents", fields: [userId], references: [id])
+  userId   String
+  Ascent   Ascent @relation(fields: [ascentId], references: [id])
+  ascentId String
+
+  @@unique([userId, ascentId])
+  @@index([userId])
+  @@index([ascentId])
 }
 
 model Comment {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  id        String   @id @default(cuid())
   text      String
   createdAt DateTime @default(now())
   author    User     @relation(fields: [authorId], references: [id])
-  authorId  String   @db.ObjectId
+  authorId  String
   ascent    Ascent   @relation(fields: [ascentId], references: [id])
-  ascentId  String   @db.ObjectId
+  ascentId  String
+
+  @@index([authorId])
+  @@index([ascentId])
 }
 
 model Photo {
-  id       String  @id @default(auto()) @map("_id") @db.ObjectId
+  id       String  @id @default(cuid())
   url      String
   ascent   Ascent? @relation(fields: [ascentId], references: [id])
-  ascentId String? @db.ObjectId
+  ascentId String?
   Event    Event[]
+
+  @@index([ascentId])
 }
 
 model Event {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  id           String   @id @default(cuid())
   title        String
   text         String
   date         String
   createdAt    DateTime @default(now())
   author       User     @relation(fields: [authorId], references: [id])
-  authorId     String   @db.ObjectId
+  authorId     String
   coverPhoto   Photo?   @relation(fields: [coverPhotoId], references: [id])
-  coverPhotoId String?  @db.ObjectId
+  coverPhotoId String?
   type         String
+
+  @@index([authorId])
+  @@index([coverPhotoId])
 }
 
 // enum ExperienceLevel {

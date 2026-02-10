@@ -1,5 +1,5 @@
 import EventsGrid from "@/components/events/EventsGrid";
-import {getAscents} from "@/app/lib/actions/ascent";
+import { getAscents } from "@/lib/actions/ascent";
 import AscentItemSimple from "@/components/ascent/AscentItemSimple";
 import Link from "next/link";
 import Image from "next/image";
@@ -12,9 +12,7 @@ export default async function Home() {
       {/* Cover photo */}
       <div className=" bg-cover bg-center w-full h-64 bg-[url('/hero-bg.jpg')]">
         <div className="px-5 flex flex-col justify-center items-center h-full">
-          <h1 className="text-4xl text-center md:text-5xl text-white font-semibold">
-            Gremo v hribe
-          </h1>
+          <h1 className="text-4xl text-center md:text-5xl text-white font-semibold">Gremo v hribe</h1>
         </div>
       </div>
 
@@ -30,7 +28,7 @@ export default async function Home() {
             <h3 className="text-xl font-semibold py-5">Zadnji vzponi</h3>
             <div className=" flex flex-col [&>*]:border-t last:border-b border-gray-300">
               {ascents.map((ascent) => (
-                <AscentItemSimple ascent={ascent} key={ascent.id}/>
+                <AscentItemSimple ascent={ascent} key={ascent.id} />
               ))}
             </div>
           </div>
@@ -45,12 +43,12 @@ export default async function Home() {
             src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fprofile.php%3Fid%3D100086123649589&tabs=timeline&width=340&height=500&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true&appId=806201063924077"
             width="340"
             height="500"
-            style={{border: "none", overflow: "hidden"}}
+            style={{ border: "none", overflow: "hidden" }}
             scrolling="no"
             frameBorder="0"
             allowFullScreen={true}
-            allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share">
-          </iframe>
+            allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+          ></iframe>
           {/* Links */}
           <section>
             <h3 className="text-xl font-semibold mb-5">Povezave</h3>
@@ -59,24 +57,14 @@ export default async function Home() {
                 href="https://www.pzs.si/"
                 className="font-medium text-gray-800 hover:text-gray-600 flex flex-row items-center gap-2"
               >
-                <Image
-                  src="/grb_pzs-tisk.jpg"
-                  alt="grb-pzs"
-                  width={30}
-                  height={30}
-                />
+                <Image src="/grb_pzs-tisk.jpg" alt="grb-pzs" width={30} height={30} />
                 Planinska zveza Slovenije
               </Link>
               <Link
                 href="http://www.slo-alp.com/"
                 className="font-medium text-gray-800 hover:text-gray-600 flex flex-row items-center gap-2"
               >
-                <Image
-                  src="/sloalp-logo.gif"
-                  alt="aloalp-logo"
-                  width={40}
-                  height={40}
-                />
+                <Image src="/sloalp-logo.gif" alt="aloalp-logo" width={40} height={40} />
                 Slo - Alp
               </Link>
             </div>
@@ -93,9 +81,9 @@ export default async function Home() {
         </div>
         <iframe
           src="https://vreme.arso.gov.si/widget/?&loc=Koper"
-          style={{border: "0", height: "185px", width: "100%"}}
+          style={{ border: "0", height: "185px", width: "100%" }}
         />
       </section>
     </>
-  )
+  );
 }
