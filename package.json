@@ -10,10 +10,12 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@prisma/adapter-neon": "^7.3.0",
     "@prisma/client": "^5.22.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.5.1",
     "date-fns": "^4.1.0",
+    "dotenv": "^17.2.4",
     "jsonwebtoken": "^9.0.2",
     "lightgallery": "^2.8.2",
     "luxon": "^3.5.0",
