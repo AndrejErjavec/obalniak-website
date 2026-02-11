@@ -16,30 +16,31 @@ import DropdownMenu from "@/components/DropdownMenu";
 const Header = () => {
   const links = [
     {
-      title: "Naši vzponi",
+      title: "Vzponi",
       href: "/ascent",
     },
     {
       title: "Novice",
-      dropdown: true,
-      items: [
-        {
-          title: "Dogodki",
-          href: "/news/events",
-        },
-        {
-          title: "Alpinistična šola",
-          href: "/news/alpine-school",
-        },
-      ],
+      href: "/news",
+    },
+    {
+      title: "Alpinistična šola",
+      href: "/alpine-school",
     },
     {
       title: "O nas",
       href: "/about",
-    },
-    {
-      title: "Člani",
-      href: "/members",
+      dropdown: true,
+      items: [
+        {
+          title: "Člani",
+          href: "/members",
+        },
+        {
+          title: "Kontakt",
+          href: "/contact",
+        },
+      ],
     },
     {
       title: "Pravila",

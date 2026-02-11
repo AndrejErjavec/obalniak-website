@@ -5,42 +5,8 @@ import { useEffect, useState } from "react";
 import UserSelect from "@/components/UserSelect";
 import { createAscent } from "@/lib/actions/ascent";
 import { toast } from "react-toastify";
-import * as form from "next/dist/lib/picocolors";
-import { useAuth } from "@/context/authContext";
 
 export default function CreateClimb() {
-  const difficulties = [
-    "1",
-    "2",
-    "3",
-    "4",
-    "5a",
-    "5b",
-    "5c",
-    "6a", // Beginner
-    "6a+",
-    "6b",
-    "6b+",
-    "6c",
-    "6c+",
-    "7a",
-    "7a+", // Intermediate
-    "7b",
-    "7b+",
-    "7c",
-    "7c+",
-    "8a",
-    "8a+",
-    "8b", // Advanced
-    "8b+",
-    "8c",
-    "8c+",
-    "9a",
-    "9a+",
-    "9b",
-    "9b+", // Pro
-  ];
-
   const [coClimbers, setCoClimbers] = useState([]);
   const [photos, setPhotos] = useState([]);
 
@@ -98,7 +64,8 @@ export default function CreateClimb() {
             </div>
             <div>
               <label htmlFor="difficulty">Težavnost</label>
-              <select id="difficulty" name="difficulty" className="border rounded w-full py-2 px-3">
+              <input type="text" name="difficulty" className="border rounded w-full py-2 px-3" />
+              {/* <select id="difficulty" name="difficulty" className="border rounded w-full py-2 px-3">
                 <option disabled value selected className="text-gray-100">
                   Izberite težavnost
                 </option>
@@ -107,7 +74,7 @@ export default function CreateClimb() {
                     {d}
                   </option>
                 ))}
-              </select>
+              </select> */}
             </div>
             <div>
               <label htmlFor="date">Datum vzpona</label>

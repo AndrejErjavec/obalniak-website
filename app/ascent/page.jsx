@@ -9,7 +9,8 @@ import { checkAuth } from "@/lib/actions/auth";
 export default async function Ascents({ searchParams }) {
   const { user, isAuthenticated } = await checkAuth();
 
-  const query = searchParams.query ?? "";
+  const params = await searchParams;
+  const query = params.query ?? "";
 
   const ascents = await getAscents(query);
 

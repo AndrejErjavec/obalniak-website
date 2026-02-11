@@ -16,16 +16,21 @@ export default async function Home() {
         </div>
       </div>
 
-      <div className="px-5 mx-auto md:container mb-10">
-        <div className="flex flex-col md:flex-row gap-7 md:gap-10">
-          {/* Events */}
-          <div className="flex flex-col">
-            <h3 className="text-xl font-semibold py-5">Prihajajoči dogodki</h3>
-            <EventsGrid />
+      <div className="px-5 py-10 mx-auto md:container">
+        {/* Events and ascents grid */}
+        <div className="md:grid md:grid-cols-4 md:gap-10 mb-20">
+          {/* News */}
+          <div className="md:col-span-3">
+            <div className="flex flex-col">
+              <h3 className="text-2xl font-semibold mb-2">Novice</h3>
+              <div className="h-px w-full bg-gray-300 mb-5" />
+              <EventsGrid />
+            </div>
           </div>
           {/* Ascents */}
-          <div className="w-full md:min-w-72 mb-10">
-            <h3 className="text-xl font-semibold py-5">Zadnji vzponi</h3>
+          <div className="w-full md:col-span-1">
+            <h3 className="text-2xl font-semibold mb-2">Zadnji vzponi</h3>
+            <div className="h-px w-full bg-gray-300 mb-5" />
             <div className=" flex flex-col [&>*]:border-t last:border-b border-gray-300">
               {ascents.map((ascent) => (
                 <AscentItemSimple ascent={ascent} key={ascent.id} />
@@ -51,7 +56,7 @@ export default async function Home() {
           ></iframe>
           {/* Links */}
           <section>
-            <h3 className="text-xl font-semibold mb-5">Povezave</h3>
+            <h3 className="text-2xl font-semibold mb-5">Povezave</h3>
             <div className="flex flex-col gap-3">
               <Link
                 href="https://www.pzs.si/"
@@ -76,7 +81,7 @@ export default async function Home() {
       <section>
         <div className="w-full bg-[#0382bc]">
           <div className="px-5 py-3 md:container">
-            <p className="text-xl font-medium text-white">Vremenska napoved</p>
+            <p className="text-2xl font-medium text-white">Vremenska napoved</p>
           </div>
         </div>
         <iframe
