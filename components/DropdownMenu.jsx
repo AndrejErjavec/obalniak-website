@@ -37,10 +37,9 @@ function DropdownMenu({ title, items, setParentOpen }) {
   }, []);
 
   return (
-    <div className="md:relative py-3 px-4 md:p-0">
+    <div className="md:relative py-3 px-4 md:p-0" ref={dropdownRef}>
       <div
         onClick={toggleMenu}
-        ref={dropdownRef}
         className="flex flex-row items-center font-medium text-gray-800 hover:text-gray-600 cursor-pointer"
       >
         {title}

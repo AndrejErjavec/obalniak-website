@@ -1,11 +1,24 @@
-"use client"
+"use client";
 
-import {useEffect, useState} from "react";
+import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
+import { FaTrashAlt } from "react-icons/fa";
 
-export default function PhotoUploadSingle({photo, setPhoto}) {
+export default function PhotoUploadSingle({ photo, setPhoto }) {
   const [preview, setPreview] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef(null);
+  const previewRef = useRef(null);
+
+  useEffect(() => {
+    previewRef.current = preview;
+  }, [preview]);
+
+  useEffect(() => {
+    return () => {
+      revokeObjectURL(previewRef.current);
+    };
+  }, []);
 
   const handleDragOver = (event) => {
     event.preventDefault();
@@ -25,6 +38,11 @@ export default function PhotoUploadSingle({photo, setPhoto}) {
       setPhoto(file);
       const previewUrl = URL.createObjectURL(file);
       setPreview(previewUrl);
+
+      // Allow selecting the same file again after deleting it.
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
@@ -50,10 +68,10 @@ export default function PhotoUploadSingle({photo, setPhoto}) {
           onDrop={handleDrop}
         >
           <p className="text-gray-500">
-            Drag & drop your photo here, or{" "}
-            <span className="text-blue-500 font-medium">browse</span>.
+            Tukaj spustite sliko ali <span className="text-blue-500 font-medium">izberite sliko z računalnika</span>.
           </p>
           <input
+            ref={fileInputRef}
             type="file"
             accept="image/*"
             className="hidden"
@@ -65,21 +83,32 @@ export default function PhotoUploadSingle({photo, setPhoto}) {
             htmlFor="fileInput"
             className="inline-block mt-2 px-4 py-2 bg-blue-500 text-white rounded-md shadow-sm cursor-pointer hover:bg-blue-600"
           >
-            Browse Files
+            Izberite sliko
           </label>
         </div>
 
         {/* Image Preview */}
         {preview && (
           <div className="mt-4">
-            <p className="text-sm text-gray-500">Preview</p>
-            <Image
-              src={preview}
-              width={500}
-              height={500}
-              alt="Preview"
-              className="w-full max-h-60 object-contain border border-gray-300 rounded-md shadow-sm"
-            />
+            <div className="grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              <div key={preview} className="relative">
+                <button
+                  type="button"
+                  onClick={() => handleRemoveImage(index)}
+                  className="absolute top-2 right-2 z-10 rounded-full bg-white/90 p-1.5 shadow-sm hover:bg-white"
+                  aria-label="Odstrani sliko"
+                >
+                  <FaTrashAlt className="fill-red-500" />
+                </button>
+                <Image
+                  src={preview}
+                  width={500}
+                  height={500}
+                  alt="Preview"
+                  className="w-full max-h-60 object-contain border border-gray-300 rounded-md shadow-sm"
+                />
+              </div>
+            </div>
           </div>
         )}
       </div>

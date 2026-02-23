@@ -10,7 +10,7 @@ export default async function Home() {
   return (
     <>
       {/* Cover photo */}
-      <div className=" bg-cover bg-center w-full h-64 bg-[url('/hero-bg.jpg')]">
+      <div className=" bg-cover bg-center w-full h-80 bg-[url('/hero-bg.JPG')]">
         <div className="px-5 flex flex-col justify-center items-center h-full">
           <h1 className="text-4xl text-center md:text-5xl text-white font-semibold">Gremo v hribe</h1>
         </div>

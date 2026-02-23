@@ -97,7 +97,7 @@ const Header = () => {
             </div>
           </div>
           {/* <!-- Right Side Menu --> */}
-          <div className="">
+          <div>
             <div className="ml-4 flex items-center gap-4 md:ml-6">
               {links.map((link) =>
                 link.dropdown ? (

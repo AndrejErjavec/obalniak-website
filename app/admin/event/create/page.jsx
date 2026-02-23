@@ -7,7 +7,16 @@ import { createEvent } from "@/lib/actions/event";
 
 export default function CreateEvent() {
   const [photo, setPhoto] = useState(null);
+  const [isPinned, setIsPinned] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    console.log(isPinned);
+  }, [isPinned]);
+
+  const handlePinChange = (e) => {
+    setIsPinned(e.target.checked);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,6 +26,8 @@ export default function CreateEvent() {
     if (photo) {
       formData.append("photo", photo);
     }
+    formData.append("isPinned", isPinned);
+
     const result = await createEvent(formData);
     if (result.success) {
       toast.success("objava ustvarjena");
@@ -34,14 +45,28 @@ export default function CreateEvent() {
     <div className="px-5 mx-auto md:container">
       <form onSubmit={(e) => handleSubmit(e)}>
         <div className="flex flex-col py-6 gap-5 md:flex-row md:justify-between md:py-8">
-          <h1 className="text-3xl md:text-2xl font-semibold">Ustvari vabilo na dogodek</h1>
-          <button
-            type={"submit"}
-            className="hidden md:block bg-blue-500 text-white font-medium px-4 py-2 rounded-md disabled:bg-blue-300 min-w-20"
-            disabled={loading}
-          >
-            {loading ? <>...</> : <>Objavi</>}
-          </button>
+          <h1 className="text-3xl md:text-2xl font-semibold">Objava novic</h1>
+          <div className="hidden md:flex md:gap-5">
+            <div className="flex flex-row items-center gap-2">
+              <input
+                type="checkbox"
+                name="pinned"
+                id="pinned"
+                checked={isPinned}
+                onChange={handlePinChange}
+                className="w-5 h-5"
+              />
+              <label htmlFor="pined">pripni novico</label>
+            </div>
+
+            <button
+              type={"submit"}
+              className="bg-blue-500 text-white font-medium px-4 py-2 rounded-md disabled:bg-blue-300 min-w-20"
+              disabled={loading}
+            >
+              {loading ? <>...</> : <>Objavi</>}
+            </button>
+          </div>
         </div>
         <div className="flex flex-col gap-8 md:flex-row">
           <section className="flex flex-col gap-3 md:w-1/3">
@@ -56,7 +81,7 @@ export default function CreateEvent() {
               />
             </div>
             <div>
-              <label htmlFor="date">Datum</label>
+              <label htmlFor="date">Datum (opcijsko, če gre za dogodek)</label>
               <input type="date" name="date" className="border rounded w-full py-2 px-3" />
             </div>
           </section>

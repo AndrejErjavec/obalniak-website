@@ -101,7 +101,7 @@ export default function PhotoUploadMulti({ setPhotos }) {
         {/* Image Preview */}
         {previews.length > 0 && (
           <div className="mt-4">
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+            <div className="grid gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {previews.map((preview, index) => (
                 <div key={preview} className="relative">
                   <button

@@ -76,7 +76,9 @@ export default function MembersTable() {
                         </option>
                       )}
                       {Object.entries(experienceLevel).map(([key, level]) => (
-                        <option value={key}>{level.name}</option>
+                        <option value={key} key={key}>
+                          {level.name}
+                        </option>
                       ))}
                     </select>
                   </td>

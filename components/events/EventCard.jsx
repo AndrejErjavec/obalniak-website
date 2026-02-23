@@ -5,9 +5,10 @@ import { MdCalendarMonth } from "react-icons/md";
 import Link from "next/link";
 
 export default function EventCard({ event }) {
+  console.log(event);
   return (
     <div key={event.id} className="flex flex-col border rounded-lg shadow-lg overflow-hidden bg-white">
-      <Link href={`/news/events/${event.id}`} className="block">
+      <Link href={`/news/${event.id}`} className="block">
         {event.coverPhoto && (
           <Image
             src={event.coverPhoto.url}
@@ -21,11 +22,20 @@ export default function EventCard({ event }) {
           {/* Head */}
           <div className="flex flex-col gap-2">
             <h3 className="text-xl font-medium text-gray-800">{event.title}</h3>
-            {/* Event date */}
-            <div className="flex flex-row items-center gap-2 text-gray-600">
-              <MdCalendarMonth size={20} />
-              <p className="text-sm font-base">{format(event.date, "EEEE, dd. MMMM yyyy", { locale: sl })}</p>
-            </div>
+
+            {/* event date badge */}
+            {event.date && (
+              <div className="inline-flex self-start justify-center items-center px-2 py-1 rounded-full bg-gray-100/30 border border-gray-200 mb-3">
+                <div className="flex flex-row gap-1 items-center text-gray-800">
+                  <MdCalendarMonth size={16} />
+                  <p className="text-sm font-medium">{format(event.date, "EEEE, dd. MMMM yyyy", { locale: sl })}</p>
+                </div>
+              </div>
+            )}
+
+            <p className="text-gray-600 text-xs font-base">
+              Objavljeno: {format(event.createdAt, "EEEE, dd. MMMM yyyy", { locale: sl })}
+            </p>
           </div>
           <div className="border-b border-gray-300"></div>
           <p className="text-gray-700 text-sm leading-relaxed line-clamp-4">{event.text}</p>

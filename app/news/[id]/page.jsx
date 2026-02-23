@@ -40,33 +40,42 @@ export default async function Event(props) {
             </section>
           )}
 
-          {/* Ascent header */}
+          {/* Event header */}
           <section className="flex flex-col py-5 bg-gray-50">
             <div className="px-5 md:px-20">
-              <h1 className="text-3xl font-medium">{event.title}</h1>
-              <div className="flex flex-col">
-                {/* Date and route */}
-                <div className="flex flex-row gap-5 py-5">
+              <h1 className="text-3xl font-medium mb-5 md:text-4xl mt-3">{event.title}</h1>
+
+              {/* event date badge */}
+              {event.date && (
+                <div className="inline-flex justify-center items-center px-4 py-2 rounded-full bg-white border border-gray-200 mb-5">
+                  <div className="flex flex-row gap-2 items-center text-gray-800">
+                    <MdCalendarMonth size={22} />
+                    <p className="text-md font-medium">{format(event.date, "EEEE, dd. MMMM yyyy", { locale: sl })}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* <div className="flex flex-row gap-5 py-5">
                   <div className="flex gap-1 items-center">
                     <MdCalendarMonth size={24} />
                     <p className="text-lg font-medium">{format(event.date, "EEEE, dd. MMMM yyyy", { locale: sl })}</p>
                   </div>
-                </div>
+                </div> */}
 
-                {/* People */}
-                <div className="flex flex-col items-start gap-5 md:flex-row md:gap-20 md:items-center">
-                  {/* Author */}
-                  <div>
-                    <p className="font-medium mb-2">Avtor</p>
-                    <ProfileBanner
-                      firstName={event.author.firstName}
-                      lastName={event.author.lastName}
-                      userId={event.author.id}
-                      size={25}
-                    />
-                  </div>
-                </div>
+              {/* Author */}
+              <div className="mb-3">
+                {/* <p className="font-medium mb-2">Avtor</p> */}
+                <ProfileBanner
+                  firstName={event.author.firstName}
+                  lastName={event.author.lastName}
+                  userId={event.author.id}
+                  iconSize={30}
+                  textSize={14}
+                />
               </div>
+              <p className="text-gray-600 text-sm font-base">
+                Objavljeno: {format(event.createdAt, "EEEE, dd. MMMM yyyy", { locale: sl })}
+              </p>
             </div>
           </section>
 
