@@ -16,7 +16,7 @@ export default function PhotoUploadSingle({ photo, setPhoto }) {
 
   useEffect(() => {
     return () => {
-      revokeObjectURL(previewRef.current);
+      URL.revokeObjectURL(previewRef.current);
     };
   }, []);
 

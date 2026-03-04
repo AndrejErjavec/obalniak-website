@@ -28,7 +28,7 @@ export default async function Home() {
             </div>
           </div>
           {/* Ascents */}
-          <div className="w-full md:col-span-1">
+          <div className="w-full flex flex-col mt-10 md:mt-0">
             <h3 className="text-2xl font-semibold mb-2">Zadnji vzponi</h3>
             <div className="h-px w-full bg-gray-300 mb-5" />
             <div className=" flex flex-col [&>*]:border-t last:border-b border-gray-300">
