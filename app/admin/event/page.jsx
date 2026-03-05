@@ -1,16 +1,19 @@
 "use client";
 
 import PhotoUploadSingle from "@/components/photoUpload/PhotoUploadSingle";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "react-toastify";
 import { createEvent } from "@/lib/actions/event";
+import Label from "@/components/ui/Label";
+import Input from "@/components/ui/Input";
+import TextArea from "@/components/ui/TextArea";
 
 function PostTypeOption({ title, value, selectedType, setSelectedType }) {
   const isActive = value === selectedType;
 
   return (
     <div
-      className={`px-3 py-2 font-medium transition cursor-pointer ${
+      className={`px-3 py-2 text-base transition cursor-pointer ${
         isActive ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-gray-100"
       }`}
       onClick={() => setSelectedType(value)}
@@ -25,10 +28,6 @@ export default function CreateEventPage() {
   const [isPinned, setIsPinned] = useState(false);
   const [loading, setLoading] = useState(false);
   const [type, setType] = useState("Običajna novica");
-
-  useEffect(() => {
-    console.log(isPinned);
-  }, [isPinned]);
 
   const handlePinChange = (e) => {
     setIsPinned(e.target.checked);
@@ -53,10 +52,6 @@ export default function CreateEventPage() {
     }
     setLoading(false);
   };
-
-  useEffect(() => {
-    console.log(loading);
-  }, [loading]);
 
   return (
     <form onSubmit={(e) => handleSubmit(e)}>
@@ -84,6 +79,7 @@ export default function CreateEventPage() {
           </button>
         </div>
       </div>
+      <Label>Tip dogodka</Label>
       <div className="inline-flex flex-row mb-6 border border-gray-300 rounded-md overflow-hidden">
         <PostTypeOption
           title={"Običajna novica"}
@@ -101,26 +97,18 @@ export default function CreateEventPage() {
       <div className="flex flex-col gap-8 md:flex-row">
         <section className="flex flex-col gap-8 md:gap-3 md:w-1/3">
           <div>
-            <label htmlFor="title" className="mb-1 block text-sm font-medium text-gray-700">
-              Naslov
-            </label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-3 text-sm text-gray-900 placeholder:text-gray-400 shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              placeholder="Naziv dogodka"
-            />
+            <Label htmlFor="title">Naslov</Label>
+            <Input type="text" id="title" name="title" placeholder="Naziv dogodka" />
           </div>
           <div>
-            <label htmlFor="date">Datum (opcijsko, če gre za dogodek)</label>
-            <input type="date" name="date" className="border rounded w-full py-2 px-3" />
+            <Label htmlFor="date">Datum (opcijsko, če gre za dogodek)</Label>
+            <Input type="date" name="date" className="border rounded w-full py-2 px-3" />
           </div>
         </section>
         <section className="flex flex-col gap-8 md:w-2/3">
           <div className="flex flex-col h-full">
-            <label htmlFor="text">Opis</label>
-            <textarea placeholder="Besedilo..." name="text" className="border rounded py-2 px-3 h-48 md:h-full" />
+            <Label htmlFor="text">Opis</Label>
+            <TextArea placeholder="Besedilo..." name="text" className="min-h-50" />
           </div>
         </section>
       </div>

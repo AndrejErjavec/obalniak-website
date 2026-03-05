@@ -7,7 +7,10 @@ import { BsPinAngleFill } from "react-icons/bs";
 
 export default function EventCard({ event }) {
   return (
-    <div key={event.id} className="relative flex flex-col border rounded-lg shadow-lg overflow-visible bg-white">
+    <div
+      key={event.id}
+      className="relative flex flex-col border border-gray-200 rounded-lg shadow-lg overflow-visible bg-white"
+    >
       {event.isPinned && (
         <div className="absolute left-0 top-0 -translate-x-1/3 -translate-y-1/3 z-50 flex h-8 w-8 items-center justify-center rounded-full bg-yellow-500 text-xs font-semibold text-white shadow-md pointer-events-none">
           <BsPinAngleFill size={16} className="-rotate-90" />
@@ -20,7 +23,7 @@ export default function EventCard({ event }) {
             alt={event.title}
             width={1000}
             height={1000}
-            className="w-full h-48 object-cover object-center"
+            className="w-full h-48 object-cover object-center rounded-t-lg"
           />
         )}
         <div className="flex flex-col gap-4 p-5">

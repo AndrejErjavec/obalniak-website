@@ -1,7 +1,7 @@
-module.exports = {
-  output: "standalone",
-  // basePath: "/test",
-  // assetPrefix: "/test",
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  /* config options here */
   experimental: {
     serverActions: {
       bodySizeLimit: "200mb",
@@ -17,3 +17,5 @@ module.exports = {
     ],
   },
 };
+
+export default nextConfig;
