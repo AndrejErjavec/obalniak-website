@@ -1,7 +1,8 @@
-"use client"
+"use client";
 
-import {usePathname, useRouter, useSearchParams} from "next/navigation";
-import {useDebouncedCallback} from "use-debounce";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useDebouncedCallback } from "use-debounce";
+import Input from "./ui/Input";
 
 export default function Search() {
   const searchParams = useSearchParams();
@@ -20,16 +21,15 @@ export default function Search() {
 
   return (
     <div className="w-full flex items-center gap-2">
-      <input
+      <Input
         id="climbName"
         name="climbName"
         placeholder="Poiščite vzpon"
         type="text"
-        className="border rounded w-full py-2 px-3"
         onChange={(e) => handleChange(e.target.value)}
         defaultValue={searchParams.get("query") ?? ""}
       />
       <button className="px-3 py-2 rounded-md bg-blue-500 text-white">Iskanje</button>
     </div>
-  )
+  );
 }

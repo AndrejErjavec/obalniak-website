@@ -4,24 +4,26 @@ import prisma from "@/lib/prisma";
 import { uploadImages } from "@/lib/actions/image";
 import { checkAuth } from "@/lib/actions/auth";
 
-export async function createEvent(formData) {
+export async function createEvent(formData: FormData) {
   const { user } = await checkAuth();
 
   if (!user) {
     return {
+      success: false,
       error: "Niste prijavljeni",
     };
   }
 
-  const title = formData.get("title");
-  const date = formData.get("date");
-  const text = formData.get("text");
-  const photo = formData.get("photo");
+  const title = String(formData.get("title"));
+  const date = String(formData.get("date"));
+  const text = String(formData.get("text"));
+  const photo = formData.get("photo") as Blob;
   const isPinned = formData.get("isPinned") === "true";
-  const type = formData.get("type");
+  const type = String(formData.get("type"));
 
   if (!title || !text) {
     return {
+      success: false,
       error: "Manjkajoči podatki",
     };
   }
@@ -32,7 +34,7 @@ export async function createEvent(formData) {
         // upload cover photo
         let uploadedPhoto;
         if (photo) {
-          const secureUrls = await uploadImages(photo);
+          const secureUrls = await uploadImages([photo]);
           uploadedPhoto = await prisma.photo.create({
             data: {
               url: secureUrls[0],
@@ -41,7 +43,7 @@ export async function createEvent(formData) {
         }
 
         // create event
-        const event = await prisma.event.create({
+        await prisma.event.create({
           data: {
             title: title,
             date: date,
@@ -62,40 +64,49 @@ export async function createEvent(formData) {
   } catch (error) {
     console.log(error);
     return {
+      success: false,
       error: "Prišlo je do napake",
     };
   }
 }
 
-export async function getUpcomingEvents() {
+export async function getEvents(currentPage: number, pageSize: number) {
   try {
     const events = await prisma.event.findMany({
-      // where: {
-      //   date: {
-      //     gte: new Date().toISOString()
-      //   }
-      // },
       orderBy: {
         createdAt: "desc",
       },
+      skip: (currentPage - 1) * pageSize,
+      take: pageSize,
       include: {
         coverPhoto: true,
       },
     });
-    // return events;
+
+    const totalEvents = await prisma.event.count();
+    const totalPages = Math.ceil(totalEvents / pageSize);
 
     const pinnedEvents = events.filter((event) => event.isPinned);
     const nonPinnedEvents = events.filter((event) => !event.isPinned);
-    return [...pinnedEvents, ...nonPinnedEvents];
+    return {
+      data: [...pinnedEvents, ...nonPinnedEvents],
+      pagination: {
+        currentPage,
+        totalPages,
+      },
+      error: null,
+    };
   } catch (error) {
     console.log(error);
     return {
+      data: null,
+      pagination: null,
       error: "Napaka pri nalaganju",
     };
   }
 }
 
-export async function getEvent(id) {
+export async function getEvent(id: string) {
   try {
     const event = await prisma.event.findUnique({
       where: {
@@ -111,11 +122,15 @@ export async function getEvent(id) {
         coverPhoto: true,
       },
     });
-    return event;
+    return {
+      data: event,
+      error: null,
+    };
   } catch (error) {
     console.log(error);
     return {
       error: "Napaka pri nalaganju",
+      data: null,
     };
   }
 }

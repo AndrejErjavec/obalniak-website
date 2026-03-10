@@ -4,6 +4,7 @@ import { sl } from "date-fns/locale";
 import { MdCalendarMonth } from "react-icons/md";
 import Link from "next/link";
 import { BsPinAngleFill } from "react-icons/bs";
+import Badge from "../Badge";
 
 export default function EventCard({ event }) {
   return (
@@ -33,12 +34,13 @@ export default function EventCard({ event }) {
 
             {/* event date badge */}
             {event.date && (
-              <div className="inline-flex self-start justify-center items-center px-2 py-1 rounded-full bg-gray-100/30 border border-gray-200 mb-3">
-                <div className="flex flex-row gap-1 items-center text-gray-800">
-                  <MdCalendarMonth size={16} />
-                  <p className="text-sm font-medium">{format(event.date, "EEEE, dd. MMMM yyyy", { locale: sl })}</p>
-                </div>
-              </div>
+              <Badge
+                content={format(event.date, "EEEE, dd. MMMM yyyy", { locale: sl })}
+                icon={MdCalendarMonth}
+                iconColor="#fff"
+                iconBgColor="#000"
+                textClassName="text-gray-900 font-semibold"
+              />
             )}
 
             <p className="text-gray-600 text-xs font-base">

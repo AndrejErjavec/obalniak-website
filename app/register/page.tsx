@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { createUser } from "@/lib/actions/user";
 import Link from "next/link";
+import Label from "@/components/ui/Label";
+import Input from "@/components/ui/Input";
 
 const RegisterPage = () => {
   const initialState = {
@@ -31,70 +33,31 @@ const RegisterPage = () => {
           <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Nov uporabniški račun</h2>
 
           <div className="mb-4">
-            <label htmlFor="firstName" className="block text-gray-700 font-bold mb-2">
-              Ime
-            </label>
-            <input
-              type="text"
-              id="firstName"
-              name="firstName"
-              className="border rounded w-full py-2 px-3"
-              autoComplete="name"
-              required
-            />
+            <Label htmlFor="firstName">Ime</Label>
+            <Input type="text" id="firstName" name="firstName" autoComplete="name" required />
           </div>
 
           <div className="mb-4">
-            <label htmlFor="lastName" className="block text-gray-700 font-bold mb-2">
-              Priimek
-            </label>
-            <input
-              type="text"
-              id="lastName"
-              name="lastName"
-              className="border rounded w-full py-2 px-3"
-              autoComplete="name"
-              required
-            />
+            <Label htmlFor="lastName">Priimek</Label>
+            <Input type="text" id="lastName" name="lastName" autoComplete="name" required />
           </div>
 
           <div className="mb-4">
-            <label htmlFor="email" className="block text-gray-700 font-bold mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              className="border rounded w-full py-2 px-3"
-              autoComplete="email"
-              required
-            />
+            <Label htmlFor="email">Email</Label>
+            <Input type="email" id="email" name="email" autoComplete="email" required />
           </div>
 
           <div className="mb-4">
-            <label htmlFor="password" className="block text-gray-700 font-bold mb-2">
-              Geslo
-            </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              className="border rounded w-full py-2 px-3"
-              required
-              autoComplete="password"
-            />
+            <Label htmlFor="password">Geslo</Label>
+            <Input type="password" id="password" name="password" required autoComplete="password" />
           </div>
 
           <div className="mb-6">
-            <label htmlFor="confirm-password" className="block text-gray-700 font-bold mb-2">
-              Potrditev gesla
-            </label>
-            <input
+            <Label htmlFor="confirm-password">Potrditev gesla</Label>
+            <Input
               type="password"
               id="confirm-password"
               name="confirm-password"
-              className="border rounded w-full py-2 px-3"
               autoComplete="confirm-password"
               required
             />

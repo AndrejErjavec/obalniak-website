@@ -1,18 +1,22 @@
 import { getAscents } from "@/lib/actions/ascent";
-import AscentItem from "@/components/ascent/AscentItem";
 import Link from "next/link";
 import Search from "@/components/Search";
 import { Suspense } from "react";
 import AscentSkeleton from "@/components/ascent/AscentSkeleton";
 import { checkAuth } from "@/lib/actions/auth";
+import Pagination from "@/components/ui/pagination";
+import AscentsTable from "@/components/ascent/AscentsTable";
 
 export default async function Ascents({ searchParams }) {
   const { user, isAuthenticated } = await checkAuth();
 
   const params = await searchParams;
   const query = params.query ?? "";
+  const currentPage = Number(params.currentPage) || 1;
 
-  const ascents = await getAscents(query);
+  const ascentsResponse = await getAscents(currentPage, 10, query);
+  const ascents = ascentsResponse.data;
+  const totalPages = ascentsResponse.totalPages;
 
   return (
     <div className="px-5 mx-auto md:container">
@@ -27,15 +31,8 @@ export default async function Ascents({ searchParams }) {
         </div>
         <Search />
         <Suspense fallback={<AscentSkeleton />}>
-          {ascents.length > 0 ? (
-            <div className="flex flex-col gap-3">
-              {ascents.map((ascent) => (
-                <AscentItem ascent={ascent} key={ascent.id} />
-              ))}
-            </div>
-          ) : (
-            <p>Ni najdenih rezultatov</p>
-          )}
+          <AscentsTable ascents={ascents} />
+          <Pagination totalPages={totalPages} currentPage={currentPage} />
         </Suspense>
       </div>
     </div>

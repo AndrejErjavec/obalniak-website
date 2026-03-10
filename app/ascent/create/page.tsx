@@ -1,16 +1,19 @@
 "use client";
 
 import PhotoUploadMulti from "@/components/photoUpload/PhotoUploadMulti";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import UserSelect from "@/components/UserSelect";
 import { createAscent } from "@/lib/actions/ascent";
 import { toast } from "react-toastify";
+import Label from "@/components/ui/Label";
+import Input from "@/components/ui/Input";
+import TextArea from "@/components/ui/TextArea";
 
 export default function CreateClimb() {
   const [coClimbers, setCoClimbers] = useState([]);
   const [photos, setPhotos] = useState([]);
 
-  const handleSubmit = async (formData) => {
+  const handleSubmit = async (formData: FormData) => {
     const coClimbersString = JSON.stringify(coClimbers);
     formData.append("coClimbers", coClimbersString);
 
@@ -23,7 +26,7 @@ export default function CreateClimb() {
     if (result.success) {
       toast.success("objava ustvarjena");
 
-      for (let key of formData.keys()) {
+      for (const key of formData.keys()) {
         formData.delete(key);
       }
     } else {
@@ -43,18 +46,12 @@ export default function CreateClimb() {
         <div className="flex flex-col gap-8 md:flex-row">
           <section className="flex flex-col gap-3 md:w-1/3">
             <div>
-              <label htmlFor="title">Naslov</label>
-              <input
-                type="text"
-                id="title"
-                name="title"
-                className="border rounded w-full py-2 px-3"
-                placeholder="Ime vzpona/ture"
-              />
+              <Label htmlFor="title">Naslov</Label>
+              <Input type="text" id="title" name="title" placeholder="Ime vzpona/ture" />
             </div>
             <div>
-              <label htmlFor="route">Smer</label>
-              <input
+              <Label htmlFor="route">Smer</Label>
+              <Input
                 type="text"
                 id="route"
                 name="route"
@@ -63,34 +60,24 @@ export default function CreateClimb() {
               />
             </div>
             <div>
-              <label htmlFor="difficulty">Težavnost</label>
-              <input type="text" name="difficulty" className="border rounded w-full py-2 px-3" />
-              {/* <select id="difficulty" name="difficulty" className="border rounded w-full py-2 px-3">
-                <option disabled value selected className="text-gray-100">
-                  Izberite težavnost
-                </option>
-                {difficulties.map((d) => (
-                  <option value={d} key={d}>
-                    {d}
-                  </option>
-                ))}
-              </select> */}
+              <Label htmlFor="difficulty">Težavnost</Label>
+              <Input type="text" name="difficulty" className="border rounded w-full py-2 px-3" />
             </div>
             <div>
-              <label htmlFor="date">Datum vzpona</label>
-              <input type="date" name="date" className="border rounded w-full py-2 px-3" />
+              <Label htmlFor="date">Datum vzpona</Label>
+              <Input type="date" name="date" className="border rounded w-full py-2 px-3" />
             </div>
             <UserSelect users={coClimbers} setUsers={setCoClimbers} />
           </section>
           <section className="flex flex-col gap-8 md:w-2/3">
             <div className="flex flex-col h-full">
-              <label htmlFor="text">Opis vzpona/ture</label>
-              <textarea placeholder="Besedilo..." name="text" className="border rounded py-2 px-3 h-48 md:h-full" />
+              <Label htmlFor="text">Opis vzpona/ture</Label>
+              <TextArea placeholder="Besedilo..." name="text" />
             </div>
           </section>
         </div>
         <div className="mt-7">
-          <PhotoUploadMulti photos={photos} setPhotos={setPhotos} />
+          <PhotoUploadMulti setPhotos={setPhotos} />
         </div>
         <button
           type={"submit"}

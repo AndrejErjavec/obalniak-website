@@ -2,7 +2,7 @@
 
 import cloudinary from "../cloudinary";
 
-export async function uploadImages(images) {
+export async function uploadImages(images: Blob[]) {
   if (!images) {
     throw new Error("No images provided");
   }
@@ -31,8 +31,9 @@ async function uploadImage(image) {
       .upload_stream({ folder: "oak" }, (error, result) => {
         if (error) {
           reject(error);
-        } else {
+        } else if (result) {
           resolve(result.secure_url);
+        } else {
         }
       })
       .end(buffer);

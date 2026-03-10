@@ -1,11 +1,15 @@
 import EventsGrid from "@/components/events/EventsGrid";
-import { getAscents } from "@/lib/actions/ascent";
-import AscentItemSimple from "@/components/ascent/AscentItemSimple";
 import Link from "next/link";
 import Image from "next/image";
+import { getAscents } from "@/lib/actions/ascent";
+import { getEvents } from "@/lib/actions/event";
+import AscentListSimple from "@/components/ascent/AscentListSimple";
 
 export default async function Home() {
-  const ascents = await getAscents();
+  const ascentsResponse = await getAscents(1, 5);
+  const eventsResponse = await getEvents(1, 6);
+  const events = eventsResponse.data;
+  const ascents = ascentsResponse.data;
 
   return (
     <>
@@ -18,24 +22,20 @@ export default async function Home() {
 
       <div className="px-5 py-10 mx-auto md:container">
         {/* Events and ascents grid */}
-        <div className="md:grid md:grid-cols-4 md:gap-10 mb-20">
+        <div className="md:grid lg:grid-cols-4 gap-10 mb-20">
           {/* News */}
-          <div className="md:col-span-3">
+          <div className="lg:col-span-3">
             <div className="flex flex-col">
               <h3 className="text-2xl font-semibold mb-2">Novice</h3>
               <div className="h-px w-full bg-gray-300 mb-5" />
-              <EventsGrid />
+              <EventsGrid events={events} />
             </div>
           </div>
           {/* Ascents */}
           <div className="w-full flex flex-col mt-10 md:mt-0">
             <h3 className="text-2xl font-semibold mb-2">Zadnji vzponi</h3>
             <div className="h-px w-full bg-gray-300 mb-5" />
-            <div className=" flex flex-col [&>*]:border-t last:border-b border-gray-300">
-              {ascents.map((ascent) => (
-                <AscentItemSimple ascent={ascent} key={ascent.id} />
-              ))}
-            </div>
+            <AscentListSimple ascents={ascents} />
           </div>
         </div>
       </div>

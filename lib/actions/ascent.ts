@@ -3,14 +3,15 @@
 import prisma from "@/lib/prisma";
 import { checkAuth } from "./auth";
 import { uploadImages } from "@/lib/actions/image";
+import Pagination from "@/components/ui/pagination";
 
-export async function createAscent(formData) {
-  const title = formData.get("title");
-  const route = formData.get("route");
-  const difficulty = formData.get("difficulty");
-  const date = formData.get("date");
-  const text = formData.get("text");
-  const coClimbersString = formData.getAll("coClimbers");
+export async function createAscent(formData: FormData) {
+  const title = String(formData.get("title"));
+  const route = String(formData.get("route"));
+  const difficulty = String(formData.get("difficulty"));
+  const date = String(formData.get("date"));
+  const text = String(formData.get("text"));
+  const coClimbersString = String(formData.getAll("coClimbers"));
   const photos = formData.getAll("photos");
 
   if (!title || !route || !difficulty || !date || !text) {
@@ -88,11 +89,14 @@ export async function createAscent(formData) {
     };
   } catch (error) {
     console.log(error);
-    return { error: "Prišlo je do napake" };
+    return {
+      success: false,
+      error: "Prišlo je do napake",
+    };
   }
 }
 
-export async function getAscents(query) {
+export async function getAscents(currentPage: number, pageSize: number, query?: string) {
   try {
     const ascents = await prisma.ascent.findMany({
       include: {
@@ -106,21 +110,36 @@ export async function getAscents(query) {
             mode: "insensitive",
           },
         },
-        orderBy: {
-          createdAt: "desc",
-        },
       }),
+      skip: (currentPage - 1) * pageSize,
+      take: pageSize,
+      orderBy: {
+        createdAt: "desc",
+      },
     });
-    return ascents;
+
+    const totalEvents = await prisma.event.count();
+    const totalPages = Math.ceil(totalEvents / pageSize);
+
+    return {
+      data: ascents,
+      Pagination: {
+        currentPage,
+        totalPages,
+      },
+      error: null,
+    };
   } catch (error) {
     console.error(error);
     return {
+      data: null,
+      pagination: null,
       error: "Napaka pri nalaganju",
     };
   }
 }
 
-export async function getAscent(id) {
+export async function getAscent(id: string) {
   try {
     const ascent = await prisma.ascent.findUnique({
       where: {
@@ -139,16 +158,20 @@ export async function getAscent(id) {
 
     ascent.registeredParticipants = ascent.registeredParticipants.map((p) => p.user);
 
-    return ascent;
+    return {
+      data: ascent,
+      error: null,
+    };
   } catch (error) {
     console.error(error);
     return {
       error: "Napaka pri nalaganju",
+      data: null,
     };
   }
 }
 
-export async function getUserAscents(userId) {
+export async function getUserAscents(userId: string) {
   try {
     const ascents = await prisma.ascent.findMany({
       where: {
@@ -171,9 +194,15 @@ export async function getUserAscents(userId) {
       },
     });
 
-    return ascents;
+    return {
+      data: ascents,
+      error: null,
+    };
   } catch (error) {
     console.log(error);
-    return { error: "Napaka pri nalaganju" };
+    return {
+      error: "Napaka pri nalaganju",
+      data: null,
+    };
   }
 }
