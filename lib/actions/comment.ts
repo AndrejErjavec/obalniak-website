@@ -4,8 +4,8 @@ import prisma from "@/lib/prisma";
 import { checkAuth } from "./auth";
 import { revalidatePath } from "next/cache";
 
-export async function addComment({ text, ascentId }) {
-  const { isAuthenticated, user } = await checkAuth();
+export async function addComment({ text, ascentId }: { text: string; ascentId: string }) {
+  const { user } = await checkAuth();
 
   if (!user) {
     return {
@@ -43,7 +43,7 @@ export async function addComment({ text, ascentId }) {
   }
 }
 
-export async function getComments(ascentId) {
+export async function getComments(ascentId: string) {
   try {
     const comments = await prisma.comment.findMany({
       where: {
@@ -65,5 +65,6 @@ export async function getComments(ascentId) {
     return { data: comments };
   } catch (error) {
     console.log(error);
+    return { error: "Napaka pri nalaganju komentarjev" };
   }
 }

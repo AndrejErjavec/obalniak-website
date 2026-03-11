@@ -7,14 +7,16 @@ import { addComment } from "@/lib/actions/comment";
 import { getComments } from "@/lib/actions/comment";
 import { useAuth } from "@/context/authContext";
 import CommentItem from "@/components/comments/CommentItem";
+import Input from "../ui/Input";
+import cn from "clsx";
 
-export default function CommentSection({ ascentId }) {
+export default function CommentSection({ ascentId }: { ascentId: string }) {
   const [comments, setComments] = useState([]);
   const [text, setText] = useState("");
 
   const { user, isAuthenticated } = useAuth();
 
-  const fetchComments = async (ascentId) => {
+  const fetchComments = async (ascentId: string) => {
     const result = await getComments(ascentId);
     if (result.error) {
       toast.error(result.error);
@@ -33,7 +35,6 @@ export default function CommentSection({ ascentId }) {
       return;
     }
     const result = await addComment({ text, ascentId });
-    console.log(result);
     if (result.error) {
       toast.error(result.error);
     } else {
@@ -47,7 +48,7 @@ export default function CommentSection({ ascentId }) {
       {isAuthenticated ? (
         <form onSubmit={handleSubmit}>
           <div className="w-full flex items-center gap-2">
-            <input
+            <Input
               type="text"
               name="text"
               value={text}
@@ -57,9 +58,10 @@ export default function CommentSection({ ascentId }) {
             />
             <button
               type="submit"
-              className={`flex items-center justify-center rounded-full w-10 h-10 ${
-                text.trim() ? "bg-gray-800 text-white" : "bg-gray-300 text-gray-500 cursor-not-allowed"
-              }`}
+              className={cn(
+                "flex items-center justify-center rounded-full w-10 h-10",
+                text.trim() ? "bg-blue-500 text-white cursor-pointer" : "bg-gray-300 text-gray-500 cursor-not-allowed",
+              )}
             >
               <MdSend size={20} />
             </button>

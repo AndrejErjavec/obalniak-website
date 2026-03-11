@@ -11,7 +11,7 @@ function AscentListSimple({ ascents }) {
           {/* title & date */}
           <div className="flex flex-row justify-between gap-2 items-center">
             <p className="font-medium text-lg md:text-base">{ascent.title}</p>
-            <Badge content={formatDate(ascent.date)} bgColor="#f4f4f4" textClassName="text-gray-900" />
+            <Badge content={formatDate(ascent.date)} bgColor="#f9f9f9" textClassName="text-gray-900" />
           </div>
           <ProfileBanner
             firstName={ascent.author.firstName}

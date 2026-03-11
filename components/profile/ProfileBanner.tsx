@@ -6,8 +6,8 @@ interface ProfileBannerProps {
   firstName: string;
   lastName: string;
   userId?: string;
-  iconSize: number;
-  textSize: number;
+  iconSize?: number;
+  textSize?: number;
 }
 
 export default function ProfileBanner({
@@ -20,7 +20,7 @@ export default function ProfileBanner({
   return (
     <Link
       href={userId ? `/profile/${userId}` : "#"}
-      className={cn("flex gap-2 items-center", userId ? "cursor-pointer" : "cursor-default")}
+      className={cn("flex gap-2 items-center", userId ? "cursor-pointer" : "cursor-default pointer-events-none")}
     >
       <ProfileImage firstName={firstName} lastName={lastName} size={iconSize} />
       <p style={{ fontSize: textSize }}>

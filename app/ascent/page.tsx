@@ -7,8 +7,12 @@ import { checkAuth } from "@/lib/actions/auth";
 import Pagination from "@/components/ui/pagination";
 import AscentsTable from "@/components/ascent/AscentsTable";
 
-export default async function Ascents({ searchParams }) {
-  const { user, isAuthenticated } = await checkAuth();
+export default async function Ascents({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | undefined }>;
+}) {
+  const { isAuthenticated } = await checkAuth();
 
   const params = await searchParams;
   const query = params.query ?? "";
@@ -16,7 +20,7 @@ export default async function Ascents({ searchParams }) {
 
   const ascentsResponse = await getAscents(currentPage, 10, query);
   const ascents = ascentsResponse.data;
-  const totalPages = ascentsResponse.totalPages;
+  const totalPages = ascentsResponse.pagination?.totalPages || 1;
 
   return (
     <div className="px-5 mx-auto md:container">

@@ -102,6 +102,7 @@ export async function getAscents(currentPage: number, pageSize: number, query?: 
       include: {
         photos: true,
         author: true,
+        registeredParticipants: true,
       },
       ...(!!query && {
         where: {
@@ -114,7 +115,7 @@ export async function getAscents(currentPage: number, pageSize: number, query?: 
       skip: (currentPage - 1) * pageSize,
       take: pageSize,
       orderBy: {
-        createdAt: "desc",
+        date: "desc",
       },
     });
 
@@ -123,7 +124,7 @@ export async function getAscents(currentPage: number, pageSize: number, query?: 
 
     return {
       data: ascents,
-      Pagination: {
+      pagination: {
         currentPage,
         totalPages,
       },

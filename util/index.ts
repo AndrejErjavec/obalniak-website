@@ -1,5 +1,5 @@
-import { formatDistanceToNow } from 'date-fns';
-import { sl } from 'date-fns/locale';
+import { format, formatDistanceToNow } from "date-fns";
+import { sl } from "date-fns/locale";
 
 export const experienceLevel = {
   TECAJNIK: {
@@ -34,13 +34,11 @@ export const experienceLevel = {
   },
 };
 
-export const formatDate = (dateString) => {
-  const parts = dateString.split("-");
-  const [year, month, day] = parts;
-  return `${day}. ${month}. ${year}`;
-}
+export const formatDate = (dateString: string) => {
+  return format(dateString, "dd. MM. yyyy");
+};
 
-export const relativeTime = (dateTimeString) => {
+export const relativeTime = (dateTimeString: string) => {
   const date = new Date(dateTimeString);
-  return formatDistanceToNow(date, { addSuffix: false, locale: sl })
-}
+  return formatDistanceToNow(date, { addSuffix: false, locale: sl });
+};

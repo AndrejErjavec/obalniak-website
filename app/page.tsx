@@ -4,6 +4,7 @@ import Image from "next/image";
 import { getAscents } from "@/lib/actions/ascent";
 import { getEvents } from "@/lib/actions/event";
 import AscentListSimple from "@/components/ascent/AscentListSimple";
+import Divider from "@/components/ui/Divider";
 
 export default async function Home() {
   const ascentsResponse = await getAscents(1, 5);
@@ -27,14 +28,14 @@ export default async function Home() {
           <div className="lg:col-span-3">
             <div className="flex flex-col">
               <h3 className="text-2xl font-semibold mb-2">Novice</h3>
-              <div className="h-px w-full bg-gray-300 mb-5" />
+              <Divider />
               <EventsGrid events={events} />
             </div>
           </div>
           {/* Ascents */}
           <div className="w-full flex flex-col mt-10 md:mt-0">
             <h3 className="text-2xl font-semibold mb-2">Zadnji vzponi</h3>
-            <div className="h-px w-full bg-gray-300 mb-5" />
+            <Divider />
             <AscentListSimple ascents={ascents} />
           </div>
         </div>

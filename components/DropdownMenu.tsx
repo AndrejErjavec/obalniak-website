@@ -1,10 +1,21 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md";
 import Modal from "@/components/Modal";
 import useMediaQuery from "@/hooks/useMediaQuery";
 
-function DropdownMenu({ title, items, setParentOpen }) {
+interface Link {
+  title: string;
+  href: string;
+}
+
+interface DropdownMenuProps {
+  title: string;
+  items: Link[];
+  setParentOpen: (value: boolean) => void;
+}
+
+function DropdownMenu({ title, items, setParentOpen }: DropdownMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const isMdScreen = useMediaQuery("(min-width: 768px)");
@@ -12,7 +23,6 @@ function DropdownMenu({ title, items, setParentOpen }) {
   const toggleMenu = () => setIsOpen((prev) => !prev);
 
   const closeMenu = () => {
-    console.log("close menu called");
     setIsOpen(false);
     setParentOpen(false);
   };
@@ -21,7 +31,7 @@ function DropdownMenu({ title, items, setParentOpen }) {
 
   // Close the menu if you click outside of it
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
       }
@@ -52,6 +62,7 @@ function DropdownMenu({ title, items, setParentOpen }) {
           <Modal open={isOpen}>
             {items.map((item) => (
               <Link
+                key={item.href}
                 href={item.href}
                 className="block px-4 py-2 font-medium text-gray-800 hover:bg-gray-100"
                 onClick={closeMenu}
@@ -67,11 +78,14 @@ function DropdownMenu({ title, items, setParentOpen }) {
           {isOpen && (
             <ul className="md:hidden left-0 mt-2 bg-white text-gray-800">
               {items.map((item) => (
-                <li>
-                  <Link href={item.href} className="block px-4 py-2 font-medium text-gray-800" onClick={closeMenu}>
-                    {item.title}
-                  </Link>
-                </li>
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="block px-4 py-2 font-medium text-gray-800"
+                  onClick={closeMenu}
+                >
+                  {item.title}
+                </Link>
               ))}
             </ul>
           )}
