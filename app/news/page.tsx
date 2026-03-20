@@ -1,8 +1,8 @@
-import EventsGrid from "@/components/events/EventsGrid";
-import { getEvents } from "@/lib/actions/event";
-import Pagination from "@/components/ui/pagination";
+import { getEvents } from "@/lib/actions/news";
+import Pagination from "@/components/ui/Pagination";
+import NewsGrid from "@/components/news/NewsGrid";
 
-export default async function EventsPage({
+export default async function NewsPage({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -10,7 +10,7 @@ export default async function EventsPage({
   const params = await searchParams;
   const currentPage = Number(params.currentPage) || 1;
 
-  const { data, pagination, error } = await getEvents(currentPage, 10);
+  const { data, pagination, error } = await getEvents(currentPage, 10, "Običajna novica");
 
   if (error) {
     return <div>{error}</div>;
@@ -18,8 +18,8 @@ export default async function EventsPage({
 
   return (
     <div className="px-5 mx-auto md:container">
-      <h1 className="text-3xl font-semibold mt-8 mb-5">Novice</h1>
-      <EventsGrid events={data} />
+      <h1 className="text-3xl font-semibold my-8">Novice</h1>
+      <NewsGrid news={data} />
       <Pagination totalPages={pagination!.totalPages} currentPage={currentPage} />
     </div>
   );

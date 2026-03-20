@@ -7,6 +7,7 @@ import { createUser } from "@/lib/actions/user";
 import Link from "next/link";
 import Label from "@/components/ui/Label";
 import Input from "@/components/ui/Input";
+import Button from "@/components/ui/Button";
 
 const RegisterPage = () => {
   const initialState = {
@@ -64,9 +65,9 @@ const RegisterPage = () => {
           </div>
 
           <div className="flex flex-col gap-5">
-            <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700">
-              {loading ? <>Ustvarjanje računa...</> : <>Ustvarite račun</>}
-            </button>
+            <Button type="submit" disabled={loading} loading={loading}>
+              Ustvarite račun
+            </Button>
 
             <p className="text-center">
               Že imate uporabniši račun?{" "}

@@ -1,7 +1,14 @@
 import { format, formatDistanceToNow } from "date-fns";
 import { sl } from "date-fns/locale";
 
-export const experienceLevel = {
+interface ExperienceLevelStyle {
+  value: string;
+  name: string;
+  colorText: string;
+  colorBg: string;
+}
+
+export const experienceLevel: Record<string, ExperienceLevelStyle> = {
   TECAJNIK: {
     value: "TECAJNIK",
     name: "Tečajnik",

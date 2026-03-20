@@ -1,10 +1,10 @@
-import EventsGrid from "@/components/events/EventsGrid";
 import Link from "next/link";
 import Image from "next/image";
 import { getAscents } from "@/lib/actions/ascent";
-import { getEvents } from "@/lib/actions/event";
+import { getEvents } from "@/lib/actions/news";
 import AscentListSimple from "@/components/ascent/AscentListSimple";
 import Divider from "@/components/ui/Divider";
+import NewsGrid from "@/components/news/NewsGrid";
 
 export default async function Home() {
   const ascentsResponse = await getAscents(1, 5);
@@ -29,7 +29,7 @@ export default async function Home() {
             <div className="flex flex-col">
               <h3 className="text-2xl font-semibold mb-2">Novice</h3>
               <Divider />
-              <EventsGrid events={events} />
+              <NewsGrid news={events} />
             </div>
           </div>
           {/* Ascents */}

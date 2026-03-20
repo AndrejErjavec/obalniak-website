@@ -2,13 +2,16 @@
 
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { type Result } from "@/types";
+import { User } from "@/app/generated/prisma";
+import { revalidatePath } from "next/cache";
 
-export async function createUser(previousState, formData) {
-  const firstName = formData.get("firstName");
-  const lastName = formData.get("lastName");
-  const email = formData.get("email");
-  const password = formData.get("password");
-  const confirmPassword = formData.get("confirm-password");
+export async function createUser(previousState: any, formData: FormData) {
+  const firstName = String(formData.get("firstName"));
+  const lastName = String(formData.get("lastName"));
+  const email = String(formData.get("email"));
+  const password = String(formData.get("password"));
+  const confirmPassword = String(formData.get("confirm-password"));
 
   // Validate required fields
   if (!email || !firstName || !lastName || !password) {
@@ -69,26 +72,79 @@ export async function createUser(previousState, formData) {
   }
 }
 
-export async function acceptMember(id, experienceLevel) {
+type BulkUpdateMembersData = {
+  updated: User[];
+  failed: Array<{
+    id: string;
+    error: string;
+  }>;
+};
+
+export async function updateMember(id: string, experienceLevel: string | null): Promise<Result<string, User>> {
   if (!experienceLevel) {
     return {
       error: "Izberite izkušenost",
     };
   }
+
   try {
-    const acceptedMember = await prisma.user.update({
+    const updatedMember = await prisma.user.update({
       where: {
-        id: id,
+        id,
       },
       data: {
-        experienceLevel: experienceLevel,
+        experienceLevel,
         accepted: true,
       },
     });
-    return acceptedMember;
+
+    return {
+      data: updatedMember,
+    };
   } catch (error) {
     console.error("Error in accept member", error);
-    return { error: "Error in accept member" };
+    return {
+      error: "Error in accept member",
+    };
+  }
+}
+
+export async function updateMembersBulk(
+  updates: { id: string; experienceLevel: string | null }[],
+): Promise<Result<string, BulkUpdateMembersData>> {
+  try {
+    const results = await Promise.all(
+      updates.map(async ({ id, experienceLevel }) => {
+        const result = await updateMember(id, experienceLevel);
+        return { id, result };
+      }),
+    );
+
+    const updated: User[] = [];
+    const failed: BulkUpdateMembersData["failed"] = [];
+
+    for (const { id, result } of results) {
+      if ("error" in result) {
+        failed.push({
+          id,
+          error: result.error!,
+        });
+      } else {
+        updated.push(result.data);
+      }
+    }
+
+    return {
+      data: {
+        updated,
+        failed,
+      },
+    };
+  } catch (error) {
+    console.error("Error in updateMembersBulk", error);
+    return {
+      error: "Failed to update members",
+    };
   }
 }
 
@@ -104,14 +160,11 @@ export async function getUsers() {
   }
 }
 
-export async function getUser(id) {
+export async function getUser(id: string) {
   try {
     const user = await prisma.user.findUnique({
       where: {
         id: id,
-      },
-      include: {
-        password: false,
       },
     });
     return user;
@@ -141,7 +194,7 @@ export async function getAllUsers() {
   }
 }
 
-export async function getUsersByName(nameQuery) {
+export async function getUsersByName(nameQuery: string) {
   // if (nameQuery === "") {
   //   return []
   // }

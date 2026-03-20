@@ -81,7 +81,7 @@ model Event {
   id              String    @id @default(cuid())
   title           String
   text            String
-  date            String?
+  date            String?   
   createdAt       DateTime  @default(now())
   author          User      @relation(fields: [authorId], references: [id])
   authorId        String

@@ -3,9 +3,8 @@
 import prisma from "@/lib/prisma";
 import { checkAuth } from "./auth";
 import { uploadImages } from "@/lib/actions/image";
-import Pagination from "@/components/ui/pagination";
 
-export async function createAscent(formData: FormData) {
+export async function createAscent(prevState: any, formData: FormData) {
   const title = String(formData.get("title"));
   const route = String(formData.get("route"));
   const difficulty = String(formData.get("difficulty"));
@@ -15,21 +14,20 @@ export async function createAscent(formData: FormData) {
   const photos = formData.getAll("photos");
 
   if (!title || !route || !difficulty || !date || !text) {
-    return {
-      error: "Manjkajoči podatki",
-    };
+    return { success: false, error: "Manjkajoči podatki" };
   }
 
   const { user } = await checkAuth();
 
   if (!user) {
     return {
+      success: false,
       error: "Niste prijavljeni",
     };
   }
 
   try {
-    let unregistered;
+    let unregistered: string[];
     let registered;
 
     const coClimbers = JSON.parse(coClimbersString);
@@ -70,7 +68,7 @@ export async function createAscent(formData: FormData) {
           // store photos in Cloudinary bucket and save links
           const secureUrls = await uploadImages(photos);
           await Promise.all(
-            secureUrls.map((url) =>
+            secureUrls.map((url: string) =>
               prisma.photo.create({
                 data: {
                   url: url,
@@ -86,6 +84,7 @@ export async function createAscent(formData: FormData) {
 
     return {
       success: true,
+      error: null,
     };
   } catch (error) {
     console.log(error);
@@ -149,13 +148,16 @@ export async function getAscent(id: string) {
       include: {
         photos: true,
         author: true,
-        registeredParticipants: {
-          include: {
-            user: true,
-          },
-        },
+        registeredParticipants: true,
       },
     });
+
+    if (!ascent) {
+      return {
+        data: null,
+        error: "Ascent not found",
+      };
+    }
 
     ascent.registeredParticipants = ascent.registeredParticipants.map((p) => p.user);
 
@@ -172,31 +174,48 @@ export async function getAscent(id: string) {
   }
 }
 
-export async function getUserAscents(userId: string) {
+export async function getUserAscents(userId: string, currentPage: number, pageSize: number) {
+  const where = {
+    OR: [
+      {
+        authorId: userId,
+      },
+      {
+        registeredParticipants: {
+          some: {
+            userId: userId,
+          },
+        },
+      },
+    ],
+  };
+
   try {
-    const ascents = await prisma.ascent.findMany({
-      where: {
-        OR: [
-          {
-            authorId: userId, // User is the author
-          },
-          {
-            registeredParticipants: {
-              some: {
-                userId: userId, // User participated
-              },
-            },
-          },
-        ],
-      },
-      include: {
-        author: true,
-        photos: true,
-      },
-    });
+    const [totalAscents, ascents] = await prisma.$transaction([
+      prisma.ascent.count({ where }),
+      prisma.ascent.findMany({
+        where,
+        skip: (currentPage - 1) * pageSize,
+        take: pageSize,
+        orderBy: {
+          date: "desc",
+        },
+        include: {
+          author: true,
+          photos: true,
+          registeredParticipants: true,
+        },
+      }),
+    ]);
+
+    const totalPages = Math.ceil(totalAscents / pageSize);
 
     return {
       data: ascents,
+      pagination: {
+        currentPage,
+        totalPages,
+      },
       error: null,
     };
   } catch (error) {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import CreatableAsyncSelect from "react-select/async-creatable";
 import { getUsersByName } from "@/lib/actions/user";
+import Label from "./ui/Label";
 
 export default function UserSelect({ users, setUsers }) {
   const [options, setOptions] = useState([]);
@@ -28,7 +29,7 @@ export default function UserSelect({ users, setUsers }) {
 
   return (
     <div>
-      <label htmlFor="select">Soplezalci</label>
+      <Label htmlFor="select">Soplezalci</Label>
       <CreatableAsyncSelect
         name={"select"}
         isMulti

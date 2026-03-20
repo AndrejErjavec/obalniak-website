@@ -21,6 +21,8 @@ function Pagination({ totalPages, currentPage }: { totalPages: number; currentPa
     router.push(`${pathname}?${params.toString()}`);
   };
 
+  if (totalPages <= 1) return;
+
   return (
     <div className="flex flex-row justify-center items-center gap-5 mt-8">
       {currentPage > 1 && (

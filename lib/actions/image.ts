@@ -22,7 +22,7 @@ export async function uploadImages(images: Blob[]) {
   }
 }
 
-async function uploadImage(image) {
+async function uploadImage(image: Blob) {
   const arrayBuffer = await image.arrayBuffer();
   const buffer = new Uint8Array(arrayBuffer);
 

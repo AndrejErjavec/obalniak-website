@@ -58,14 +58,14 @@ function AscentsTable({ ascents }) {
                             icon={MdCalendarMonth}
                             iconColor="#fff"
                             iconBgColor="#117ec6"
-                            textClassName="text-gray-900 font-semibold"
+                            textClassName="text-gray-900 font-medium"
                           />
                           <Badge
                             content={`${ascent.route} (${ascent.difficulty})`}
                             icon={MdAltRoute}
                             iconColor="#fff"
                             iconBgColor="#e29212"
-                            textClassName="text-gray-900"
+                            textClassName="text-gray-900 font-medium"
                           />
                         </div>
                       </div>
@@ -80,7 +80,7 @@ function AscentsTable({ ascents }) {
                         iconSize={25}
                       />
                       {otherParticipants > 0 && (
-                        <div className="flex items-center justify-center bg-gray-100 text-xs font-semibold rounded-md px-2 py-1">
+                        <div className="flex items-center justify-center bg-gray-100/30 border border-gray-200 text-xs font-semibold rounded-md px-1.5 py-0.5">
                           <span>+{otherParticipants}</span>
                         </div>
                       )}
@@ -92,7 +92,7 @@ function AscentsTable({ ascents }) {
                       icon={MdCalendarMonth}
                       iconColor="#fff"
                       iconBgColor="#117ec6"
-                      textClassName="text-gray-900 font-semibold"
+                      textClassName="text-gray-900 font-medium"
                     />
                   </td>
                   <td className="hidden md:table-cell py-5">
@@ -101,7 +101,7 @@ function AscentsTable({ ascents }) {
                       icon={MdAltRoute}
                       iconColor="#fff"
                       iconBgColor="#e29212"
-                      textClassName="text-gray-900 font-semibold"
+                      textClassName="text-gray-900 font-medium"
                     />
                   </td>
                 </tr>

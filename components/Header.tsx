@@ -2,19 +2,24 @@
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { FaUser, FaSignInAlt, FaSignOutAlt, FaUserShield, FaBars } from "react-icons/fa";
+import { FaSignInAlt, FaSignOutAlt, FaUserShield, FaBars } from "react-icons/fa";
 import { FaXmark } from "react-icons/fa6";
 import { useAuth } from "@/context/authContext";
 import UserDropdown from "./UserDropdown";
-import { useEffect, useState } from "react";
-import ProfileImage from "@/components/profile/ProfileImage";
+import { useState } from "react";
 import { destroySession } from "@/lib/actions/auth";
 import { toast } from "react-toastify";
 import ProfileBanner from "@/components/profile/ProfileBanner";
 import DropdownMenu from "@/components/DropdownMenu";
 
+interface HeaderLink {
+  title: string;
+  href: string;
+  items?: HeaderLink[];
+}
+
 const Header = () => {
-  const links = [
+  const links: HeaderLink[] = [
     {
       title: "Vzponi",
       href: "/ascent",
@@ -30,15 +35,14 @@ const Header = () => {
     {
       title: "O nas",
       href: "/about",
-      dropdown: true,
       items: [
-        {
-          title: "Člani",
-          href: "/members",
-        },
         {
           title: "Kontakt",
           href: "/contact",
+        },
+        {
+          title: "Člani",
+          href: "/members",
         },
       ],
     },
@@ -100,7 +104,7 @@ const Header = () => {
           <div>
             <div className="ml-4 flex items-center gap-4 md:ml-6">
               {links.map((link) =>
-                link.dropdown ? (
+                link.items ? (
                   <DropdownMenu title={link.title} items={link.items} key={link.title} setParentOpen={setMenuOpen} />
                 ) : (
                   <Link href={link.href} className="font-medium text-gray-800 hover:text-gray-600" key={link.href}>
@@ -119,9 +123,8 @@ const Header = () => {
               )}
 
               {isAuthenticated && currentUser && (
-                <button onClick={handleToggleUserDropdown} className="flex items-center gap-2 ml-3">
-                  <ProfileImage firstName={currentUser.firstName} lastName={currentUser.lastName} />
-                  {currentUser.firstName} {currentUser.lastName}
+                <button onClick={handleToggleUserDropdown} className="flex items-center gap-2 ml-3 cursor-pointer">
+                  <ProfileBanner firstName={currentUser.firstName} lastName={currentUser.lastName} />
                 </button>
               )}
             </div>

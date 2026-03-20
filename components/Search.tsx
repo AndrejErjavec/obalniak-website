@@ -3,6 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useDebouncedCallback } from "use-debounce";
 import Input from "./ui/Input";
+import Button from "./ui/Button";
 
 export default function Search() {
   const searchParams = useSearchParams();
@@ -29,7 +30,7 @@ export default function Search() {
         onChange={(e) => handleChange(e.target.value)}
         defaultValue={searchParams.get("query") ?? ""}
       />
-      <button className="px-3 py-2 rounded-md bg-blue-500 text-white">Iskanje</button>
+      <Button>Iskanje</Button>
     </div>
   );
 }

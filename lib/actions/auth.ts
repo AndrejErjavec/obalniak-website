@@ -43,13 +43,15 @@ export async function checkAuth() {
   }
 }
 
-export async function createSession(previousState, formData) {
+export async function createSession(previousState: any, formData: FormData) {
   const email = formData.get("email");
   const password = formData.get("password");
 
   if (!email || !password) {
     return {
+      success: false,
       error: "Manjkajoči podatki",
+      user: null,
     };
   }
 
@@ -62,7 +64,9 @@ export async function createSession(previousState, formData) {
     });
     if (!user) {
       return {
+        success: false,
         error: "Uporabnik ne obstaja",
+        user: null,
       };
     }
 
@@ -71,7 +75,9 @@ export async function createSession(previousState, formData) {
     const passwordMatch = bcrypt.compareSync(password, user.password);
     if (!passwordMatch) {
       return {
+        success: false,
         error: "Napačno geslo",
+        user: null,
       };
     }
 
@@ -79,7 +85,7 @@ export async function createSession(previousState, formData) {
     const token = jwt.sign(
       { id: user.id, email: user.email },
       process.env.JWT_SECRET, // Store this secret in .env.local
-      { expiresIn: "1d" },
+      // { expiresIn: "1d" },
     );
     // Set JWT in a secure cookie
     const c = await cookies();
@@ -93,12 +99,15 @@ export async function createSession(previousState, formData) {
 
     return {
       success: true,
+      error: null,
       user: user,
     };
   } catch (error) {
     console.log("Authentication Error: ", error);
     return {
+      success: false,
       error: "Napaka pri prijavi",
+      user: null,
     };
   }
 }
@@ -110,6 +119,7 @@ export async function destroySession() {
 
   if (!sessionCookie) {
     return {
+      success: false,
       error: "Ni piškotov",
     };
   }
@@ -120,10 +130,12 @@ export async function destroySession() {
 
     return {
       success: true,
+      error: null,
     };
   } catch (error) {
     console.log("Error deleting session cookie: ", error);
     return {
+      success: false,
       error: "Napaka pri odjavi",
     };
   }

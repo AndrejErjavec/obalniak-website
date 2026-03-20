@@ -4,7 +4,7 @@ import Search from "@/components/Search";
 import { Suspense } from "react";
 import AscentSkeleton from "@/components/ascent/AscentSkeleton";
 import { checkAuth } from "@/lib/actions/auth";
-import Pagination from "@/components/ui/pagination";
+import Pagination from "@/components/ui/Pagination";
 import AscentsTable from "@/components/ascent/AscentsTable";
 
 export default async function Ascents({

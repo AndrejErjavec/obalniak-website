@@ -3,7 +3,7 @@ import ProfileBanner from "@/components/profile/ProfileBanner";
 import { MdCalendarMonth } from "react-icons/md";
 import { format } from "date-fns";
 import { sl } from "date-fns/locale";
-import { getEvent } from "@/lib/actions/event";
+import { getEvent } from "@/lib/actions/news";
 import Badge from "@/components/Badge";
 
 export default async function Event({ params }: { params: Promise<{ id: string }> }) {
@@ -46,7 +46,9 @@ export default async function Event({ params }: { params: Promise<{ id: string }
                   iconBgColor="#000"
                   className="mb-5"
                   bgColor="#fff"
-                  textClassName="text-gray-900 font-semibold"
+                  textClassName="text-gray-900 font-medium"
+                  textSize="base"
+                  iconSize="base"
                 />
               )}
 
