@@ -42,7 +42,7 @@ const initialState = {
 };
 
 export default function CreateNewsPage() {
-  const [photo, setPhoto] = useState(null);
+  const [photo, setPhoto] = useState<File | null>(null);
   const [isPinned, setIsPinned] = useState(false);
   const [type, setType] = useState<NewsType>("Običajna novica");
 

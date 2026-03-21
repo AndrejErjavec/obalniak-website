@@ -8,7 +8,7 @@ import { FiCameraOff } from "react-icons/fi";
 import Badge from "../Badge";
 import { useRouter } from "next/navigation";
 
-function AscentsTable({ ascents }) {
+function AscentsTable({ ascents }: { ascents }) {
   const router = useRouter();
 
   return (

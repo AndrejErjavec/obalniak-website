@@ -2,94 +2,97 @@
 
 import prisma from "@/lib/prisma";
 import { checkAuth } from "./auth";
-import { uploadImages } from "@/lib/actions/image";
+import type { Ascent, User } from "@/app/generated/prisma";
+import { Result } from "@/types";
 
-export async function createAscent(prevState: any, formData: FormData) {
+type CoClimber = User | string;
+
+export async function createAscent(formData: FormData): Promise<Result<string, Ascent>> {
   const title = String(formData.get("title"));
   const route = String(formData.get("route"));
   const difficulty = String(formData.get("difficulty"));
   const date = String(formData.get("date"));
   const text = String(formData.get("text"));
-  const coClimbersString = String(formData.getAll("coClimbers"));
-  const photos = formData.getAll("photos");
+  const coClimbersString = String(formData.get("coClimbers") ?? "[]");
+  const photoUrls = formData.getAll("photoUrls") as string[];
 
   if (!title || !route || !difficulty || !date || !text) {
-    return { success: false, error: "Manjkajoči podatki" };
+    return { error: "Manjkajoči podatki" };
   }
 
   const { user } = await checkAuth();
 
   if (!user) {
     return {
-      success: false,
       error: "Niste prijavljeni",
     };
   }
 
   try {
-    let unregistered: string[];
-    let registered;
+    let coClimbers: CoClimber[] = [];
 
-    const coClimbers = JSON.parse(coClimbersString);
-    if (coClimbers && coClimbers.length > 0) {
-      registered = coClimbers.filter((c) => typeof c == "object");
-      unregistered = coClimbers.filter((c) => typeof c == "string");
+    try {
+      coClimbers = JSON.parse(coClimbersString) as CoClimber[];
+    } catch {
+      return {
+        error: "Neveljavni podatki o soplezalcih",
+      };
     }
 
-    await prisma.$transaction(
-      async (prisma) => {
-        const ascent = await prisma.ascent.create({
-          data: {
-            title: title,
-            route: route,
-            difficulty: difficulty,
-            date: date,
-            text: text,
-            authorId: user.id,
-            unregisteredParticipants: unregistered,
+    const registeredParticipantIds = [
+      ...new Set(
+        coClimbers
+          .filter((climber): climber is User => typeof climber === "object" && climber !== null && "id" in climber)
+          .map((climber) => climber.id),
+      ),
+    ];
+    const unregisteredParticipants = coClimbers.filter((climber): climber is string => typeof climber === "string");
+
+    const ascent = await prisma.$transaction(async (prisma) => {
+      const ascent = await prisma.ascent.create({
+        data: {
+          title,
+          route,
+          difficulty,
+          date,
+          text,
+          author: {
+            connect: {
+              id: user.id,
+            },
           },
-        });
+          unregisteredParticipants,
+          ...(registeredParticipantIds.length > 0 && {
+            registeredParticipants: {
+              connect: registeredParticipantIds.map((id) => ({ id })),
+            },
+          }),
+        },
+      });
 
-        if (registered) {
-          // store registered in separate table
-          await Promise.all(
-            registered.map((climber) =>
-              prisma.userParticipatedAscent.create({
-                data: {
-                  userId: climber.id,
-                  ascentId: ascent.id,
-                },
-              }),
-            ),
-          );
-        }
-
-        if (photos && photos.length > 0) {
-          // store photos in Cloudinary bucket and save links
-          const secureUrls = await uploadImages(photos);
-          await Promise.all(
-            secureUrls.map((url: string) =>
-              prisma.photo.create({
-                data: {
-                  url: url,
-                  ascentId: ascent.id,
-                },
-              }),
-            ),
-          );
-        }
-      },
-      { timeout: 30000 },
-    ); // end of transaction
+      if (photoUrls && photoUrls.length > 0) {
+        // store photos in Cloudinary bucket and save links
+        // const secureUrls = await uploadImages(photos);
+        await Promise.all(
+          photoUrls.map((url: string) =>
+            prisma.photo.create({
+              data: {
+                url: url,
+                ascentId: ascent.id,
+              },
+            }),
+          ),
+        );
+      }
+      return ascent;
+    }); // end of transaction
 
     return {
-      success: true,
-      error: null,
+      data: ascent,
     };
   } catch (error) {
     console.log(error);
     return {
-      success: false,
       error: "Prišlo je do napake",
     };
   }
@@ -118,8 +121,8 @@ export async function getAscents(currentPage: number, pageSize: number, query?: 
       },
     });
 
-    const totalEvents = await prisma.event.count();
-    const totalPages = Math.ceil(totalEvents / pageSize);
+    const totalAscents = await prisma.ascent.count();
+    const totalPages = Math.ceil(totalAscents / pageSize);
 
     return {
       data: ascents,
@@ -159,8 +162,6 @@ export async function getAscent(id: string) {
       };
     }
 
-    ascent.registeredParticipants = ascent.registeredParticipants.map((p) => p.user);
-
     return {
       data: ascent,
       error: null,
@@ -183,7 +184,7 @@ export async function getUserAscents(userId: string, currentPage: number, pageSi
       {
         registeredParticipants: {
           some: {
-            userId: userId,
+            id: userId,
           },
         },
       },
@@ -215,6 +216,7 @@ export async function getUserAscents(userId: string, currentPage: number, pageSi
       pagination: {
         currentPage,
         totalPages,
+        totalItems: totalAscents,
       },
       error: null,
     };

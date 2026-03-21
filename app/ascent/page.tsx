@@ -1,8 +1,6 @@
 import { getAscents } from "@/lib/actions/ascent";
 import Link from "next/link";
 import Search from "@/components/Search";
-import { Suspense } from "react";
-import AscentSkeleton from "@/components/ascent/AscentSkeleton";
 import { checkAuth } from "@/lib/actions/auth";
 import Pagination from "@/components/ui/Pagination";
 import AscentsTable from "@/components/ascent/AscentsTable";
@@ -22,6 +20,8 @@ export default async function Ascents({
   const ascents = ascentsResponse.data;
   const totalPages = ascentsResponse.pagination?.totalPages || 1;
 
+  console.log(ascentsResponse.pagination);
+
   return (
     <div className="px-5 mx-auto md:container">
       <div className="flex flex-col gap-5">
@@ -34,10 +34,10 @@ export default async function Ascents({
           )}
         </div>
         <Search />
-        <Suspense fallback={<AscentSkeleton />}>
-          <AscentsTable ascents={ascents} />
-          <Pagination totalPages={totalPages} currentPage={currentPage} />
-        </Suspense>
+        {/* <Suspense fallback={<AscentSkeleton />}> */}
+        <AscentsTable ascents={ascents} />
+        <Pagination totalPages={totalPages} currentPage={currentPage} />
+        {/* </Suspense> */}
       </div>
     </div>
   );

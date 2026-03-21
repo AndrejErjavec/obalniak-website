@@ -34,6 +34,7 @@ export async function checkAuth() {
     return {
       isAuthenticated: true,
       user: user,
+      sessionToken: sessionToken,
     };
   } catch (error) {
     console.error("Authentication Error: ", error.message);
@@ -93,8 +94,8 @@ export async function createSession(previousState: any, formData: FormData) {
       httpOnly: true,
       secure: true,
       sameSite: "strict",
-      // maxAge: 60 * 60, // 1 hour in seconds
       path: "/",
+      // maxAge: 60 * 60, // 1 hour in seconds
     });
 
     return {

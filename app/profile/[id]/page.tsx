@@ -16,6 +16,7 @@ export default async function Profile({
 }) {
   const PAGE_SIZE = 10;
 
+  // TODO page to state, handle error or remove error from response
   const { id } = await params;
   const srchParams = await searchParams;
   const currentPage = Number(srchParams.currentPage) || 1;
@@ -25,6 +26,10 @@ export default async function Profile({
     getUserAscents(id, currentPage, PAGE_SIZE),
   ]);
   const totalPages = pagination?.totalPages || 1;
+
+  if (!user) {
+    return <div>uporabnik ni najden</div>;
+  }
 
   return (
     <div className="px-5 mx-auto md:container mt-8">
@@ -54,8 +59,8 @@ export default async function Profile({
       <section>
         <div className="flex flex-row gap-3 items-center py-5">
           <h3 className="text-xl font-semibold">Vzponi</h3>
-          <div className="flex w-7 h-7 rounded-full bg-slate-500 text-white justify-center items-center">
-            <p className="text-sm font-medium">{PAGE_SIZE * totalPages}</p>
+          <div className="flex w-8 h-8 rounded-full bg-slate-500 text-white justify-center items-center">
+            <p className="text-sm font-medium">{pagination?.totalItems}</p>
           </div>
         </div>
         <AscentsTable ascents={ascents} />

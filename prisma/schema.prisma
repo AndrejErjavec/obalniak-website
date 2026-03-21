@@ -19,40 +19,41 @@ model User {
   isAdmin             Boolean                  @default(false)
   createdAt           DateTime                 @default(now())
   authoredAscents     Ascent[]                 @relation("authoredAscents")
-  participatedAscents UserParticipatedAscent[] @relation("participatedAscents")
+  // participatedAscents UserParticipatedAscent[] @relation("participatedAscents")
+  participatedAscents Ascent[]
   comments            Comment[]
   Events              Event[]
 }
 
 model Ascent {
-  id                       String                   @id @default(cuid())
+  id                       String            @id @default(cuid())
   title                    String
   route                    String
   date                     String
   text                     String
   difficulty               String
-  createdAt                DateTime                 @default(now())
-  author                   User                     @relation("authoredAscents", fields: [authorId], references: [id])
+  createdAt                DateTime           @default(now())
+  author                   User               @relation("authoredAscents", fields: [authorId], references: [id])
   authorId                 String
   photos                   Photo[]
   comments                 Comment[]
-  registeredParticipants   UserParticipatedAscent[]
+  registeredParticipants   User[]
   unregisteredParticipants String[]
 
   @@index([authorId])
 }
 
-model UserParticipatedAscent {
-  id       String @id @default(cuid())
-  user     User   @relation("participatedAscents", fields: [userId], references: [id])
-  userId   String
-  Ascent   Ascent @relation(fields: [ascentId], references: [id])
-  ascentId String
+// model UserParticipatedAscent {
+//   id       String @id @default(cuid())
+//   user     User   @relation("participatedAscents", fields: [userId], references: [id])
+//   userId   String
+//   Ascent   Ascent @relation(fields: [ascentId], references: [id])
+//   ascentId String
 
-  @@unique([userId, ascentId])
-  @@index([userId])
-  @@index([ascentId])
-}
+//   @@unique([userId, ascentId])
+//   @@index([userId])
+//   @@index([ascentId])
+// }
 
 model Comment {
   id        String   @id @default(cuid())

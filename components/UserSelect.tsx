@@ -1,22 +1,37 @@
-import { useEffect, useState } from "react";
+import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
 import CreatableAsyncSelect from "react-select/async-creatable";
 import { getUsersByName } from "@/lib/actions/user";
+import type { User } from "@/app/generated/prisma";
 import Label from "./ui/Label";
 
-export default function UserSelect({ users, setUsers }) {
-  const [options, setOptions] = useState([]);
+type CoClimber = User | string;
+type SelectOption = {
+  label: string;
+  value: CoClimber;
+};
 
-  const handleCreate = (inputValue) => {
+type UserSelectProps = {
+  setUsers: Dispatch<SetStateAction<CoClimber[]>>;
+};
+
+export default function UserSelect({ setUsers }: UserSelectProps) {
+  const [options, setOptions] = useState<SelectOption[]>([]);
+
+  const handleCreate = (inputValue: string) => {
     const newOption = { label: inputValue, value: inputValue };
     setOptions((prevOptions) => [...prevOptions, newOption]);
   };
 
-  const handleChange = (selectedOptions) => {
-    setOptions(selectedOptions);
+  const handleChange = (selectedOptions: readonly SelectOption[] | null) => {
+    setOptions(selectedOptions ? [...selectedOptions] : []);
   };
 
-  const fetchClimbers = async (query) => {
+  const fetchClimbers = async (query: string): Promise<SelectOption[]> => {
     const climbers = await getUsersByName(query);
+    if ("error" in climbers) {
+      return [];
+    }
+
     return climbers.map((climber) => ({
       value: climber,
       label: `${climber.firstName} ${climber.lastName}`,
@@ -25,7 +40,7 @@ export default function UserSelect({ users, setUsers }) {
 
   useEffect(() => {
     setUsers(options.map((user) => user.value));
-  }, [options]);
+  }, [options, setUsers]);
 
   return (
     <div>

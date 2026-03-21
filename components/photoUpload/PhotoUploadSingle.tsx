@@ -1,14 +1,20 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
+import type { ChangeEvent, Dispatch, DragEvent, SetStateAction } from "react";
 import Image from "next/image";
 import { FaTrashAlt } from "react-icons/fa";
 
-export default function PhotoUploadSingle({ photo, setPhoto }) {
-  const [preview, setPreview] = useState(null);
+type PhotoUploadSingleProps = {
+  photo: File | null;
+  setPhoto: Dispatch<SetStateAction<File | null>>;
+};
+
+export default function PhotoUploadSingle({ photo, setPhoto }: PhotoUploadSingleProps) {
+  const [preview, setPreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const fileInputRef = useRef(null);
-  const previewRef = useRef(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const previewRef = useRef<string | null>(null);
 
   useEffect(() => {
     previewRef.current = preview;
@@ -16,11 +22,13 @@ export default function PhotoUploadSingle({ photo, setPhoto }) {
 
   useEffect(() => {
     return () => {
-      URL.revokeObjectURL(previewRef.current);
+      if (previewRef.current) {
+        URL.revokeObjectURL(previewRef.current);
+      }
     };
   }, []);
 
-  const handleDragOver = (event) => {
+  const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     setIsDragging(true);
   };
@@ -29,30 +37,39 @@ export default function PhotoUploadSingle({ photo, setPhoto }) {
     setIsDragging(false);
   };
 
-  const handleDrop = (event) => {
+  const handleDrop = (event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     setIsDragging(false);
 
-    const file = event.target.files[0];
-    if (file.type.startsWith("image/")) {
-      setPhoto(file);
-      const previewUrl = URL.createObjectURL(file);
-      setPreview(previewUrl);
+    const file = event.dataTransfer.files[0];
+    if (!file || !file.type.startsWith("image/")) {
+      return;
+    }
 
-      // Allow selecting the same file again after deleting it.
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+    setPhoto(file);
+    const previewUrl = URL.createObjectURL(file);
+    setPreview(previewUrl);
+
+    // Allow selecting the same file again after deleting it.
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file.type.startsWith("image/")) {
-      setPhoto(file);
-      const previewUrl = URL.createObjectURL(file);
-      setPreview(previewUrl);
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !file.type.startsWith("image/")) {
+      return;
     }
+
+    setPhoto(file);
+    const previewUrl = URL.createObjectURL(file);
+    setPreview(previewUrl);
+  };
+
+  const handleRemoveImage = () => {
+    setPhoto(null);
+    setPreview(null);
   };
 
   return (
@@ -94,8 +111,8 @@ export default function PhotoUploadSingle({ photo, setPhoto }) {
               <div key={preview} className="relative">
                 <button
                   type="button"
-                  onClick={() => handleRemoveImage(index)}
-                  className="absolute top-2 right-2 z-10 rounded-full bg-white/90 p-1.5 shadow-sm hover:bg-white"
+                  onClick={handleRemoveImage}
+                  className="absolute top-2 right-2 z-10 rounded-full bg-white/90 p-1.5 shadow-sm hover:bg-white cursor-pointer"
                   aria-label="Odstrani sliko"
                 >
                   <FaTrashAlt className="fill-red-500" />
