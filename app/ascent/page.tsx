@@ -2,7 +2,7 @@ import { getAscents } from "@/lib/actions/ascent";
 import Link from "next/link";
 import Search from "@/components/Search";
 import { checkAuth } from "@/lib/actions/auth";
-import Pagination from "@/components/ui/pagination";
+import Pagination from "@/components/ui/Pagination";
 import AscentsTable from "@/components/ascent/AscentsTable";
 
 export default async function Ascents({
