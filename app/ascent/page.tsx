@@ -17,10 +17,12 @@ export default async function Ascents({
   const currentPage = Number(params.currentPage) || 1;
 
   const ascentsResponse = await getAscents(currentPage, 10, query);
-  const ascents = ascentsResponse.data;
-  const totalPages = ascentsResponse.pagination?.totalPages || 1;
 
-  console.log(ascentsResponse.pagination);
+  if (!ascentsResponse.success) {
+    return <div>{ascentsResponse.error}</div>;
+  }
+  const ascents = ascentsResponse.data.data;
+  const totalPages = ascentsResponse.data.pagination.totalPages || 1;
 
   return (
     <div className="px-5 mx-auto md:container">

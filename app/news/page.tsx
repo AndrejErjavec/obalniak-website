@@ -12,6 +12,8 @@ export default async function NewsPage({
 
   const { data, pagination, error } = await getEvents(currentPage, 10, "Običajna novica");
 
+  console.log(pagination);
+
   if (error) {
     return <div>{error}</div>;
   }

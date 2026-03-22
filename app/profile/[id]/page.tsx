@@ -21,15 +21,18 @@ export default async function Profile({
   const srchParams = await searchParams;
   const currentPage = Number(srchParams.currentPage) || 1;
 
-  const [user, { data: ascents, pagination }] = await Promise.all([
-    getUser(id),
-    getUserAscents(id, currentPage, PAGE_SIZE),
-  ]);
-  const totalPages = pagination?.totalPages || 1;
+  const [userResponse, ascentsResponse] = await Promise.all([getUser(id), getUserAscents(id, currentPage, PAGE_SIZE)]);
 
-  if (!user) {
-    return <div>uporabnik ni najden</div>;
+  if (!ascentsResponse.success || !userResponse.success) {
+    return <div>Napaka pri nalaganju podatkov</div>;
   }
+
+  const user = userResponse.data!;
+  const ascentsData = ascentsResponse.data;
+  const ascents = ascentsData?.data;
+
+  const totalPages = ascentsData?.pagination.totalPages || 1;
+  const totalItems = ascentsData?.pagination.totalItems;
 
   return (
     <div className="px-5 mx-auto md:container mt-8">
@@ -60,7 +63,7 @@ export default async function Profile({
         <div className="flex flex-row gap-3 items-center py-5">
           <h3 className="text-xl font-semibold">Vzponi</h3>
           <div className="flex w-8 h-8 rounded-full bg-slate-500 text-white justify-center items-center">
-            <p className="text-sm font-medium">{pagination?.totalItems}</p>
+            <p className="text-sm font-medium">{totalItems}</p>
           </div>
         </div>
         <AscentsTable ascents={ascents} />

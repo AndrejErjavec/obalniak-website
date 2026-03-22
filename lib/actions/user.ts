@@ -2,11 +2,14 @@
 
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { type Result } from "@/types";
+import { type ActionResult } from "@/types";
 import { User } from "@/app/generated/prisma";
-import { revalidatePath } from "next/cache";
+import { err, ok } from "../action.utils";
 
-export async function createUser(previousState: any, formData: FormData) {
+export async function createUser(
+  prevState: ActionResult<User> | null,
+  formData: FormData,
+): Promise<ActionResult<User>> {
   const firstName = String(formData.get("firstName"));
   const lastName = String(formData.get("lastName"));
   const email = String(formData.get("email"));
@@ -16,18 +19,21 @@ export async function createUser(previousState: any, formData: FormData) {
   // Validate required fields
   if (!email || !firstName || !lastName || !password) {
     return {
+      success: false,
       error: "Please fill in all fields",
     };
   }
 
   if (password.length < 8) {
     return {
+      success: false,
       error: "Password must be at least 8 characters long",
     };
   }
 
   if (password !== confirmPassword) {
     return {
+      success: false,
       error: "Passwords do not match",
     };
   }
@@ -41,6 +47,7 @@ export async function createUser(previousState: any, formData: FormData) {
     });
     if (existingUser) {
       return {
+        success: false,
         error: "Email is already registered",
       };
     }
@@ -51,7 +58,7 @@ export async function createUser(previousState: any, formData: FormData) {
     // const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create user document
-    const result = await prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         firstName,
         lastName,
@@ -62,11 +69,12 @@ export async function createUser(previousState: any, formData: FormData) {
 
     return {
       success: true,
-      //userId: result.insertedId,
+      data: user,
     };
   } catch (error) {
     console.log("Registration Error: ", error);
     return {
+      success: false,
       error: "Could not register user",
     };
   }
@@ -80,11 +88,9 @@ type BulkUpdateMembersData = {
   }>;
 };
 
-export async function updateMember(id: string, experienceLevel: string | null): Promise<Result<string, User>> {
+export async function updateMember(id: string, experienceLevel: string | null): Promise<ActionResult<User>> {
   if (!experienceLevel) {
-    return {
-      error: "Izberite izkušenost",
-    };
+    return err("Izberite izkušenost");
   }
 
   try {
@@ -98,20 +104,14 @@ export async function updateMember(id: string, experienceLevel: string | null): 
       },
     });
 
-    return {
-      data: updatedMember,
-    };
+    return ok(updatedMember);
   } catch (error) {
     console.error("Error in accept member", error);
-    return {
-      error: "Error in accept member",
-    };
+    return err("Error in accept member");
   }
 }
 
-export async function updateMembersBulk(
-  updates: { id: string; experienceLevel: string | null }[],
-): Promise<Result<string, BulkUpdateMembersData>> {
+export async function updateMembersBulk(updates: { id: string; experienceLevel: string | null }[]) {
   try {
     const results = await Promise.all(
       updates.map(async ({ id, experienceLevel }) => {
@@ -124,7 +124,7 @@ export async function updateMembersBulk(
     const failed: BulkUpdateMembersData["failed"] = [];
 
     for (const { id, result } of results) {
-      if ("error" in result) {
+      if (!result.success) {
         failed.push({
           id,
           error: result.error!,
@@ -148,10 +148,12 @@ export async function updateMembersBulk(
   }
 }
 
-export async function getUsers() {
+export async function getUsers(): Promise<ActionResult<User[]>> {
   try {
     const users = await prisma.user.findMany();
-    return users;
+    return {
+      data: users,
+    };
   } catch (error) {
     console.log(error);
     return {
@@ -160,23 +162,25 @@ export async function getUsers() {
   }
 }
 
-export async function getUser(id: string) {
+export async function getUser(id: string): Promise<ActionResult<User>> {
   try {
     const user = await prisma.user.findUnique({
       where: {
         id: id,
       },
     });
-    return user;
+
+    if (!user) {
+      return err("Uporabnik ni najden");
+    }
+    return ok(user);
   } catch (error) {
     console.log("Error in getting user", error);
-    return {
-      error: "Error in getUser",
-    };
+    return err("Error in getUser");
   }
 }
 
-export async function getAllUsers() {
+export async function getAllUsers(): Promise<ActionResult<User[]>> {
   try {
     const users = await prisma.user.findMany({
       // where: {
@@ -187,17 +191,16 @@ export async function getAllUsers() {
       },
     });
 
-    return users;
+    return {
+      data: users,
+    };
   } catch (error) {
     console.error("Error fetching pending members:", error);
     return { error: "Could not retrieve pending members" };
   }
 }
 
-export async function getUsersByName(nameQuery: string) {
-  // if (nameQuery === "") {
-  //   return []
-  // }
+export async function getUsersByName(nameQuery: string): Promise<ActionResult<User[]>> {
   try {
     const users = await prisma.user.findMany({
       where: {
@@ -211,7 +214,7 @@ export async function getUsersByName(nameQuery: string) {
       },
     });
 
-    return users;
+    return { data: users };
   } catch (error) {
     console.error("Error fetching pending members:", error);
     return { error: "Could not retrieve pending members" };

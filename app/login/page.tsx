@@ -10,23 +10,20 @@ import Label from "@/components/ui/Label";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 
-const initialState = {
-  success: false,
-  error: false,
-  user: null,
-};
-
 const LoginPage = () => {
-  const { isAuthenticated, setIsAuthenticated, currentUser, setCurrentUser } = useAuth();
+  const { setIsAuthenticated, setCurrentUser } = useAuth();
 
-  const [state, formAction, loading] = useActionState(createSession, initialState);
+  const [state, formAction, loading] = useActionState(createSession, null);
   const router = useRouter();
   useEffect(() => {
-    if (state.error) toast.error(state.error);
+    if (!state) return;
+
+    if (!state.success) toast.error(state.error);
+
     if (state.success) {
       toast.success("Prijava uspešna");
       setIsAuthenticated(true);
-      setCurrentUser(state.user);
+      setCurrentUser(state.data);
       router.push("/");
     }
   }, [state]);

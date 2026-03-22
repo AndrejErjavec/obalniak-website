@@ -3,16 +3,14 @@
 import prisma from "@/lib/prisma";
 import { uploadImages } from "@/lib/actions/image";
 import { checkAuth } from "@/lib/actions/auth";
-import { NewsType } from "@/types";
+import { ActionResult, NewsType } from "@/types";
+import { err, ok } from "../action.utils";
 
-export async function createEvent(prevState: any, formData: FormData) {
+export async function createEvent(formData: FormData): Promise<ActionResult<never>> {
   const { user } = await checkAuth();
 
   if (!user) {
-    return {
-      success: false,
-      error: "Niste prijavljeni",
-    };
+    return err("Niste prijavljeni");
   }
 
   const title = String(formData.get("title"));
@@ -23,10 +21,7 @@ export async function createEvent(prevState: any, formData: FormData) {
   const type = String(formData.get("type"));
 
   if (!title || !text) {
-    return {
-      success: false,
-      error: "Manjkajoči podatki",
-    };
+    return err("Manjkajoči podatki");
   }
 
   try {
@@ -38,7 +33,7 @@ export async function createEvent(prevState: any, formData: FormData) {
           const secureUrls = await uploadImages([photo]);
           uploadedPhoto = await prisma.photo.create({
             data: {
-              url: secureUrls[0],
+              url: secureUrls[0] as string,
             },
           });
         }
@@ -59,16 +54,10 @@ export async function createEvent(prevState: any, formData: FormData) {
       { timeout: 30000 },
     );
 
-    return {
-      success: true,
-      error: null,
-    };
+    return ok();
   } catch (error) {
     console.log(error);
-    return {
-      success: false,
-      error: "Prišlo je do napake",
-    };
+    return err("Prišlo je do napake");
   }
 }
 
@@ -88,7 +77,11 @@ export async function getEvents(currentPage: number, pageSize: number, type?: Ne
       },
     });
 
-    const totalEvents = await prisma.event.count();
+    const totalEvents = await prisma.event.count({
+      where: {
+        ...(type && { type: type }),
+      },
+    });
     const totalPages = Math.ceil(totalEvents / pageSize);
 
     const pinnedEvents = events.filter((event) => event.isPinned);

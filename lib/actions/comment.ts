@@ -3,14 +3,29 @@
 import prisma from "@/lib/prisma";
 import { checkAuth } from "./auth";
 import { revalidatePath } from "next/cache";
+import { ActionResult } from "@/types";
+import { err, ok } from "../action.utils";
+import { Comment } from "@/app/generated/prisma";
 
-export async function addComment({ text, ascentId }: { text: string; ascentId: string }) {
+type CommentWithAuthor = Comment & {
+  author: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+};
+
+export async function addComment({
+  text,
+  ascentId,
+}: {
+  text: string;
+  ascentId: string;
+}): Promise<ActionResult<CommentWithAuthor>> {
   const { user } = await checkAuth();
 
   if (!user) {
-    return {
-      error: "Niste prijavljeni",
-    };
+    return err("Niste prijavljeni");
   }
 
   try {
@@ -31,19 +46,14 @@ export async function addComment({ text, ascentId }: { text: string; ascentId: s
       },
     });
     revalidatePath(`/ascent/${ascentId}`);
-    return {
-      success: true,
-      data: comment,
-    };
+    return ok(comment);
   } catch (error) {
     console.log(error);
-    return {
-      error: "Prišlo je do napake",
-    };
+    return err("Prišlo je do napake");
   }
 }
 
-export async function getComments(ascentId: string) {
+export async function getComments(ascentId: string): Promise<ActionResult<CommentWithAuthor[]>> {
   try {
     const comments = await prisma.comment.findMany({
       where: {
@@ -62,9 +72,9 @@ export async function getComments(ascentId: string) {
         },
       },
     });
-    return { data: comments };
+    return ok(comments);
   } catch (error) {
     console.log(error);
-    return { error: "Napaka pri nalaganju komentarjev" };
+    return err("Napaka pri nalaganju komentarjev");
   }
 }

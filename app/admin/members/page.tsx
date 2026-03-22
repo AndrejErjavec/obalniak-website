@@ -18,17 +18,14 @@ export default function AdminPage() {
 
   useEffect(() => {
     const fetchMembers = async () => {
-      try {
-        const result = await getAllUsers();
-        if (Array.isArray(result)) {
-          setMembers(result);
-        } else {
-          toast.error(result.error);
-        }
-      } catch (err) {
-        toast.error("Failed to fetch pending members.");
-        console.error(err);
+      const result = await getAllUsers();
+
+      if ("error" in result) {
+        toast.error(result.error);
+        return;
       }
+
+      setMembers(result.data);
     };
 
     fetchMembers();

@@ -4,6 +4,9 @@ import prisma from "@/lib/prisma";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
+import { ActionResult } from "@/types";
+import { User } from "@/app/generated/prisma";
+import { err, ok } from "../action.utils";
 
 export async function checkAuth() {
   // Retrieve JWT from cookies
@@ -44,16 +47,15 @@ export async function checkAuth() {
   }
 }
 
-export async function createSession(previousState: any, formData: FormData) {
-  const email = formData.get("email");
-  const password = formData.get("password");
+export async function createSession(
+  prevState: ActionResult<User> | null,
+  formData: FormData,
+): Promise<ActionResult<User>> {
+  const email = String(formData.get("email"));
+  const password = String(formData.get("password"));
 
   if (!email || !password) {
-    return {
-      success: false,
-      error: "Manjkajoči podatki",
-      user: null,
-    };
+    return err("Manjkajoči podatki");
   }
 
   try {
@@ -64,22 +66,14 @@ export async function createSession(previousState: any, formData: FormData) {
       },
     });
     if (!user) {
-      return {
-        success: false,
-        error: "Uporabnik ne obstaja",
-        user: null,
-      };
+      return err("Uporabnik ne obstaja");
     }
 
     // Verify password
     // const passwordMatch = await bcrypt.compare(password, user.password);
     const passwordMatch = bcrypt.compareSync(password, user.password);
     if (!passwordMatch) {
-      return {
-        success: false,
-        error: "Napačno geslo",
-        user: null,
-      };
+      return err("Napačno geslo");
     }
 
     // Generate JWT
@@ -98,18 +92,10 @@ export async function createSession(previousState: any, formData: FormData) {
       // maxAge: 60 * 60, // 1 hour in seconds
     });
 
-    return {
-      success: true,
-      error: null,
-      user: user,
-    };
+    return ok(user);
   } catch (error) {
     console.log("Authentication Error: ", error);
-    return {
-      success: false,
-      error: "Napaka pri prijavi",
-      user: null,
-    };
+    return err("Napaka pri prijavi");
   }
 }
 

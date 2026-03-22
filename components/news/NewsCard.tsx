@@ -5,8 +5,12 @@ import { MdCalendarMonth } from "react-icons/md";
 import Link from "next/link";
 import { BsPinAngleFill } from "react-icons/bs";
 import Badge from "../Badge";
+import cn from "clsx";
 
 export default function NewsCard({ event }) {
+  const showSchoolBadge = event.type === "Alpinistična šola";
+  const needsBadgeSpacing = showSchoolBadge && !event.coverPhoto;
+
   return (
     <div
       key={event.id}
@@ -17,9 +21,11 @@ export default function NewsCard({ event }) {
           <BsPinAngleFill size={16} className="-rotate-90" />
         </div>
       )}
-      {event.type === "Alpinistična šola" && (
-        <div className="absolute top-3 right-2 flex items-center justify-center py-1 px-2 rounded-md z-50 bg-blue-600 text-white text-sm font-medium">
-          Alpinistična šola
+      {showSchoolBadge && (
+        <div className="absolute top-3 right-2">
+          <span className="flex items-center justify-center py-1 px-2 rounded-md z-50 bg-blue-600 text-white text-sm font-medium">
+            Alpinistična šola
+          </span>
         </div>
       )}
       <Link href={`/news/${event.id}`} className="block">
@@ -32,7 +38,7 @@ export default function NewsCard({ event }) {
             className="w-full h-48 object-cover object-center rounded-t-lg"
           />
         )}
-        <div className="flex flex-col gap-4 p-5">
+        <div className={cn("flex flex-col gap-4 p-5", needsBadgeSpacing && "pt-14")}>
           {/* Head */}
           <div className="flex flex-col gap-2">
             <h3 className="text-xl font-medium text-gray-800">{event.title}</h3>

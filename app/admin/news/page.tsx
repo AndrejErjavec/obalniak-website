@@ -1,7 +1,7 @@
 "use client";
 
 import PhotoUploadSingle from "@/components/photoUpload/PhotoUploadSingle";
-import { useActionState, useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { createEvent } from "@/lib/actions/news";
 import Label from "@/components/ui/Label";
@@ -36,42 +36,48 @@ function PostTypeOption({
   );
 }
 
-const initialState = {
-  success: false,
-  error: null as string | null,
-};
-
 export default function CreateNewsPage() {
+  const formRef = useRef<HTMLFormElement>(null);
+
   const [photo, setPhoto] = useState<File | null>(null);
   const [isPinned, setIsPinned] = useState(false);
   const [type, setType] = useState<NewsType>("Običajna novica");
-
-  const [state, formAction, isPending] = useActionState(createEvent, initialState);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handlePinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setIsPinned(e.target.checked);
   };
 
-  const handleSubmit = async (formData: FormData) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    setIsSubmitting(true);
+
+    const formElement = event.currentTarget;
+    const formData = new FormData(formElement);
+
     if (photo) {
       formData.append("photo", photo);
     }
     formData.append("isPinned", isPinned.toString());
     formData.append("type", type);
 
-    await formAction(formData);
+    const result = await createEvent(formData);
+
+    if (!result.success) {
+      toast.error(result.error);
+      setIsSubmitting(false);
+      return;
+    }
+
+    formRef.current?.reset();
+    setPhoto(null);
+    setIsSubmitting(false);
+    toast.success("Novica ustvarjena");
   };
 
-  useEffect(() => {
-    if (state.success) {
-      toast.success("objava ustvarjena");
-    } else if (state.error) {
-      toast.error(state.error);
-    }
-  }, [state]);
-
   return (
-    <form action={handleSubmit}>
+    <form ref={formRef} onSubmit={handleSubmit}>
       <h1 className="text-xl lg:text-2xl font-semibold">Objava novic</h1>
 
       <div className="flex flex-col gap-5 lg:flex-row lg:justify-between lg:items-center py-5">
@@ -108,7 +114,7 @@ export default function CreateNewsPage() {
               <Label htmlFor="pined">Pripni na vrh</Label>
             </div>
           </div>
-          <Button type={"submit"} disabled={isPending} loading={isPending}>
+          <Button type={"submit"} disabled={isSubmitting} loading={isSubmitting}>
             Objavi
           </Button>
         </div>
@@ -156,7 +162,7 @@ export default function CreateNewsPage() {
             <Label htmlFor="pined">Pripni na vrh</Label>
           </div>
         </div>
-        <Button type="submit" className="block w-full" disabled={isPending} loading={isPending}>
+        <Button type="submit" className="block w-full" disabled={isSubmitting} loading={isSubmitting}>
           Objavi
         </Button>
       </div>

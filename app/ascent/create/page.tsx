@@ -10,8 +10,9 @@ import Label from "@/components/ui/Label";
 import Input from "@/components/ui/Input";
 import TextArea from "@/components/ui/TextArea";
 import Button from "@/components/ui/Button";
-import { Result } from "@/types";
 import { useRouter } from "next/navigation";
+import { ActionResult } from "@/types";
+import { err, ok } from "@/lib/action.utils";
 
 type CoClimber = User | string;
 
@@ -25,9 +26,9 @@ export default function CreateAscentPage() {
 
   const router = useRouter();
 
-  const uploadPhotos = async (files: File[]): Promise<Result<string, string[]>> => {
+  const uploadPhotos = async (files: File[]): Promise<ActionResult<string[]>> => {
     if (files.length === 0) {
-      return { data: [] };
+      return ok([]);
     }
 
     const formData = new FormData();
@@ -44,18 +45,12 @@ export default function CreateAscentPage() {
       const result = await response.json();
 
       if (!response.ok) {
-        return {
-          error: result.error,
-        };
+        return err(result.error);
       }
 
-      return {
-        data: result.data.map((d) => d.url),
-      };
+      return ok(result.data.map((d: { url: string; publicId: string }) => d.url));
     } catch {
-      return {
-        error: "Photo upload failed",
-      };
+      return err("Photo upload failed");
     }
   };
 
@@ -68,44 +63,38 @@ export default function CreateAscentPage() {
 
     setIsSubmitting(true);
 
-    try {
-      const formElement = event.currentTarget;
-      const formData = new FormData(formElement);
+    const formElement = event.currentTarget;
+    const formData = new FormData(formElement);
 
-      const photoFiles = photos.map((photo) => photo.file);
-      const uploadedPhotosResult = await uploadPhotos(photoFiles);
+    const photoFiles = photos.map((photo) => photo.file);
+    const uploadedPhotosResult = await uploadPhotos(photoFiles);
 
-      if ("error" in uploadedPhotosResult) {
-        toast.error(uploadedPhotosResult.error);
-        return;
-      }
-
-      for (const photoUrl of uploadedPhotosResult.data) {
-        formData.append("photoUrls", photoUrl);
-      }
-
-      formData.append("coClimbers", JSON.stringify(coClimbers));
-
-      const result = await createAscent(formData);
-
-      if ("error" in result) {
-        toast.error(result.error);
-        return;
-      }
-
-      formRef.current?.reset();
-      setCoClimbers([]);
-      setPhotos([]);
-      setUserSelectKey((currentKey) => currentKey + 1);
-
-      toast.success("Objava ustvarjena");
-      router.push(`/ascent/${result.data.id}`);
-    } catch (e) {
-      console.log(e);
-      toast.error("Something went wrong");
-    } finally {
-      setIsSubmitting(false);
+    if ("error" in uploadedPhotosResult) {
+      toast.error(uploadedPhotosResult.error);
+      return;
     }
+
+    for (const photoUrl of uploadedPhotosResult.data) {
+      formData.append("photoUrls", photoUrl);
+    }
+
+    formData.append("coClimbers", JSON.stringify(coClimbers));
+
+    const result = await createAscent(formData);
+
+    if (!result.success) {
+      toast.error(result.error);
+      return;
+    }
+
+    formRef.current?.reset();
+    setCoClimbers([]);
+    setPhotos([]);
+    setUserSelectKey((currentKey) => currentKey + 1);
+
+    setIsSubmitting(false);
+    toast.success("Objava ustvarjena");
+    router.push(`/ascent/${result.data?.id}`);
   };
 
   return (

@@ -7,10 +7,13 @@ import Divider from "@/components/ui/Divider";
 import NewsGrid from "@/components/news/NewsGrid";
 
 export default async function Home() {
-  const ascentsResponse = await getAscents(1, 5);
   const eventsResponse = await getEvents(1, 6);
+  const ascentsResponse = await getAscents(1, 5);
+  if (!ascentsResponse.success) {
+    return <div>{ascentsResponse.error}</div>;
+  }
   const events = eventsResponse.data;
-  const ascents = ascentsResponse.data;
+  const ascents = ascentsResponse.data?.data;
 
   return (
     <>

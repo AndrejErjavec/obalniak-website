@@ -12,9 +12,12 @@ export default async function Ascent({ params }: { params: Promise<{ id: string 
   const { id } = await params;
 
   const response = await getAscent(id);
+  if (!response.success) {
+    return <div>{response.error}</div>;
+  }
   const ascent = response.data;
 
-  const participants = ascent ? ascent?.registeredParticipants.length + ascent?.unregisteredParticipants.length : 0;
+  const participants = ascent.registeredParticipants.length + ascent.unregisteredParticipants.length;
 
   return (
     <>

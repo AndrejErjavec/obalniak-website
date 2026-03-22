@@ -3,7 +3,13 @@ import ProfileBanner from "@/components/profile/ProfileBanner";
 import ExperienceLevelTicket from "@/components/ExperienceLevelTicket";
 
 export default async function Members() {
-  const members = await getUsers();
+  const result = await getUsers();
+
+  if ("error" in result) {
+    return <div>result.error</div>;
+  }
+
+  const members = result.data;
 
   return (
     <div className="px-5 mx-auto md:container">

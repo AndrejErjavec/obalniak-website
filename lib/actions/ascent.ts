@@ -2,12 +2,19 @@
 
 import prisma from "@/lib/prisma";
 import { checkAuth } from "./auth";
-import type { Ascent, User } from "@/app/generated/prisma";
-import { Result } from "@/types";
+import type { Ascent, Photo, User } from "@/app/generated/prisma";
+import { ActionResult, PaginatedData } from "@/types";
+import { err, ok } from "../action.utils";
 
 type CoClimber = User | string;
 
-export async function createAscent(formData: FormData): Promise<Result<string, Ascent>> {
+type AscentWithData = Ascent & {
+  author: User;
+  registeredParticipants: User[];
+  photos: Photo[];
+};
+
+export async function createAscent(formData: FormData): Promise<ActionResult<Ascent>> {
   const title = String(formData.get("title"));
   const route = String(formData.get("route"));
   const difficulty = String(formData.get("difficulty"));
@@ -17,15 +24,13 @@ export async function createAscent(formData: FormData): Promise<Result<string, A
   const photoUrls = formData.getAll("photoUrls") as string[];
 
   if (!title || !route || !difficulty || !date || !text) {
-    return { error: "Manjkajoči podatki" };
+    return err("Manjkajoči podatki");
   }
 
   const { user } = await checkAuth();
 
   if (!user) {
-    return {
-      error: "Niste prijavljeni",
-    };
+    return err("Niste prijavljeni");
   }
 
   try {
@@ -34,9 +39,7 @@ export async function createAscent(formData: FormData): Promise<Result<string, A
     try {
       coClimbers = JSON.parse(coClimbersString) as CoClimber[];
     } catch {
-      return {
-        error: "Neveljavni podatki o soplezalcih",
-      };
+      return err("Neveljavni podatki o soplezalcih");
     }
 
     const registeredParticipantIds = [
@@ -87,18 +90,18 @@ export async function createAscent(formData: FormData): Promise<Result<string, A
       return ascent;
     }); // end of transaction
 
-    return {
-      data: ascent,
-    };
+    return ok(ascent);
   } catch (error) {
     console.log(error);
-    return {
-      error: "Prišlo je do napake",
-    };
+    return err("Prišlo je do napake");
   }
 }
 
-export async function getAscents(currentPage: number, pageSize: number, query?: string) {
+export async function getAscents(
+  currentPage: number,
+  pageSize: number,
+  query?: string,
+): Promise<ActionResult<PaginatedData<Ascent[]>>> {
   try {
     const ascents = await prisma.ascent.findMany({
       include: {
@@ -124,25 +127,20 @@ export async function getAscents(currentPage: number, pageSize: number, query?: 
     const totalAscents = await prisma.ascent.count();
     const totalPages = Math.ceil(totalAscents / pageSize);
 
-    return {
+    return ok({
       data: ascents,
       pagination: {
         currentPage,
         totalPages,
       },
-      error: null,
-    };
+    });
   } catch (error) {
     console.error(error);
-    return {
-      data: null,
-      pagination: null,
-      error: "Napaka pri nalaganju",
-    };
+    return err("Napaka pri nalaganju");
   }
 }
 
-export async function getAscent(id: string) {
+export async function getAscent(id: string): Promise<ActionResult<AscentWithData>> {
   try {
     const ascent = await prisma.ascent.findUnique({
       where: {
@@ -156,26 +154,21 @@ export async function getAscent(id: string) {
     });
 
     if (!ascent) {
-      return {
-        data: null,
-        error: "Ascent not found",
-      };
+      return err("Ascent not found");
     }
 
-    return {
-      data: ascent,
-      error: null,
-    };
+    return ok(ascent);
   } catch (error) {
     console.error(error);
-    return {
-      error: "Napaka pri nalaganju",
-      data: null,
-    };
+    return err("Napaka pri nalaganju");
   }
 }
 
-export async function getUserAscents(userId: string, currentPage: number, pageSize: number) {
+export async function getUserAscents(
+  userId: string,
+  currentPage: number,
+  pageSize: number,
+): Promise<ActionResult<PaginatedData<Ascent[]>>> {
   const where = {
     OR: [
       {
@@ -211,20 +204,16 @@ export async function getUserAscents(userId: string, currentPage: number, pageSi
 
     const totalPages = Math.ceil(totalAscents / pageSize);
 
-    return {
+    return ok({
       data: ascents,
       pagination: {
         currentPage,
         totalPages,
         totalItems: totalAscents,
       },
-      error: null,
-    };
+    });
   } catch (error) {
     console.log(error);
-    return {
-      error: "Napaka pri nalaganju",
-      data: null,
-    };
+    return err("Napaka pri nalaganju");
   }
 }

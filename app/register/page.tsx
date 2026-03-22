@@ -10,20 +10,18 @@ import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 
 const RegisterPage = () => {
-  const initialState = {
-    success: false,
-    error: false,
-  };
-
-  const [state, formAction, loading] = useActionState(createUser, initialState);
+  const [state, formAction, loading] = useActionState(createUser, null);
 
   const router = useRouter();
 
   useEffect(() => {
-    if (state.error) toast.error(state.error);
-    if (state.success) {
-      toast.success("Uporabniški račun je bil ustvarjen");
-      router.push("/login");
+    if (!state) return;
+
+    if (!state.success) {
+      toast.error(state.error);
+    } else {
+      toast.success("Prijava uspešna");
+      router.replace("/");
     }
   }, [state]);
 
