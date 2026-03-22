@@ -1,5 +1,5 @@
 import NewsGrid from "@/components/news/NewsGrid";
-import Pagination from "@/components/ui/Pagination";
+import Pagination from "@/components/ui/pagination";
 import { getEvents } from "@/lib/actions/news";
 
 export default async function AlpineSchoolNewsPage({

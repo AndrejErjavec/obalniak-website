@@ -3,7 +3,7 @@ import ExperienceLevelTicket from "@/components/ExperienceLevelTicket";
 import { getUser } from "@/lib/actions/user";
 import { getUserAscents } from "@/lib/actions/ascent";
 import AscentsTable from "@/components/ascent/AscentsTable";
-import Pagination from "@/components/ui/Pagination";
+import Pagination from "@/components/ui/pagination";
 import ProfileImage from "@/components/profile/ProfileImage";
 import Divider from "@/components/ui/Divider";
 

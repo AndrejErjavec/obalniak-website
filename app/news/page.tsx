@@ -1,5 +1,5 @@
 import { getEvents } from "@/lib/actions/news";
-import Pagination from "@/components/ui/Pagination";
+import Pagination from "@/components/ui/pagination";
 import NewsGrid from "@/components/news/NewsGrid";
 
 export default async function NewsPage({
