@@ -10,17 +10,19 @@ export default async function AlpineSchoolNewsPage({
   const params = await searchParams;
   const currentPage = Number(params.currentPage) || 1;
 
-  const { data, pagination, error } = await getEvents(currentPage, 10, "Alpinistična šola");
+  const eventsResponse = await getEvents(currentPage, 10, "Alpinistična šola");
 
-  if (error) {
-    return <div>{error}</div>;
+  if (!eventsResponse.success) {
+    return <div>{eventsResponse.error}</div>;
   }
+
+  const { data: news, pagination } = eventsResponse.data;
 
   return (
     <div className="px-5 mx-auto md:container">
       <h1 className="text-3xl font-semibold my-8">Novice alpinistične šole</h1>
-      <NewsGrid news={data} />
-      <Pagination totalPages={pagination!.totalPages} currentPage={currentPage} />
+      <NewsGrid news={news} />
+      <Pagination totalPages={pagination.totalPages} currentPage={currentPage} />
     </div>
   );
 }

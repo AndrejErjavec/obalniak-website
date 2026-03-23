@@ -3,8 +3,20 @@
 import prisma from "@/lib/prisma";
 import { uploadImages } from "@/lib/actions/image";
 import { checkAuth } from "@/lib/actions/auth";
-import { ActionResult, NewsType } from "@/types";
+import { ActionResult, NewsType, PaginatedData } from "@/types";
 import { err, ok } from "../action.utils";
+import { Event, Photo } from "@/app/generated/prisma";
+
+type EventWithCoverPhoto = Event & {
+  coverPhoto: Photo | null;
+};
+
+type EventWithCoverPhotoAndAuthor = EventWithCoverPhoto & {
+  author: {
+    firstName: string;
+    lastName: string;
+  };
+};
 
 export async function createEvent(formData: FormData): Promise<ActionResult<never>> {
   const { user } = await checkAuth();
@@ -61,7 +73,11 @@ export async function createEvent(formData: FormData): Promise<ActionResult<neve
   }
 }
 
-export async function getEvents(currentPage: number, pageSize: number, type?: NewsType) {
+export async function getEvents(
+  currentPage: number,
+  pageSize: number,
+  type?: NewsType,
+): Promise<ActionResult<PaginatedData<EventWithCoverPhoto[]>>> {
   try {
     const events = await prisma.event.findMany({
       where: {
@@ -86,25 +102,20 @@ export async function getEvents(currentPage: number, pageSize: number, type?: Ne
 
     const pinnedEvents = events.filter((event) => event.isPinned);
     const nonPinnedEvents = events.filter((event) => !event.isPinned);
-    return {
+    return ok({
       data: [...pinnedEvents, ...nonPinnedEvents],
       pagination: {
         currentPage,
         totalPages,
       },
-      error: null,
-    };
+    });
   } catch (error) {
     console.log(error);
-    return {
-      data: null,
-      pagination: null,
-      error: "Napaka pri nalaganju",
-    };
+    return err("Napaka pri nalaganju");
   }
 }
 
-export async function getEvent(id: string) {
+export async function getEvent(id: string): Promise<ActionResult<EventWithCoverPhotoAndAuthor>> {
   try {
     const event = await prisma.event.findUnique({
       where: {
@@ -120,15 +131,14 @@ export async function getEvent(id: string) {
         coverPhoto: true,
       },
     });
-    return {
-      data: event,
-      error: null,
-    };
+
+    if (!event) {
+      return err("Event not found");
+    }
+
+    return ok(event);
   } catch (error) {
     console.log(error);
-    return {
-      error: "Napaka pri nalaganju",
-      data: null,
-    };
+    return err("Napaka pri nalaganju");
   }
 }

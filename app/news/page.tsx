@@ -10,18 +10,18 @@ export default async function NewsPage({
   const params = await searchParams;
   const currentPage = Number(params.currentPage) || 1;
 
-  const { data, pagination, error } = await getEvents(currentPage, 10, "Običajna novica");
+  const eventsResponse = await getEvents(currentPage, 10, "Alpinistična šola");
 
-  console.log(pagination);
-
-  if (error) {
-    return <div>{error}</div>;
+  if (!eventsResponse.success) {
+    return <div>{eventsResponse.error}</div>;
   }
+
+  const { data: news, pagination } = eventsResponse.data;
 
   return (
     <div className="px-5 mx-auto md:container">
       <h1 className="text-3xl font-semibold my-8">Novice</h1>
-      <NewsGrid news={data} />
+      <NewsGrid news={news} />
       <Pagination totalPages={pagination!.totalPages} currentPage={currentPage} />
     </div>
   );

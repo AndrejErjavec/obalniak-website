@@ -16,7 +16,6 @@ export default async function Profile({
 }) {
   const PAGE_SIZE = 10;
 
-  // TODO page to state, handle error or remove error from response
   const { id } = await params;
   const srchParams = await searchParams;
   const currentPage = Number(srchParams.currentPage) || 1;
@@ -27,12 +26,12 @@ export default async function Profile({
     return <div>Napaka pri nalaganju podatkov</div>;
   }
 
-  const user = userResponse.data!;
-  const ascentsData = ascentsResponse.data;
-  const ascents = ascentsData?.data;
+  const user = userResponse.data;
 
-  const totalPages = ascentsData?.pagination.totalPages || 1;
-  const totalItems = ascentsData?.pagination.totalItems;
+  const { data: ascents, pagination } = ascentsResponse.data;
+
+  const totalPages = pagination.totalPages || 1;
+  const totalItems = pagination.totalItems;
 
   return (
     <div className="px-5 mx-auto md:container mt-8">

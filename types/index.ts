@@ -2,7 +2,7 @@ export type NewsType = "Običajna novica" | "Alpinistična šola";
 
 export type SuccessResult<D> = {
   success: true;
-  data?: D;
+  data: D;
 };
 
 export type ErrorResult = {

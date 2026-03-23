@@ -21,8 +21,9 @@ export default async function Ascents({
   if (!ascentsResponse.success) {
     return <div>{ascentsResponse.error}</div>;
   }
-  const ascents = ascentsResponse.data.data;
-  const totalPages = ascentsResponse.data.pagination.totalPages || 1;
+
+  const { data: ascents, pagination } = ascentsResponse.data;
+  const totalPages = pagination.totalPages || 1;
 
   return (
     <div className="px-5 mx-auto md:container">

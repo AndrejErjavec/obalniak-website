@@ -9,11 +9,13 @@ import Badge from "@/components/Badge";
 export default async function Event({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const { data: event, error } = await getEvent(id);
+  const eventResponse = await getEvent(id);
 
-  if (error) {
-    return <div>error</div>;
+  if (!eventResponse.success) {
+    return <div>{eventResponse.error}</div>;
   }
+
+  const event = eventResponse.data;
 
   return (
     <>

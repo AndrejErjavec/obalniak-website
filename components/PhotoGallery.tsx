@@ -9,8 +9,10 @@ import "lightgallery/css/lg-thumbnail.css";
 // import plugins if you need
 import lgThumbnail from "lightgallery/plugins/thumbnail";
 import lgZoom from "lightgallery/plugins/zoom";
+import Image from "next/image";
+import { Photo } from "@/app/generated/prisma";
 
-export default function PhotoGallery({ photos }) {
+export default function PhotoGallery({ photos }: { photos: Photo[] }) {
   const onInit = () => {
     console.log("lightGallery has been initialized");
   };
@@ -21,14 +23,16 @@ export default function PhotoGallery({ photos }) {
         onInit={onInit}
         speed={500}
         plugins={[lgThumbnail, lgZoom]}
-        elementClassNames="grid grid-cols-1 gap-1 sm:grid-cols-2 md:grid-cols-3"
+        elementClassNames="grid grid-cols-1 gap-1 sm:grid-cols-2 md:grid-cols-4"
       >
-        {photos.map((photo, index) => (
+        {photos.map((photo: Photo, index: number) => (
           <a key={index} data-src={photo.url}>
-            <img
+            <Image
               src={photo.url}
+              width={800}
+              height={600}
               alt={`photo ${index + 1}`}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover cursor-pointer"
             />
           </a>
         ))}

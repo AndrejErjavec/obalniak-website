@@ -9,11 +9,11 @@ import NewsGrid from "@/components/news/NewsGrid";
 export default async function Home() {
   const eventsResponse = await getEvents(1, 6);
   const ascentsResponse = await getAscents(1, 5);
-  if (!ascentsResponse.success) {
-    return <div>{ascentsResponse.error}</div>;
+  if (!ascentsResponse.success || !eventsResponse.success) {
+    return <div>Napaka pri nalaganju podatkov</div>;
   }
-  const events = eventsResponse.data;
-  const ascents = ascentsResponse.data?.data;
+  const { data: events } = eventsResponse.data;
+  const { data: ascents } = ascentsResponse.data;
 
   return (
     <>
