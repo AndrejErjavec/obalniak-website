@@ -43,16 +43,27 @@ function AscentsTable({ ascents }: { ascents }) {
                     )}
                   </td>
                   <td className="py-5 pl-3 md:pl-6 align-center">
-                    <div className="flex flex-col gap-2 align-top">
+                    <div className="flex flex-col gap-0.5 align-top">
                       <p className="font-semibold">{ascent.title}</p>
                       {/* mobile ascent details */}
                       <div className="flex flex-col gap-2 text-sm md:hidden">
-                        <ProfileBanner
+                        {/* <ProfileBanner
                           firstName={ascent.author.firstName}
                           lastName={ascent.author.lastName}
                           iconSize={22}
-                        />
-                        <div className="flex flex-row gap-4 md:hidden">
+                        /> */}
+                        <div className="flex flex-row itemer-center gap-2">
+                          <span className="text-sm text-gray-500 font-semibold">
+                            {ascent.author.firstName} {ascent.author.lastName}
+                          </span>
+                          {otherParticipants > 0 && (
+                            <div className="flex items-center justify-center bg-gray-100/30 border border-gray-200 text-xs font-semibold rounded-md px-1.5 py-0.5">
+                              <span>+{otherParticipants}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex flex-col gap-2 md:hidden">
                           <Badge
                             content={formatDate(ascent.date)}
                             icon={MdCalendarMonth}

@@ -155,10 +155,10 @@ const Header = () => {
         </div>
         {/* Hamburger Menu */}
         {menuOpen && (
-          <div className="absolute z-50 left-0 top-15 bg-white w-full border-10 border-gray-300 border-t shadow-md">
+          <div className="absolute z-50 left-0 top-15 bg-white w-full border-t border-gray-300 shadow-md">
             <div className="flex flex-col">
               {links.map((link) =>
-                link.dropdown ? (
+                link.items ? (
                   <DropdownMenu title={link.title} items={link.items} key={link.title} setParentOpen={setMenuOpen} />
                 ) : (
                   <Link
@@ -189,7 +189,7 @@ const Header = () => {
               )}
 
               {isAuthenticated && currentUser && (
-                <div className="flex flex-row items-center justify-between py-5 px-4 border-10 border-gray-300 border-t">
+                <div className="flex flex-row items-center justify-between py-5 px-4 border-t border-gray-300">
                   <div className="flex flex-row items-center">
                     <Link
                       href={`/profile/${currentUser.id}`}
