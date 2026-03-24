@@ -83,9 +83,7 @@ export async function getEvents(
       where: {
         ...(type && { type: type }),
       },
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: [{ isPinned: "desc" }, { createdAt: "desc" }],
       skip: (currentPage - 1) * pageSize,
       take: pageSize,
       include: {
@@ -100,10 +98,8 @@ export async function getEvents(
     });
     const totalPages = Math.ceil(totalEvents / pageSize);
 
-    const pinnedEvents = events.filter((event) => event.isPinned);
-    const nonPinnedEvents = events.filter((event) => !event.isPinned);
     return ok({
-      data: [...pinnedEvents, ...nonPinnedEvents],
+      data: events,
       pagination: {
         currentPage,
         totalPages,

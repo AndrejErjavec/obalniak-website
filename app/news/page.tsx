@@ -10,7 +10,7 @@ export default async function NewsPage({
   const params = await searchParams;
   const currentPage = Number(params.currentPage) || 1;
 
-  const eventsResponse = await getEvents(currentPage, 10, "Alpinistična šola");
+  const eventsResponse = await getEvents(currentPage, 10, "Običajna novica");
 
   if (!eventsResponse.success) {
     return <div>{eventsResponse.error}</div>;

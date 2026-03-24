@@ -5,6 +5,7 @@ import { getEvents } from "@/lib/actions/news";
 import AscentListSimple from "@/components/ascent/AscentListSimple";
 import Divider from "@/components/ui/Divider";
 import NewsGrid from "@/components/news/NewsGrid";
+import { GiBookCover } from "react-icons/gi";
 
 export default async function Home() {
   const eventsResponse = await getEvents(1, 6);
@@ -61,7 +62,7 @@ export default async function Home() {
           {/* Links */}
           <section>
             <h3 className="text-2xl font-semibold mb-5">Povezave</h3>
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-5">
               <Link
                 href="https://www.pzs.si/"
                 className="font-medium text-gray-800 hover:text-gray-600 flex flex-row items-center gap-2"
@@ -75,6 +76,20 @@ export default async function Home() {
               >
                 <Image src="/sloalp-logo.gif" alt="aloalp-logo" width={40} height={40} />
                 Slo - Alp
+              </Link>
+              <Link
+                href="https://alpirocnik.rasica.org/wiki/Glavna_stran"
+                className="font-medium text-gray-800 hover:text-gray-600 flex flex-row items-center gap-2"
+              >
+                <GiBookCover size={30} className="text-blue-800" />
+                Alpiročnik Rašica
+              </Link>
+              <Link
+                href="https://ka.pzs.si/"
+                className="font-medium text-gray-800 hover:text-gray-600 flex flex-row items-center gap-2"
+              >
+                <Image src="/ka-logo.png" alt="aloalp-logo" width={40} height={40} />
+                Komisija za alpinizem
               </Link>
             </div>
           </section>
