@@ -1,6 +1,6 @@
 import { ActionResult } from "@/types";
 
-export function ok<T>(data?: T): ActionResult<T> {
+export function ok<T>(data: T): ActionResult<T> {
   return { success: true, data };
 }
 

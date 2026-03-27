@@ -3,8 +3,8 @@ import Link from "next/link";
 import ProfileImage from "./ProfileImage";
 
 interface ProfileBannerProps {
-  firstName: string;
-  lastName: string;
+  name: string;
+  isRegistered?: boolean;
   userId?: string;
   isLink?: boolean;
   iconSize?: number;
@@ -12,13 +12,19 @@ interface ProfileBannerProps {
 }
 
 export default function ProfileBanner({
-  firstName,
-  lastName,
+  name,
+  isRegistered = true,
   userId,
   isLink = false,
   iconSize = 32,
   textSize = 16,
 }: ProfileBannerProps) {
+  if (!name) return;
+  const nameParts = name.split(" ");
+  const firstName = nameParts[0];
+  const lastName = nameParts.length >= 2 ? nameParts[1] : "";
+  const initials = nameParts.length >= 2 ? `${firstName.slice(0, 1)}${lastName.slice(0, 1)}` : name.slice(0, 1);
+
   return (
     <>
       {isLink ? (
@@ -26,14 +32,14 @@ export default function ProfileBanner({
           href={userId ? `/profile/${userId}` : "#"}
           className={cn("flex gap-2 items-center", userId ? "cursor-pointer" : "cursor-default pointer-events-none")}
         >
-          <ProfileImage firstName={firstName} lastName={lastName} size={iconSize} />
+          <ProfileImage size={iconSize} text={initials} isRegistered={isRegistered} />
           <p style={{ fontSize: textSize }}>
             {firstName} {lastName}
           </p>
         </Link>
       ) : (
         <div className="flex gap-2 items-center">
-          <ProfileImage firstName={firstName} lastName={lastName} size={iconSize} />
+          <ProfileImage size={iconSize} text={initials} isRegistered={isRegistered} />
           <p style={{ fontSize: textSize }}>
             {firstName} {lastName}
           </p>

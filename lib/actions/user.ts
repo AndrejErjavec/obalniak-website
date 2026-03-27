@@ -151,14 +151,10 @@ export async function updateMembersBulk(updates: { id: string; experienceLevel: 
 export async function getUsers(): Promise<ActionResult<User[]>> {
   try {
     const users = await prisma.user.findMany();
-    return {
-      data: users,
-    };
+    return ok(users);
   } catch (error) {
     console.log(error);
-    return {
-      error: "Napaka pri pridobivanju podatkov",
-    };
+    return err("Napaka pri pridobivanju podatkov");
   }
 }
 
@@ -191,12 +187,10 @@ export async function getAllUsers(): Promise<ActionResult<User[]>> {
       },
     });
 
-    return {
-      data: users,
-    };
+    return ok(users);
   } catch (error) {
     console.error("Error fetching pending members:", error);
-    return { error: "Could not retrieve pending members" };
+    return err("Could not retrieve pending members");
   }
 }
 
@@ -214,9 +208,9 @@ export async function getUsersByName(nameQuery: string): Promise<ActionResult<Us
       },
     });
 
-    return { data: users };
+    return ok(users);
   } catch (error) {
     console.error("Error fetching pending members:", error);
-    return { error: "Could not retrieve pending members" };
+    return err("Could not retrieve pending members");
   }
 }

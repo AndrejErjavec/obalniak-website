@@ -2,13 +2,13 @@
 
 import Image from "next/image";
 import { formatDate } from "@/util";
-import ProfileBanner from "../profile/ProfileBanner";
-import { MdAltRoute, MdCalendarMonth } from "react-icons/md";
+import { MdCalendarMonth } from "react-icons/md";
 import { FiCameraOff } from "react-icons/fi";
 import Badge from "../Badge";
 import { useRouter } from "next/navigation";
+import AscentParticipantsList from "./AscentParticipantsList";
 
-function AscentsTable({ ascents }: { ascents }) {
+function AscentsTable({ ascents }) {
   const router = useRouter();
 
   return (
@@ -17,7 +17,11 @@ function AscentsTable({ ascents }: { ascents }) {
         <table className="table-auto min-w-full text-gray-900 md:table">
           <tbody className="divide-y divide-gray-200 text-gray-900">
             {ascents.map((ascent) => {
-              const otherParticipants = ascent.registeredParticipants.length + ascent.unregisteredParticipants.length;
+              const participants = [
+                `${ascent.author.firstName} ${ascent.author.lastName}`,
+                ...ascent.registeredParticipants.map((p) => `${p.firstName} ${p.lastName}`),
+                ...ascent.unregisteredParticipants.map((p) => `${p.name}`),
+              ];
 
               return (
                 <tr
@@ -43,59 +47,30 @@ function AscentsTable({ ascents }: { ascents }) {
                     )}
                   </td>
                   <td className="py-5 pl-3 md:pl-6 align-center">
-                    <div className="flex flex-col gap-0.5 align-top">
-                      <p className="font-semibold">{ascent.title}</p>
-                      {/* mobile ascent details */}
-                      <div className="flex flex-col gap-2 text-sm md:hidden">
-                        {/* <ProfileBanner
-                          firstName={ascent.author.firstName}
-                          lastName={ascent.author.lastName}
-                          iconSize={22}
-                        /> */}
-                        <div className="flex flex-row itemer-center gap-2">
-                          <span className="text-sm text-gray-500 font-semibold">
-                            {ascent.author.firstName} {ascent.author.lastName}
-                          </span>
-                          {otherParticipants > 0 && (
-                            <div className="flex items-center justify-center bg-gray-100/30 border border-gray-200 text-xs font-semibold rounded-md px-1.5 py-0.5">
-                              <span>+{otherParticipants}</span>
-                            </div>
-                          )}
-                        </div>
+                    <div className="flex flex-col gap-3 align-top">
+                      <div className="flex gap-3 items-center">
+                        <p className="font-semibold">
+                          {ascent.route} ({ascent.difficulty})
+                        </p>
+                        <p className="font-base text-sm">{ascent.routeLength} m</p>
+                      </div>
 
-                        <div className="flex flex-col gap-2 md:hidden">
-                          <Badge
-                            content={formatDate(ascent.date)}
-                            icon={MdCalendarMonth}
-                            iconColor="#fff"
-                            iconBgColor="#117ec6"
-                            textClassName="text-gray-900 font-medium"
-                          />
-                          <Badge
-                            content={`${ascent.route} (${ascent.difficulty})`}
-                            icon={MdAltRoute}
-                            iconColor="#fff"
-                            iconBgColor="#e29212"
-                            textClassName="text-gray-900 font-medium"
-                          />
-                        </div>
+                      {/* mobile ascent details */}
+                      <div className="md:hidden flex flex-col gap-3">
+                        <AscentParticipantsList names={participants} limit={1} />
+                        <Badge
+                          content={formatDate(ascent.date)}
+                          icon={MdCalendarMonth}
+                          iconColor="#fff"
+                          iconBgColor="#117ec6"
+                          textClassName="text-gray-800 font-medium"
+                        />
                       </div>
                     </div>
                   </td>
                   {/* desktop ascent details */}
                   <td className="hidden md:table-cell py-5">
-                    <div className="flex flex-row items-center gap-2">
-                      <ProfileBanner
-                        firstName={ascent.author.firstName}
-                        lastName={ascent.author.lastName}
-                        iconSize={25}
-                      />
-                      {otherParticipants > 0 && (
-                        <div className="flex items-center justify-center bg-gray-100/30 border border-gray-200 text-xs font-semibold rounded-md px-1.5 py-0.5">
-                          <span>+{otherParticipants}</span>
-                        </div>
-                      )}
-                    </div>
+                    <AscentParticipantsList names={participants} limit={3} />
                   </td>
                   <td className="hidden md:table-cell py-5">
                     <Badge
@@ -103,16 +78,7 @@ function AscentsTable({ ascents }: { ascents }) {
                       icon={MdCalendarMonth}
                       iconColor="#fff"
                       iconBgColor="#117ec6"
-                      textClassName="text-gray-900 font-medium"
-                    />
-                  </td>
-                  <td className="hidden md:table-cell py-5">
-                    <Badge
-                      content={`${ascent.route} (${ascent.difficulty})`}
-                      icon={MdAltRoute}
-                      iconColor="#fff"
-                      iconBgColor="#e29212"
-                      textClassName="text-gray-900 font-medium"
+                      textClassName="text-gray-800 font-medium"
                     />
                   </td>
                 </tr>

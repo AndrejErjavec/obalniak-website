@@ -11,10 +11,11 @@ type SelectOption = {
 };
 
 type UserSelectProps = {
+  userId: string;
   setUsers: Dispatch<SetStateAction<CoClimber[]>>;
 };
 
-export default function UserSelect({ setUsers }: UserSelectProps) {
+export default function UserSelect({ userId, setUsers }: UserSelectProps) {
   const [options, setOptions] = useState<SelectOption[]>([]);
 
   const handleCreate = (inputValue: string) => {
@@ -27,15 +28,19 @@ export default function UserSelect({ setUsers }: UserSelectProps) {
   };
 
   const fetchClimbers = async (query: string): Promise<SelectOption[]> => {
-    const climbers = await getUsersByName(query);
-    if ("error" in climbers) {
+    const result = await getUsersByName(query);
+    if ("error" in result) {
       return [];
     }
 
-    return climbers.map((climber) => ({
-      value: climber,
-      label: `${climber.firstName} ${climber.lastName}`,
-    }));
+    const climbers = result.data;
+
+    return climbers
+      .filter((climber) => climber.id !== userId)
+      .map((climber) => ({
+        value: climber,
+        label: `${climber.firstName} ${climber.lastName}`,
+      }));
   };
 
   useEffect(() => {

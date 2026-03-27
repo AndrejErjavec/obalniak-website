@@ -76,6 +76,10 @@ export async function createSession(
       return err("Napačno geslo");
     }
 
+    if (!user.accepted) {
+      return err("Vaš profil še ni bil potrjen s strani administratorja.");
+    }
+
     // Generate JWT
     const token = jwt.sign(
       { id: user.id, email: user.email },

@@ -26,7 +26,7 @@ function SidebarLink({
       href={href}
       className={`flex items-center gap-3 rounded-lg border px-3 py-3 transition ${
         isActive
-          ? "border-blue-500 bg-blue-500 text-white shadow-sm"
+          ? "border-primary bg-primary text-white shadow-sm"
           : "border-transparent text-gray-700 hover:border-gray-200 hover:bg-gray-50"
       }`}
     >

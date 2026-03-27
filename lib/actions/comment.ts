@@ -25,7 +25,7 @@ export async function addComment({
   const { user } = await checkAuth();
 
   if (!user) {
-    return err("Niste prijavljeni");
+    return err("Unauthorized");
   }
 
   try {

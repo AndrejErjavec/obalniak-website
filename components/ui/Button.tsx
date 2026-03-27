@@ -11,7 +11,7 @@ type ButtonProps = {
 } & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: "bg-blue-500 text-white",
+  primary: "bg-primary text-white",
   secondary: "bg-gray-200 text-gray-900",
   danger: "bg-red-600 text-white",
 };
@@ -31,7 +31,7 @@ export default function Button({
       {...props}
       disabled={isDisabled}
       className={`
-        inline-flex items-center justify-center rounded-md px-4 py-2 min-w-20 min-h-10 font-medium
+        items-center justify-center rounded-md px-4 py-2 min-w-20 min-h-10 font-medium text-sm
         transition-colors cursor-pointer
         disabled:cursor-not-allowed disabled:opacity-50
         ${variantClasses[variant]}

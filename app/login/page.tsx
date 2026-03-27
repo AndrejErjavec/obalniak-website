@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { createSession } from "@/lib/actions/auth";
 import { useAuth } from "@/context/authContext";
@@ -12,13 +12,17 @@ import Button from "@/components/ui/Button";
 
 const LoginPage = () => {
   const { setIsAuthenticated, setCurrentUser } = useAuth();
+  const [message, setMessage] = useState(null);
 
   const [state, formAction, loading] = useActionState(createSession, null);
   const router = useRouter();
+
   useEffect(() => {
     if (!state) return;
 
-    if (!state.success) toast.error(state.error);
+    if (!state.success) {
+      setMessage(state.error);
+    }
 
     if (state.success) {
       toast.success("Prijava uspešna");
@@ -27,6 +31,7 @@ const LoginPage = () => {
       router.push("/");
     }
   }, [state]);
+
   return (
     <div className="flex items-center justify-center">
       <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-sm mt-20">
@@ -44,8 +49,9 @@ const LoginPage = () => {
             <Button type="submit" disabled={loading} loading={loading}>
               Prijava
             </Button>
+            {message && <p className="text-center text-red-600">{message}</p>}
             <p className="text-center">
-              Še nimate uporabniškega računa?
+              Še nimate uporabniškega računa?{" "}
               <Link href="/register" className="text-blue-500">
                 Registracija
               </Link>

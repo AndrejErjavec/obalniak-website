@@ -1,10 +1,25 @@
-export default function ProfileImage({ firstName, lastName, size = 32 }) {
+import { FaUser } from "react-icons/fa";
+import cn from "clsx";
+
+export default function ProfileImage({
+  text,
+  size = 32,
+  isRegistered = true,
+}: {
+  text: string;
+  size: number;
+  isRegistered?: boolean;
+}) {
+  const fontSize = size * 0.45;
   return (
     <div
-      className="flex items-center justify-center flex-shrink-0 font-medium text-white rounded-full bg-blue-500"
-      style={{ width: size, height: size, fontSize: size * 0.45 }}
+      className={cn(
+        "flex items-center justify-center shrink-0 font-medium text-white rounded-full",
+        isRegistered ? "bg-primary" : "bg-slate-600",
+      )}
+      style={{ width: size, height: size, fontSize: fontSize }}
     >
-      {firstName.slice(0, 1)}{lastName.slice(0, 1)}
+      {isRegistered ? <span>{text}</span> : <FaUser size={fontSize} />}
     </div>
   );
 }

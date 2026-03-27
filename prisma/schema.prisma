@@ -19,28 +19,36 @@ model User {
   isAdmin             Boolean                  @default(false)
   createdAt           DateTime                 @default(now())
   authoredAscents     Ascent[]                 @relation("authoredAscents")
-  // participatedAscents UserParticipatedAscent[] @relation("participatedAscents")
   participatedAscents Ascent[]
   comments            Comment[]
   Events              Event[]
 }
 
 model Ascent {
-  id                       String            @id @default(cuid())
-  title                    String
+  id                       String             @id @default(cuid())
   route                    String
-  date                     String
-  text                     String
   difficulty               String
+  routeLength              Float              @default(0)
+  date                     String
+  text                     String?
   createdAt                DateTime           @default(now())
   author                   User               @relation("authoredAscents", fields: [authorId], references: [id])
   authorId                 String
   photos                   Photo[]
   comments                 Comment[]
   registeredParticipants   User[]
-  unregisteredParticipants String[]
+  unregisteredParticipants UnregisteredParticipation[] @relation("AscentUnregisteredParticipants")
 
   @@index([authorId])
+}
+
+model UnregisteredParticipation {
+  id        String    @id @default(cuid())
+  name      String
+  ascentId  String
+  ascent    Ascent    @relation("AscentUnregisteredParticipants", fields: [ascentId], references: [id], onDelete: Cascade)
+
+  @@index([ascentId])
 }
 
 // model UserParticipatedAscent {

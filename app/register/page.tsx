@@ -20,10 +20,12 @@ const RegisterPage = () => {
     if (!state.success) {
       toast.error(state.error);
     } else {
-      toast.success("Prijava uspešna");
-      router.replace("/");
+      toast.success("Račun je bil ustvarjen");
+      const params = new URLSearchParams();
+      params.set("newRegister", "true");
+      router.replace(`/?${params.toString()}`);
     }
-  }, [state]);
+  }, [router, state]);
 
   return (
     <div className="flex items-center justify-center">

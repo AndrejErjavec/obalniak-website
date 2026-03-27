@@ -23,7 +23,7 @@ export default function NewsCard({ event }) {
       )}
       {showSchoolBadge && (
         <div className="absolute top-3 right-2">
-          <span className="flex items-center justify-center py-1 px-2 rounded-md z-50 bg-blue-600 text-white text-sm font-medium">
+          <span className="flex items-center justify-center py-1 px-2 rounded-md z-50 bg-primary text-white text-sm font-medium">
             Alpinistična šola
           </span>
         </div>

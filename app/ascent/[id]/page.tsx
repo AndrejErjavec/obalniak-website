@@ -39,7 +39,9 @@ export default async function Ascent({ params }: { params: Promise<{ id: string 
           {/* Ascent header */}
           <section className="flex flex-col py-5 bg-gray-50">
             <div className="px-5 md:px-20">
-              <h1 className="text-3xl font-medium">{ascent.title}</h1>
+              <h1 className="text-3xl font-medium">
+                {ascent.route} ({ascent.difficulty})
+              </h1>
               <div className="flex flex-col">
                 {/* Date and route */}
                 <div className="flex flex-row gap-3 py-5">
@@ -48,14 +50,16 @@ export default async function Ascent({ params }: { params: Promise<{ id: string 
                     icon={MdCalendarMonth}
                     iconColor="#fff"
                     iconBgColor="#117ec6"
-                    textClassName="text-gray-900 font-medium"
+                    textClassName="text-gray-800 font-medium"
+                    iconSize="base"
                   />
                   <Badge
-                    content={`${ascent.route} (${ascent.difficulty})`}
+                    content={`${ascent.routeLength} m`}
                     icon={MdAltRoute}
                     iconColor="#fff"
                     iconBgColor="#e29212"
-                    textClassName="text-gray-900 font-medium"
+                    textClassName="text-gray-800 font-medium"
+                    iconSize="base"
                   />
                 </div>
 
@@ -65,8 +69,7 @@ export default async function Ascent({ params }: { params: Promise<{ id: string 
                   <div>
                     <p className="font-medium mb-2">Avtor</p>
                     <ProfileBanner
-                      firstName={ascent.author.firstName}
-                      lastName={ascent.author.lastName}
+                      name={`${ascent.author.firstName} ${ascent.author.lastName}`}
                       userId={ascent.author.id}
                       textSize={14}
                       iconSize={28}
@@ -79,18 +82,23 @@ export default async function Ascent({ params }: { params: Promise<{ id: string 
                       {participants > 0 ? (
                         <ul className="flex gap-5 flex-wrap items-center">
                           {ascent.registeredParticipants.map((participant) => (
-                            <li key={participant.id}>
-                              <ProfileBanner
-                                firstName={participant.firstName}
-                                lastName={participant.lastName}
-                                userId={participant.id}
-                                textSize={14}
-                                iconSize={28}
-                              />
-                            </li>
+                            <ProfileBanner
+                              key={participant.id}
+                              name={`${participant.firstName} ${participant.lastName}`}
+                              userId={participant.id}
+                              textSize={14}
+                              iconSize={28}
+                              isRegistered={true}
+                            />
                           ))}
-                          {ascent.unregisteredParticipants.map((participant, index) => (
-                            <li key={index}>{participant}</li>
+                          {ascent.unregisteredParticipants.map((participant) => (
+                            <ProfileBanner
+                              key={participant.id}
+                              name={participant.name}
+                              textSize={14}
+                              iconSize={28}
+                              isRegistered={false}
+                            />
                           ))}
                         </ul>
                       ) : (

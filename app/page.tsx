@@ -6,8 +6,13 @@ import AscentListSimple from "@/components/ascent/AscentListSimple";
 import Divider from "@/components/ui/Divider";
 import NewsGrid from "@/components/news/NewsGrid";
 import { GiBookCover } from "react-icons/gi";
+import RegisterNotification from "@/components/RegisterNotification";
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   const eventsResponse = await getEvents(1, 6);
   const ascentsResponse = await getAscents(1, 5);
   if (!ascentsResponse.success || !eventsResponse.success) {
@@ -16,8 +21,12 @@ export default async function Home() {
   const { data: events } = eventsResponse.data;
   const { data: ascents } = ascentsResponse.data;
 
+  const params = await searchParams;
+  const isNewlyRegistered = params.newRegister === "true";
+
   return (
     <>
+      {isNewlyRegistered && <RegisterNotification />}
       {/* Cover photo */}
       <div className=" bg-cover bg-center w-full h-80 bg-[url('/hero-bg.jpg')]">
         <div className="px-5 flex flex-col justify-center items-center h-full">

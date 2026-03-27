@@ -124,7 +124,7 @@ const Header = () => {
 
               {isAuthenticated && currentUser && (
                 <button onClick={handleToggleUserDropdown} className="flex items-center gap-2 ml-3 cursor-pointer">
-                  <ProfileBanner firstName={currentUser.firstName} lastName={currentUser.lastName} />
+                  <ProfileBanner name={`${currentUser.firstName} ${currentUser.lastName}`} />
                 </button>
               )}
             </div>
@@ -196,7 +196,7 @@ const Header = () => {
                       className="flex flex-row gap-2 items-center text-gray-800 hover:text-gray-600"
                       onClick={() => setMenuOpen(false)}
                     >
-                      <ProfileBanner firstName={currentUser.firstName} lastName={currentUser.lastName} />
+                      <ProfileBanner name={`${currentUser.firstName} ${currentUser.lastName}`} />
                     </Link>
                   </div>
                   <FaSignOutAlt size={18} onClick={handleLogout} />

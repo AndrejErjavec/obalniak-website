@@ -2,10 +2,10 @@
 
 import prisma from "@/lib/prisma";
 import { uploadImages } from "@/lib/actions/image";
-import { checkAuth } from "@/lib/actions/auth";
 import { ActionResult, NewsType, PaginatedData } from "@/types";
 import { err, ok } from "../action.utils";
 import { Event, Photo } from "@/app/generated/prisma";
+import { requireAdmin } from "../authMiddleware";
 
 type EventWithCoverPhoto = Event & {
   coverPhoto: Photo | null;
@@ -18,12 +18,8 @@ type EventWithCoverPhotoAndAuthor = EventWithCoverPhoto & {
   };
 };
 
-export async function createEvent(formData: FormData): Promise<ActionResult<never>> {
-  const { user } = await checkAuth();
-
-  if (!user) {
-    return err("Niste prijavljeni");
-  }
+export async function createEvent(formData: FormData): Promise<ActionResult<string>> {
+  const user = requireAdmin();
 
   const title = String(formData.get("title"));
   const date = String(formData.get("date"));
@@ -66,7 +62,7 @@ export async function createEvent(formData: FormData): Promise<ActionResult<neve
       { timeout: 30000 },
     );
 
-    return ok();
+    return ok("Event created");
   } catch (error) {
     console.log(error);
     return err("Prišlo je do napake");

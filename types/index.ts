@@ -21,3 +21,5 @@ export type PaginatedData<D> = {
     totalItems?: number;
   };
 };
+
+export type AscentFilterType = "route" | "climbers";

@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import Input from "../ui/Input";
 import { MdSend } from "react-icons/md";
 import cn from "clsx";
+import Button from "../ui/Button";
 
 function CommentForm({ ascentId }: { ascentId: string }) {
   const [text, setText] = useState("");
@@ -43,7 +44,7 @@ function CommentForm({ ascentId }: { ascentId: string }) {
               type="submit"
               className={cn(
                 "flex items-center justify-center rounded-full w-10 h-10",
-                text.trim() ? "bg-blue-500 text-white cursor-pointer" : "bg-gray-300 text-gray-500 cursor-not-allowed",
+                text.trim() ? "bg-primary text-white cursor-pointer" : "bg-gray-300 text-gray-500 cursor-not-allowed",
               )}
             >
               <MdSend size={20} />

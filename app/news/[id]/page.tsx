@@ -58,8 +58,7 @@ export default async function Event({ params }: { params: Promise<{ id: string }
               <div className="mb-5">
                 {/* <p className="font-medium mb-2">Avtor</p> */}
                 <ProfileBanner
-                  firstName={event.author.firstName}
-                  lastName={event.author.lastName}
+                  name={`${event.author.firstName} ${event.author.lastName}`}
                   iconSize={30}
                   textSize={14}
                 />

@@ -10,31 +10,7 @@ import TextArea from "@/components/ui/TextArea";
 import Button from "@/components/ui/Button";
 import { BsPinAngleFill } from "react-icons/bs";
 import { NewsType } from "@/types";
-
-function PostTypeOption({
-  title,
-  value,
-  selectedType,
-  setSelectedType,
-}: {
-  title: string;
-  value: NewsType;
-  selectedType: NewsType;
-  setSelectedType: (value: NewsType) => void;
-}) {
-  const isActive = value === selectedType;
-
-  return (
-    <div
-      className={`px-3 py-2 text-sm font-semibold transition cursor-pointer ${
-        isActive ? "bg-blue-500 text-white" : "text-gray-700 hover:bg-gray-100"
-      }`}
-      onClick={() => setSelectedType(value)}
-    >
-      {title}
-    </div>
-  );
-}
+import Option from "@/components/Option";
 
 export default function CreateNewsPage() {
   const formRef = useRef<HTMLFormElement>(null);
@@ -85,13 +61,8 @@ export default function CreateNewsPage() {
         <div>
           <Label>Tip novice</Label>
           <div className="inline-flex flex-row border border-gray-300 rounded-md overflow-hidden">
-            <PostTypeOption
-              title={"Običajna novica"}
-              value={"Običajna novica"}
-              selectedType={type}
-              setSelectedType={setType}
-            />
-            <PostTypeOption
+            <Option title={"Običajna novica"} value={"Običajna novica"} selectedType={type} setSelectedType={setType} />
+            <Option
               title={"Alpinistična šola"}
               value={"Alpinistična šola"}
               selectedType={type}

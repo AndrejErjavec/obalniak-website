@@ -1,10 +1,17 @@
 "use server";
 
+import { err, ok } from "../action.utils";
 import cloudinary from "../cloudinary";
+import { checkAuth } from "./auth";
 
 export async function uploadImages(images: Blob[]) {
+  const { user } = await checkAuth();
+
+  if (!user) {
+    return err("Unauthorized");
+  }
   if (!images) {
-    throw new Error("No images provided");
+    return err("No images provided");
   }
 
   const imageArray = Array.isArray(images) ? images : [images];
@@ -15,7 +22,9 @@ export async function uploadImages(images: Blob[]) {
 
   try {
     const result = await Promise.all(imageArray.map((image) => uploadImage(image)));
-    return result;
+    return ok({
+      data: result,
+    });
   } catch (error) {
     console.error("Error uploading images:", error);
     throw new Error("Failed to upload images");

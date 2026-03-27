@@ -20,13 +20,7 @@ export default async function Members() {
             className="flex flex-col gap-3 items-start p-3 rounded-lg shadow-xs border border-gray-200"
             key={member.id}
           >
-            <ProfileBanner
-              firstName={member.firstName}
-              lastName={member.lastName}
-              isLink={false}
-              iconSize={40}
-              textSize={18}
-            />
+            <ProfileBanner name={`${member.firstName} ${member.lastName}`} isLink={false} iconSize={40} textSize={18} />
             {member.experienceLevel && <ExperienceLevelTicket level={member.experienceLevel} />}
           </div>
         ))}

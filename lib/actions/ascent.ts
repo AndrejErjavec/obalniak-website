@@ -1,36 +1,36 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { checkAuth } from "./auth";
-import type { Ascent, Photo, User } from "@/app/generated/prisma";
-import { ActionResult, PaginatedData } from "@/types";
+import type { Ascent, Prisma, User } from "@/app/generated/prisma";
+import { ActionResult, AscentFilterType, PaginatedData } from "@/types";
 import { err, ok } from "../action.utils";
+import { requireUser } from "../authMiddleware";
+import { buildAscentQuery } from "../util";
 
 type CoClimber = User | string;
 
-type AscentWithData = Ascent & {
-  author: User;
-  registeredParticipants: User[];
-  photos: Photo[];
-};
+type AscentWithData = Prisma.AscentGetPayload<{
+  include: {
+    author: true;
+    registeredParticipants: true;
+    unregisteredParticipants: true;
+    photos: true;
+  };
+}>;
 
 export async function createAscent(formData: FormData): Promise<ActionResult<Ascent>> {
-  const title = String(formData.get("title"));
   const route = String(formData.get("route"));
   const difficulty = String(formData.get("difficulty"));
+  const routeLength = Number(formData.get("length"));
   const date = String(formData.get("date"));
   const text = String(formData.get("text"));
   const coClimbersString = String(formData.get("coClimbers") ?? "[]");
   const photoUrls = formData.getAll("photoUrls") as string[];
 
-  if (!title || !route || !difficulty || !date || !text) {
+  const user = await requireUser();
+
+  if (!route || !difficulty || !date || !routeLength) {
     return err("Manjkajoči podatki");
-  }
-
-  const { user } = await checkAuth();
-
-  if (!user) {
-    return err("Niste prijavljeni");
   }
 
   try {
@@ -49,33 +49,44 @@ export async function createAscent(formData: FormData): Promise<ActionResult<Asc
           .map((climber) => climber.id),
       ),
     ];
-    const unregisteredParticipants = coClimbers.filter((climber): climber is string => typeof climber === "string");
+    const unregisteredParticipantNames = [
+      ...new Set(coClimbers.filter((climber): climber is string => typeof climber === "string")),
+    ];
 
     const ascent = await prisma.$transaction(async (prisma) => {
-      const ascent = await prisma.ascent.create({
-        data: {
-          title,
-          route,
-          difficulty,
-          date,
-          text,
-          author: {
-            connect: {
-              id: user.id,
-            },
+      const ascentData: Prisma.AscentCreateInput = {
+        route,
+        difficulty,
+        routeLength,
+        date,
+        text,
+        author: {
+          connect: {
+            id: user.id,
           },
-          unregisteredParticipants,
-          ...(registeredParticipantIds.length > 0 && {
-            registeredParticipants: {
-              connect: registeredParticipantIds.map((id) => ({ id })),
-            },
-          }),
+        },
+      };
+
+      if (unregisteredParticipantNames.length > 0) {
+        ascentData.unregisteredParticipants = {
+          create: unregisteredParticipantNames.map((name) => ({ name })),
+        };
+      }
+
+      if (registeredParticipantIds.length > 0) {
+        ascentData.registeredParticipants = {
+          connect: registeredParticipantIds.map((id) => ({ id })),
+        };
+      }
+
+      const ascent = await prisma.ascent.create({
+        data: ascentData,
+        include: {
+          unregisteredParticipants: true,
         },
       });
 
       if (photoUrls && photoUrls.length > 0) {
-        // store photos in Cloudinary bucket and save links
-        // const secureUrls = await uploadImages(photos);
         await Promise.all(
           photoUrls.map((url: string) =>
             prisma.photo.create({
@@ -101,22 +112,19 @@ export async function getAscents(
   currentPage: number,
   pageSize: number,
   query?: string,
+  queryBy?: AscentFilterType,
 ): Promise<ActionResult<PaginatedData<Ascent[]>>> {
+  const queryByInsert = buildAscentQuery(query, queryBy);
+
   try {
     const ascents = await prisma.ascent.findMany({
       include: {
         photos: true,
         author: true,
         registeredParticipants: true,
+        unregisteredParticipants: true,
       },
-      ...(!!query && {
-        where: {
-          title: {
-            contains: String(query),
-            mode: "insensitive",
-          },
-        },
-      }),
+      ...(!!query && queryByInsert),
       skip: (currentPage - 1) * pageSize,
       take: pageSize,
       orderBy: {
@@ -124,7 +132,7 @@ export async function getAscents(
       },
     });
 
-    const totalAscents = await prisma.ascent.count();
+    const totalAscents = ascents.length; //await prisma.ascent.count();
     const totalPages = Math.ceil(totalAscents / pageSize);
 
     return ok({
@@ -150,6 +158,7 @@ export async function getAscent(id: string): Promise<ActionResult<AscentWithData
         photos: true,
         author: true,
         registeredParticipants: true,
+        unregisteredParticipants: true,
       },
     });
 
@@ -198,6 +207,7 @@ export async function getUserAscents(
           author: true,
           photos: true,
           registeredParticipants: true,
+          unregisteredParticipants: true,
         },
       }),
     ]);
