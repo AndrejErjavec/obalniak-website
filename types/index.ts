@@ -1,3 +1,5 @@
+import { User } from "@/app/generated/prisma";
+
 export type NewsType = "Običajna novica" | "Alpinistična šola";
 
 export type SuccessResult<D> = {
@@ -23,3 +25,5 @@ export type PaginatedData<D> = {
 };
 
 export type AscentFilterType = "route" | "climbers";
+
+export type CoClimber = User | string;

@@ -4,12 +4,12 @@ import prisma from "@/lib/prisma";
 import type { Ascent, Prisma, User } from "@/app/generated/prisma";
 import { ActionResult, AscentFilterType, PaginatedData } from "@/types";
 import { err, ok } from "../action.utils";
-import { requireUser } from "../authMiddleware";
+import { requireUser, requireUserWithId } from "../authMiddleware";
 import { buildAscentQuery } from "../util";
 
 type CoClimber = User | string;
 
-type AscentWithData = Prisma.AscentGetPayload<{
+export type AscentWithData = Prisma.AscentGetPayload<{
   include: {
     author: true;
     registeredParticipants: true;
@@ -17,6 +17,29 @@ type AscentWithData = Prisma.AscentGetPayload<{
     photos: true;
   };
 }>;
+
+function parseClimbersPayload(payload: string) {
+  let climbers: CoClimber[] = [];
+
+  try {
+    climbers = JSON.parse(payload) as CoClimber[];
+  } catch {
+    throw new Error("Error parsing climbers payload");
+  }
+
+  const registeredParticipantIds = [
+    ...new Set(
+      climbers
+        .filter((climber): climber is User => typeof climber === "object" && climber !== null && "id" in climber)
+        .map((climber) => climber.id),
+    ),
+  ];
+  const unregisteredParticipantNames = [
+    ...new Set(climbers.filter((climber): climber is string => typeof climber === "string")),
+  ];
+
+  return { registeredParticipantIds, unregisteredParticipantNames };
+}
 
 export async function createAscent(formData: FormData): Promise<ActionResult<Ascent>> {
   const route = String(formData.get("route"));
@@ -34,24 +57,7 @@ export async function createAscent(formData: FormData): Promise<ActionResult<Asc
   }
 
   try {
-    let coClimbers: CoClimber[] = [];
-
-    try {
-      coClimbers = JSON.parse(coClimbersString) as CoClimber[];
-    } catch {
-      return err("Neveljavni podatki o soplezalcih");
-    }
-
-    const registeredParticipantIds = [
-      ...new Set(
-        coClimbers
-          .filter((climber): climber is User => typeof climber === "object" && climber !== null && "id" in climber)
-          .map((climber) => climber.id),
-      ),
-    ];
-    const unregisteredParticipantNames = [
-      ...new Set(coClimbers.filter((climber): climber is string => typeof climber === "string")),
-    ];
+    const { registeredParticipantIds, unregisteredParticipantNames } = parseClimbersPayload(coClimbersString);
 
     const ascent = await prisma.$transaction(async (prisma) => {
       const ascentData: Prisma.AscentCreateInput = {
@@ -113,7 +119,7 @@ export async function getAscents(
   pageSize: number,
   query?: string,
   queryBy?: AscentFilterType,
-): Promise<ActionResult<PaginatedData<Ascent[]>>> {
+): Promise<ActionResult<PaginatedData<AscentWithData[]>>> {
   const queryByInsert = buildAscentQuery(query, queryBy);
 
   try {
@@ -225,5 +231,79 @@ export async function getUserAscents(
   } catch (error) {
     console.log(error);
     return err("Napaka pri nalaganju");
+  }
+}
+
+export async function updateAscent(id: string, formData: FormData): Promise<ActionResult<Ascent>> {
+  const authorId = String(formData.get("authorId"));
+  await requireUserWithId(authorId);
+
+  const route = String(formData.get("route"));
+  const difficulty = String(formData.get("difficulty"));
+  const routeLength = Number(formData.get("routeLength"));
+  const date = String(formData.get("date"));
+  const text = String(formData.get("text"));
+  const coClimbersString = String(formData.get("coClimbers") ?? "[]");
+
+  if (!route || !difficulty || !date || !routeLength) {
+    return err("Manjkajoči podatki");
+  }
+
+  try {
+    const { registeredParticipantIds, unregisteredParticipantNames } = parseClimbersPayload(coClimbersString);
+
+    const { ascent: updatedAscent } = await prisma.$transaction(
+      async (tx) => {
+        const existingAscent = await tx.ascent.findUnique({
+          where: {
+            id,
+          },
+          include: {
+            photos: true,
+          },
+        });
+
+        if (!existingAscent) {
+          throw new Error("ASCENT_NOT_FOUND");
+        }
+
+        // TODO: photo update process
+
+        const ascent = await tx.ascent.update({
+          where: { id },
+          data: {
+            route,
+            difficulty,
+            routeLength,
+            date,
+            text,
+            registeredParticipants: {
+              set: registeredParticipantIds.map((id) => ({ id })),
+            },
+            unregisteredParticipants: {
+              deleteMany: {},
+              create: unregisteredParticipantNames.map((name) => ({ name })),
+            },
+          },
+        });
+
+        return {
+          ascent,
+        };
+      },
+      { timeout: 30000 },
+    );
+
+    // await cleanupImages(deletedPhotoUrls);
+
+    return ok(updatedAscent);
+  } catch (error) {
+    console.log(error);
+
+    if (error instanceof Error && error.message === "ASCENT_NOT_FOUND") {
+      return err("Novica ne obstaja");
+    }
+
+    return err("Prišlo je do napake");
   }
 }

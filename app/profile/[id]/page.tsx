@@ -1,4 +1,3 @@
-import { FaExclamationCircle } from "react-icons/fa";
 import { FiMail } from "react-icons/fi";
 import ExperienceLevelTicket from "@/components/ExperienceLevelTicket";
 import { getUser } from "@/lib/actions/user";

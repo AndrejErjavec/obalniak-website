@@ -5,32 +5,38 @@ import { formatDate } from "@/util";
 import { MdCalendarMonth } from "react-icons/md";
 import { FiCameraOff } from "react-icons/fi";
 import Badge from "../Badge";
-import { useRouter } from "next/navigation";
 import AscentParticipantsList from "./AscentParticipantsList";
+import { useState } from "react";
+import Button from "../ui/Button";
+import { HiOutlinePencilAlt } from "react-icons/hi";
+import Link from "next/link";
+import { UnregisteredParticipation, User } from "@/app/generated/prisma";
+import { AscentWithData } from "@/lib/actions/ascent";
 
-function AscentsTable({ ascents }) {
-  const router = useRouter();
+function AscentsTable({ ascents }: { ascents: AscentWithData[] }) {
+  const [editMode, setEditMode] = useState(true);
+
+  const toggleEditMode = () => {
+    setEditMode((curr) => !curr);
+  };
 
   return (
     <>
+      <Button className="my-3" onClick={toggleEditMode} variant={editMode === false ? "primary" : "danger"}>
+        <span>{editMode === false ? "Uredi" : "Prekliči urejanje"}</span>
+      </Button>
       <div className="rounded-md border border-gray-200">
         <table className="table-auto min-w-full text-gray-900 md:table">
           <tbody className="divide-y divide-gray-200 text-gray-900">
             {ascents.map((ascent) => {
               const participants = [
                 `${ascent.author.firstName} ${ascent.author.lastName}`,
-                ...ascent.registeredParticipants.map((p) => `${p.firstName} ${p.lastName}`),
-                ...ascent.unregisteredParticipants.map((p) => `${p.name}`),
+                ...ascent.registeredParticipants.map((p: User) => `${p.firstName} ${p.lastName}`),
+                ...ascent.unregisteredParticipants.map((p: UnregisteredParticipation) => `${p.name}`),
               ];
 
               return (
-                <tr
-                  key={ascent.id}
-                  role="link"
-                  tabIndex={0}
-                  onClick={() => router.push(`/ascent/${ascent.id}`)}
-                  className="cursor-pointer hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                >
+                <tr key={ascent.id}>
                   <td className="w-32 h-24 p-2">
                     {ascent.photos?.length > 0 ? (
                       <Image
@@ -49,9 +55,9 @@ function AscentsTable({ ascents }) {
                   <td className="py-5 pl-3 md:pl-6 align-center">
                     <div className="flex flex-col gap-3 align-top">
                       <div className="flex gap-3 items-center">
-                        <p className="font-semibold">
+                        <Link className="font-semibold cursor-pointer hover:underline" href={`/ascent/${ascent.id}`}>
                           {ascent.route} ({ascent.difficulty})
-                        </p>
+                        </Link>
                         <p className="font-base text-sm">{ascent.routeLength} m</p>
                       </div>
 
@@ -81,6 +87,18 @@ function AscentsTable({ ascents }) {
                       textClassName="text-gray-800 font-medium"
                     />
                   </td>
+                  {editMode && (
+                    <td>
+                      <Link
+                        href={`/ascent/${ascent.id}/edit/`}
+                        type="button"
+                        className="inline-flex rounded-full bg-white/90 p-1.5 border border-gray-200 hover:bg-white cursor-pointer"
+                        aria-label="uredi"
+                      >
+                        <HiOutlinePencilAlt size={20} />
+                      </Link>
+                    </td>
+                  )}
                 </tr>
               );
             })}

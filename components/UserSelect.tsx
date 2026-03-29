@@ -1,10 +1,9 @@
-import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
+import { type Dispatch, type SetStateAction } from "react";
 import CreatableAsyncSelect from "react-select/async-creatable";
 import { getUsersByName } from "@/lib/actions/user";
-import type { User } from "@/app/generated/prisma";
+import { CoClimber } from "@/types";
 import Label from "./ui/Label";
 
-type CoClimber = User | string;
 type SelectOption = {
   label: string;
   value: CoClimber;
@@ -12,19 +11,31 @@ type SelectOption = {
 
 type UserSelectProps = {
   userId: string;
+  selectedUsers?: CoClimber[];
   setUsers: Dispatch<SetStateAction<CoClimber[]>>;
 };
 
-export default function UserSelect({ userId, setUsers }: UserSelectProps) {
-  const [options, setOptions] = useState<SelectOption[]>([]);
+const toOption = (user: CoClimber): SelectOption => {
+  if (typeof user === "string") {
+    return {
+      label: user,
+      value: user,
+    };
+  }
 
+  return {
+    value: user,
+    label: `${user.firstName} ${user.lastName}`,
+  };
+};
+
+export default function UserSelect({ userId, selectedUsers = [], setUsers }: UserSelectProps) {
   const handleCreate = (inputValue: string) => {
-    const newOption = { label: inputValue, value: inputValue };
-    setOptions((prevOptions) => [...prevOptions, newOption]);
+    setUsers((prev) => [...prev, inputValue]);
   };
 
   const handleChange = (selectedOptions: readonly SelectOption[] | null) => {
-    setOptions(selectedOptions ? [...selectedOptions] : []);
+    setUsers(selectedOptions ? selectedOptions.map((option) => option.value) : []);
   };
 
   const fetchClimbers = async (query: string): Promise<SelectOption[]> => {
@@ -33,19 +44,13 @@ export default function UserSelect({ userId, setUsers }: UserSelectProps) {
       return [];
     }
 
-    const climbers = result.data;
-
-    return climbers
+    return result.data
       .filter((climber) => climber.id !== userId)
       .map((climber) => ({
         value: climber,
         label: `${climber.firstName} ${climber.lastName}`,
       }));
   };
-
-  useEffect(() => {
-    setUsers(options.map((user) => user.value));
-  }, [options, setUsers]);
 
   return (
     <div>
@@ -58,7 +63,7 @@ export default function UserSelect({ userId, setUsers }: UserSelectProps) {
         loadOptions={fetchClimbers}
         onChange={handleChange}
         onCreateOption={handleCreate}
-        value={options}
+        value={selectedUsers.map(toOption)}
         placeholder="Poiščite ali vnesite imena"
       />
     </div>

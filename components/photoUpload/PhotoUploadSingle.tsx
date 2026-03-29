@@ -85,7 +85,7 @@ export default function PhotoUploadSingle({ photo, setPhoto }: PhotoUploadSingle
           onDrop={handleDrop}
         >
           <p className="text-gray-500">
-            Tukaj spustite sliko ali <span className="text-blue-500 font-medium">izberite sliko z računalnika</span>.
+            Tukaj spustite sliko ali <span className="text-primary font-medium">izberite sliko z računalnika</span>.
           </p>
           <input
             ref={fileInputRef}

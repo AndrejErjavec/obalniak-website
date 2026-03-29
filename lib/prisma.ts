@@ -9,10 +9,15 @@ const adapter = new PrismaPg({
   connectionString: process.env.DATABASE_URL,
 });
 
+const omitConfig = {
+  user: { password: true },
+} as const;
+
 const prisma =
   globalForPrisma.prisma ||
   new PrismaClient({
     adapter,
+    omit: omitConfig,
   });
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;

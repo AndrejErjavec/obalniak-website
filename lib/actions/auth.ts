@@ -64,6 +64,9 @@ export async function createSession(
       where: {
         email: email,
       },
+      omit: {
+        password: false,
+      },
     });
     if (!user) {
       return err("Uporabnik ne obstaja");
@@ -83,7 +86,7 @@ export async function createSession(
     // Generate JWT
     const token = jwt.sign(
       { id: user.id, email: user.email },
-      process.env.JWT_SECRET, // Store this secret in .env.local
+      process.env.JWT_SECRET,
       // { expiresIn: "1d" },
     );
     // Set JWT in a secure cookie

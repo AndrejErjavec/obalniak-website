@@ -17,7 +17,7 @@ const poppins = Poppins({
 });
 
 const roboto = Roboto({
-  ubsets: ["latin"],
+  subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-roboto",
 });

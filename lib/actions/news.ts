@@ -1,11 +1,12 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { uploadImages } from "@/lib/actions/image";
+import { deleteImages, uploadImages } from "@/lib/actions/image";
 import { ActionResult, NewsType, PaginatedData } from "@/types";
 import { err, ok } from "../action.utils";
 import { Event, Photo } from "@/app/generated/prisma";
 import { requireAdmin } from "../authMiddleware";
+import { revalidatePath } from "next/cache";
 
 type EventWithCoverPhoto = Event & {
   coverPhoto: Photo | null;
@@ -18,54 +19,337 @@ type EventWithCoverPhotoAndAuthor = EventWithCoverPhoto & {
   };
 };
 
-export async function createEvent(formData: FormData): Promise<ActionResult<string>> {
-  const user = requireAdmin();
+export type AdminEventSummary = EventWithCoverPhotoAndAuthor;
 
-  const title = String(formData.get("title"));
-  const date = String(formData.get("date"));
-  const text = String(formData.get("text"));
-  const photo = formData.get("photo") as Blob;
-  const isPinned = formData.get("isPinned") === "true";
-  const type = String(formData.get("type"));
+type ParsedEventFormData = {
+  title: string;
+  date: string | null;
+  text: string;
+  photo: Blob | null;
+  isPinned: boolean;
+  type: NewsType;
+  removeCoverPhoto: boolean;
+};
+
+function parseEventFormData(formData: FormData): ParsedEventFormData {
+  const rawPhoto = formData.get("photo");
+
+  return {
+    title: String(formData.get("title") ?? "").trim(),
+    date: String(formData.get("date") ?? "").trim() || null,
+    text: String(formData.get("text") ?? "").trim(),
+    photo: rawPhoto instanceof Blob && rawPhoto.size > 0 ? rawPhoto : null,
+    isPinned: formData.get("isPinned") === "true",
+    type: String(formData.get("type")) as NewsType,
+    removeCoverPhoto: formData.get("removeCoverPhoto") === "true",
+  };
+}
+
+async function createPhotoRecord(photo: Blob, tx: { photo: typeof prisma.photo }) {
+  const uploadResult = await uploadImages([photo]);
+
+  if (Array.isArray(uploadResult)) {
+    throw new Error("Prišlo je do napake pri nalaganju slike");
+  }
+
+  if (!uploadResult.success) {
+    throw new Error(uploadResult.error);
+  }
+
+  const [url] = uploadResult.data.data as string[];
+
+  return tx.photo.create({
+    data: {
+      url,
+    },
+  });
+}
+
+function revalidateNewsPaths(eventId?: string) {
+  revalidatePath("/");
+  revalidatePath("/news");
+  revalidatePath("/alpine-school");
+  revalidatePath("/admin/news");
+
+  if (eventId) {
+    revalidatePath(`/news/${eventId}`);
+  }
+}
+
+async function cleanupImages(imageUrls: string[]) {
+  if (imageUrls.length === 0) {
+    return;
+  }
+
+  const deleteResult = await deleteImages(imageUrls);
+
+  if (!deleteResult.success) {
+    console.error("Failed to delete remote images:", deleteResult.error, imageUrls);
+  }
+}
+
+export async function createEvent(formData: FormData): Promise<ActionResult<AdminEventSummary>> {
+  const user = await requireAdmin();
+  const { title, date, text, photo, isPinned, type } = parseEventFormData(formData);
 
   if (!title || !text) {
     return err("Manjkajoči podatki");
   }
 
   try {
-    await prisma.$transaction(
-      async (prisma) => {
-        // upload cover photo
-        let uploadedPhoto;
+    const createdEvent = await prisma.$transaction(
+      async (tx) => {
+        let uploadedPhoto: Photo | null = null;
+
         if (photo) {
-          const secureUrls = await uploadImages([photo]);
-          uploadedPhoto = await prisma.photo.create({
-            data: {
-              url: secureUrls[0] as string,
-            },
-          });
+          uploadedPhoto = await createPhotoRecord(photo, tx);
         }
 
-        // create event
-        await prisma.event.create({
+        return tx.event.create({
           data: {
-            title: title,
-            date: date,
-            text: text,
-            type: type,
+            title,
+            date,
+            text,
+            type,
             authorId: user.id,
             coverPhotoId: uploadedPhoto?.id,
-            isPinned: isPinned,
+            isPinned,
+          },
+          include: {
+            coverPhoto: true,
+            author: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
           },
         });
       },
       { timeout: 30000 },
     );
 
-    return ok("Event created");
+    revalidateNewsPaths(createdEvent.id);
+
+    return ok(createdEvent);
   } catch (error) {
     console.log(error);
     return err("Prišlo je do napake");
+  }
+}
+
+export async function updateEvent(id: string, formData: FormData): Promise<ActionResult<AdminEventSummary>> {
+  await requireAdmin();
+
+  const { title, date, text, photo, isPinned, type, removeCoverPhoto } = parseEventFormData(formData);
+
+  if (!title || !text) {
+    return err("Manjkajoči podatki");
+  }
+
+  try {
+    const { event: updatedEvent, deletedPhotoUrls } = await prisma.$transaction(
+      async (tx) => {
+        const existingEvent = await tx.event.findUnique({
+          where: {
+            id,
+          },
+          include: {
+            coverPhoto: true,
+          },
+        });
+
+        if (!existingEvent) {
+          throw new Error("EVENT_NOT_FOUND");
+        }
+
+        let nextCoverPhotoId = existingEvent.coverPhotoId;
+        let oldCoverPhotoIdToDelete: string | null = null;
+        let oldCoverPhotoUrlToDelete: string | null = null;
+
+        if (photo) {
+          const newPhoto = await createPhotoRecord(photo, tx);
+          nextCoverPhotoId = newPhoto.id;
+          oldCoverPhotoIdToDelete = existingEvent.coverPhotoId;
+          oldCoverPhotoUrlToDelete = existingEvent.coverPhoto?.url ?? null;
+        } else if (removeCoverPhoto && existingEvent.coverPhotoId) {
+          nextCoverPhotoId = null;
+          oldCoverPhotoIdToDelete = existingEvent.coverPhotoId;
+          oldCoverPhotoUrlToDelete = existingEvent.coverPhoto?.url ?? null;
+        }
+
+        const event = await tx.event.update({
+          where: {
+            id,
+          },
+          data: {
+            title,
+            date,
+            text,
+            type,
+            isPinned,
+            coverPhotoId: nextCoverPhotoId,
+          },
+          include: {
+            coverPhoto: true,
+            author: {
+              select: {
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        });
+
+        if (oldCoverPhotoIdToDelete) {
+          await tx.photo.delete({
+            where: {
+              id: oldCoverPhotoIdToDelete,
+            },
+          });
+        }
+
+        return {
+          event,
+          deletedPhotoUrls: oldCoverPhotoUrlToDelete ? [oldCoverPhotoUrlToDelete] : [],
+        };
+      },
+      { timeout: 30000 },
+    );
+
+    await cleanupImages(deletedPhotoUrls);
+
+    revalidateNewsPaths(updatedEvent.id);
+
+    return ok(updatedEvent);
+  } catch (error) {
+    console.log(error);
+
+    if (error instanceof Error && error.message === "EVENT_NOT_FOUND") {
+      return err("Novica ne obstaja");
+    }
+
+    return err("Prišlo je do napake");
+  }
+}
+
+export async function deleteEvent(id: string): Promise<ActionResult<string>> {
+  await requireAdmin();
+
+  try {
+    const deletedPhotoUrls = await prisma.$transaction(async (tx) => {
+      const event = await tx.event.findUnique({
+        where: {
+          id,
+        },
+        include: {
+          coverPhoto: true,
+        },
+      });
+
+      if (!event) {
+        throw new Error("EVENT_NOT_FOUND");
+      }
+
+      await tx.event.delete({
+        where: {
+          id,
+        },
+      });
+
+      if (event.coverPhotoId) {
+        await tx.photo.delete({
+          where: {
+            id: event.coverPhotoId,
+          },
+        });
+      }
+
+      return event.coverPhoto?.url ? [event.coverPhoto.url] : [];
+    });
+
+    await cleanupImages(deletedPhotoUrls);
+
+    revalidateNewsPaths(id);
+
+    return ok(id);
+  } catch (error) {
+    console.log(error);
+
+    if (error instanceof Error && error.message === "EVENT_NOT_FOUND") {
+      return err("Novica ne obstaja");
+    }
+
+    return err("Prišlo je do napake");
+  }
+}
+
+export async function getAdminEvent(id: string): Promise<ActionResult<AdminEventSummary>> {
+  await requireAdmin();
+
+  try {
+    const event = await prisma.event.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        author: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+        coverPhoto: true,
+      },
+    });
+
+    if (!event) {
+      return err("Novica ne obstaja");
+    }
+
+    return ok(event);
+  } catch (error) {
+    console.log(error);
+    return err("Napaka pri nalaganju");
+  }
+}
+
+export async function getAdminEvents(
+  currentPage: number,
+  pageSize: number,
+): Promise<ActionResult<PaginatedData<AdminEventSummary[]>>> {
+  await requireAdmin();
+
+  try {
+    const events = await prisma.event.findMany({
+      orderBy: [{ isPinned: "desc" }, { createdAt: "desc" }],
+      skip: (currentPage - 1) * pageSize,
+      take: pageSize,
+      include: {
+        coverPhoto: true,
+        author: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
+
+    const totalEvents = await prisma.event.count();
+    const totalPages = Math.ceil(totalEvents / pageSize);
+
+    return ok({
+      data: events,
+      pagination: {
+        currentPage,
+        totalPages,
+        totalItems: totalEvents,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    return err("Napaka pri nalaganju");
   }
 }
 
@@ -77,7 +361,7 @@ export async function getEvents(
   try {
     const events = await prisma.event.findMany({
       where: {
-        ...(type && { type: type }),
+        ...(type && { type }),
       },
       orderBy: [{ isPinned: "desc" }, { createdAt: "desc" }],
       skip: (currentPage - 1) * pageSize,
@@ -89,7 +373,7 @@ export async function getEvents(
 
     const totalEvents = await prisma.event.count({
       where: {
-        ...(type && { type: type }),
+        ...(type && { type }),
       },
     });
     const totalPages = Math.ceil(totalEvents / pageSize);
@@ -111,7 +395,7 @@ export async function getEvent(id: string): Promise<ActionResult<EventWithCoverP
   try {
     const event = await prisma.event.findUnique({
       where: {
-        id: id,
+        id,
       },
       include: {
         author: {
