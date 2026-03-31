@@ -6,7 +6,7 @@ import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { ActionResult } from "@/types";
 import { User } from "@/app/generated/prisma";
-import { err, ok } from "../action.utils";
+import { err, ok } from "../action-utils";
 
 export async function checkAuth() {
   // Retrieve JWT from cookies

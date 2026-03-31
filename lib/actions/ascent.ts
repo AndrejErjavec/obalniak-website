@@ -3,9 +3,11 @@
 import prisma from "@/lib/prisma";
 import type { Ascent, Prisma, User } from "@/app/generated/prisma";
 import { ActionResult, AscentFilterType, PaginatedData } from "@/types";
-import { err, ok } from "../action.utils";
+import { err, ok } from "../action-utils";
 import { requireUser, requireUserWithId } from "../authMiddleware";
 import { buildAscentQuery } from "../util";
+import { deleteImages } from "./image";
+import { revalidatePath } from "next/cache";
 
 type CoClimber = User | string;
 
@@ -44,7 +46,7 @@ function parseClimbersPayload(payload: string) {
 export async function createAscent(formData: FormData): Promise<ActionResult<Ascent>> {
   const route = String(formData.get("route"));
   const difficulty = String(formData.get("difficulty"));
-  const routeLength = Number(formData.get("length"));
+  const routeLength = Number(formData.get("routeLength"));
   const date = String(formData.get("date"));
   const text = String(formData.get("text"));
   const coClimbersString = String(formData.get("coClimbers") ?? "[]");
@@ -183,7 +185,7 @@ export async function getUserAscents(
   userId: string,
   currentPage: number,
   pageSize: number,
-): Promise<ActionResult<PaginatedData<Ascent[]>>> {
+): Promise<ActionResult<PaginatedData<AscentWithData[]>>> {
   const where = {
     OR: [
       {
@@ -235,15 +237,14 @@ export async function getUserAscents(
 }
 
 export async function updateAscent(id: string, formData: FormData): Promise<ActionResult<Ascent>> {
-  const authorId = String(formData.get("authorId"));
-  await requireUserWithId(authorId);
-
   const route = String(formData.get("route"));
   const difficulty = String(formData.get("difficulty"));
   const routeLength = Number(formData.get("routeLength"));
   const date = String(formData.get("date"));
   const text = String(formData.get("text"));
   const coClimbersString = String(formData.get("coClimbers") ?? "[]");
+  const photoUrls = formData.getAll("photoUrls") as string[];
+  const removedPhotoIds = formData.getAll("removePhotoIds") as string[];
 
   if (!route || !difficulty || !date || !routeLength) {
     return err("Manjkajoči podatki");
@@ -251,6 +252,8 @@ export async function updateAscent(id: string, formData: FormData): Promise<Acti
 
   try {
     const { registeredParticipantIds, unregisteredParticipantNames } = parseClimbersPayload(coClimbersString);
+
+    let deletedPhotoUrls: string[] = [];
 
     const { ascent: updatedAscent } = await prisma.$transaction(
       async (tx) => {
@@ -267,7 +270,31 @@ export async function updateAscent(id: string, formData: FormData): Promise<Acti
           throw new Error("ASCENT_NOT_FOUND");
         }
 
-        // TODO: photo update process
+        await requireUserWithId(existingAscent.authorId);
+
+        // add new photos
+        if (photoUrls.length > 0) {
+          await tx.photo.createMany({
+            data: photoUrls.map((url) => ({
+              url,
+              ascentId: id,
+            })),
+          });
+        }
+
+        // delete removed photos
+        const photosToDelete = existingAscent.photos.filter((photo) => removedPhotoIds.includes(photo.id));
+        deletedPhotoUrls = photosToDelete.map((photo) => photo.url);
+
+        if (photosToDelete.length > 0) {
+          await tx.photo.deleteMany({
+            where: {
+              id: {
+                in: photosToDelete.map((photo) => photo.id),
+              },
+            },
+          });
+        }
 
         const ascent = await tx.ascent.update({
           where: { id },
@@ -294,7 +321,7 @@ export async function updateAscent(id: string, formData: FormData): Promise<Acti
       { timeout: 30000 },
     );
 
-    // await cleanupImages(deletedPhotoUrls);
+    await deleteImages(deletedPhotoUrls);
 
     return ok(updatedAscent);
   } catch (error) {
@@ -305,5 +332,44 @@ export async function updateAscent(id: string, formData: FormData): Promise<Acti
     }
 
     return err("Prišlo je do napake");
+  }
+}
+
+export async function deleteAscent(id: string): Promise<ActionResult<string>> {
+  try {
+    const deletedPhotoUrls = await prisma.$transaction(async (tx) => {
+      const existingAscent = await tx.ascent.findUnique({
+        where: {
+          id,
+        },
+        include: {
+          photos: true,
+        },
+      });
+
+      if (!existingAscent) {
+        throw new Error("ASCENT_NOT_FOUND");
+      }
+
+      await requireUserWithId(existingAscent.authorId);
+
+      const deleteResult = await prisma.ascent.delete({ where: { id }, include: { photos: true } });
+      // await tx.photo.deleteMany({
+      //   where: {
+      //     ascentId: id;
+      //   }
+      // });
+
+      console.log(deleteResult);
+      return existingAscent.photos.map((p) => p.url);
+    });
+
+    await deleteImages(deletedPhotoUrls);
+    revalidatePath("/");
+    revalidatePath("/ascent");
+    return ok(id);
+  } catch (e) {
+    console.log(e);
+    return err("Napaka pri brisanju");
   }
 }

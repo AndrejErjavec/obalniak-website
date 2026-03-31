@@ -91,7 +91,7 @@ export default async function Home({
                 className="font-medium text-gray-800 hover:text-gray-600 flex flex-row items-center gap-2"
               >
                 <GiBookCover size={30} className="text-blue-800" />
-                Alpiročnik Rašica
+                Alpriročnik Rašica
               </Link>
               <Link
                 href="https://ka.pzs.si/"

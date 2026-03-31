@@ -12,6 +12,7 @@ import Button from "@/components/ui/Button";
 import Option from "@/components/Option";
 import { NewsType } from "@/types";
 import { AdminEventSummary, createEvent, updateEvent } from "@/lib/actions/news";
+import { uploadPhotos } from "@/lib/api-service";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -76,10 +77,6 @@ export default function NewsEditorForm({ mode, event }: NewsEditorFormProps) {
     nextFormData.append("type", formState.type);
     nextFormData.append("removeCoverPhoto", String(formState.removeCoverPhoto));
 
-    if (photo) {
-      nextFormData.append("photo", photo);
-    }
-
     return nextFormData;
   };
 
@@ -88,6 +85,18 @@ export default function NewsEditorForm({ mode, event }: NewsEditorFormProps) {
     setIsSubmitting(true);
 
     const payload = buildFormData();
+    const uploadedPhotosResult = await uploadPhotos(photo ? [photo] : []);
+
+    if (!uploadedPhotosResult.success) {
+      toast.error(uploadedPhotosResult.error);
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (uploadedPhotosResult.data[0]) {
+      payload.append("photoUrl", uploadedPhotosResult.data[0]);
+    }
+
     const result = mode === "edit" && event ? await updateEvent(event.id, payload) : await createEvent(payload);
 
     if (!result.success) {

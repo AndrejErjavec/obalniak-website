@@ -7,7 +7,7 @@ export default function ProfileImage({
   isRegistered = true,
 }: {
   text: string;
-  size: number;
+  size?: number;
   isRegistered?: boolean;
 }) {
   const fontSize = size * 0.45;

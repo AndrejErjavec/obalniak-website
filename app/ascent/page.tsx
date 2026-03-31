@@ -46,7 +46,7 @@ export default async function Ascents({
           <Search />
         </div>
         {/* <Suspense fallback={<AscentSkeleton />}> */}
-        <AscentsTable ascents={ascents} />
+        <AscentsTable ascents={ascents} withHeader={false} />
         <Pagination totalPages={totalPages} currentPage={currentPage} />
         {/* </Suspense> */}
       </div>

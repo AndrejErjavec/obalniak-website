@@ -1,11 +1,11 @@
 "use client";
 
-import { Photo, UnregisteredParticipation, User } from "@/app/generated/prisma";
+import { Photo, User } from "@/app/generated/prisma";
 import { AscentWithData, createAscent, updateAscent } from "@/lib/actions/ascent";
-import { useRef, useState } from "react";
-import PhotoUploadMulti, { UploadPhoto } from "../photoUpload/PhotoUploadMulti";
-import { ActionResult } from "@/types";
-import { err, ok } from "@/lib/action.utils";
+import { useEffect, useRef, useState } from "react";
+import PhotoUploadMulti from "../photoUpload/PhotoUploadMulti";
+import { ActionResult, NewPhotoItem } from "@/types";
+import { err, ok } from "@/lib/action-utils";
 import { toast } from "react-toastify";
 import Button from "../ui/Button";
 import Label from "../ui/Label";
@@ -13,6 +13,7 @@ import Input from "../ui/Input";
 import UserSelect from "../UserSelect";
 import TextArea from "../ui/TextArea";
 import { useRouter } from "next/navigation";
+import { uploadPhotos } from "@/lib/api-service";
 
 type FormState = {
   route: string;
@@ -20,9 +21,6 @@ type FormState = {
   routeLength: number;
   date: string;
   text: string;
-  registeredParticipants: User[];
-  unregisteredParticipants: UnregisteredParticipation[];
-  removePhotos: Photo[];
 };
 
 type AscentEditorFormProps = {
@@ -41,9 +39,6 @@ function getInitialState(ascent?: AscentWithData): FormState {
       routeLength: 0,
       date: "",
       text: "",
-      registeredParticipants: [],
-      unregisteredParticipants: [],
-      removePhotos: [],
     };
   }
 
@@ -53,9 +48,6 @@ function getInitialState(ascent?: AscentWithData): FormState {
     routeLength: ascent.routeLength,
     date: ascent.date,
     text: ascent.text || "",
-    registeredParticipants: ascent.registeredParticipants,
-    unregisteredParticipants: ascent.unregisteredParticipants,
-    removePhotos: ascent.photos,
   };
 }
 
@@ -72,7 +64,9 @@ function AscentEditorForm({ userId, mode, ascent }: AscentEditorFormProps) {
 
   const [formState, setFormState] = useState<FormState>(getInitialState(ascent));
   const [coClimbers, setCoClimbers] = useState<CoClimber[]>(getInitialCoClimbers(ascent));
-  const [photos, setPhotos] = useState<UploadPhoto[]>([]);
+  const [existingPhotos, setExistingPhotos] = useState<Photo[]>(ascent?.photos ?? []);
+  const [removedPhotoIds, setRemovedPhotoIds] = useState<string[]>([]);
+  const [newPhotos, setNewPhotos] = useState<NewPhotoItem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const router = useRouter();
@@ -92,41 +86,8 @@ function AscentEditorForm({ userId, mode, ascent }: AscentEditorFormProps) {
     nextFormData.append("routeLength", String(formState.routeLength));
     nextFormData.append("date", String(formState.date));
     nextFormData.append("text", String(formState.text));
-    nextFormData.append("authorId", String(userId));
-
-    // if (photo) {
-    //   nextFormData.append("photo", photo);
-    // }
 
     return nextFormData;
-  };
-
-  const uploadPhotos = async (files: File[]): Promise<ActionResult<string[]>> => {
-    if (files.length === 0) {
-      return ok([]);
-    }
-
-    const formData = new FormData();
-    for (const photo of files) {
-      formData.append("photos", photo);
-    }
-
-    try {
-      const response = await fetch("/api/image-upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        return err(result.error);
-      }
-
-      return ok(result.data.map((d: { url: string; publicId: string }) => d.url));
-    } catch {
-      return err("Photo upload failed");
-    }
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -134,9 +95,11 @@ function AscentEditorForm({ userId, mode, ascent }: AscentEditorFormProps) {
     setIsSubmitting(true);
 
     const payload = buildFormData();
+
     payload.append("coClimbers", JSON.stringify(coClimbers));
 
-    const photoFiles = photos.map((photo) => photo.file);
+    // upload new photos
+    const photoFiles = newPhotos.map((photo) => photo.file);
     const uploadedPhotosResult = await uploadPhotos(photoFiles);
 
     if ("error" in uploadedPhotosResult) {
@@ -149,6 +112,13 @@ function AscentEditorForm({ userId, mode, ascent }: AscentEditorFormProps) {
       payload.append("photoUrls", photoUrl);
     }
 
+    // photos to delete
+    if (mode === "edit") {
+      for (const removedPhotoId of removedPhotoIds) {
+        payload.append("removePhotoIds", removedPhotoId);
+      }
+    }
+
     const result = mode === "edit" && ascent ? await updateAscent(ascent.id, payload) : await createAscent(payload);
 
     if (!result.success) {
@@ -159,7 +129,9 @@ function AscentEditorForm({ userId, mode, ascent }: AscentEditorFormProps) {
 
     formRef.current?.reset();
     setCoClimbers([]);
-    setPhotos([]);
+    setNewPhotos([]);
+    setExistingPhotos([]);
+    setRemovedPhotoIds([]);
 
     toast.success(mode === "edit" ? "Objava posodobljena" : "Objava ustvarjena");
 
@@ -206,13 +178,13 @@ function AscentEditorForm({ userId, mode, ascent }: AscentEditorFormProps) {
             </div>
 
             <div>
-              <Label htmlFor="length" className="mb-1">
+              <Label htmlFor="routeLength" className="mb-1">
                 Dolžina
               </Label>
               <Input
                 type="number"
-                id="length"
-                name="length"
+                id="routeLength"
+                name="routeLength"
                 placeholder="dolžina smeri v metrih"
                 value={formState.routeLength}
                 onChange={(inputEvent) => handleInputChange("routeLength", inputEvent.target.value)}
@@ -252,7 +224,13 @@ function AscentEditorForm({ userId, mode, ascent }: AscentEditorFormProps) {
         </div>
 
         <div className="mt-7">
-          <PhotoUploadMulti photos={photos} setPhotos={setPhotos} />
+          <PhotoUploadMulti
+            existingPhotos={existingPhotos}
+            removedPhotoIds={removedPhotoIds}
+            newPhotos={newPhotos}
+            setRemovedPhotoIds={setRemovedPhotoIds}
+            setNewPhotos={setNewPhotos}
+          />
         </div>
 
         <Button type="submit" className="md:hidden! w-full mt-7" loading={isSubmitting} disabled={isSubmitting}>

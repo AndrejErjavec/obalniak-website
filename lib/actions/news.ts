@@ -1,9 +1,9 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { deleteImages, uploadImages } from "@/lib/actions/image";
+import { deleteImages } from "@/lib/actions/image";
 import { ActionResult, NewsType, PaginatedData } from "@/types";
-import { err, ok } from "../action.utils";
+import { err, ok } from "../action-utils";
 import { Event, Photo } from "@/app/generated/prisma";
 import { requireAdmin } from "../authMiddleware";
 import { revalidatePath } from "next/cache";
@@ -25,42 +25,32 @@ type ParsedEventFormData = {
   title: string;
   date: string | null;
   text: string;
-  photo: Blob | null;
+  photoUrl: string | null;
   isPinned: boolean;
   type: NewsType;
   removeCoverPhoto: boolean;
 };
 
 function parseEventFormData(formData: FormData): ParsedEventFormData {
-  const rawPhoto = formData.get("photo");
-
   return {
     title: String(formData.get("title") ?? "").trim(),
     date: String(formData.get("date") ?? "").trim() || null,
     text: String(formData.get("text") ?? "").trim(),
-    photo: rawPhoto instanceof Blob && rawPhoto.size > 0 ? rawPhoto : null,
+    photoUrl: String(formData.get("photoUrl") ?? "").trim() || null,
     isPinned: formData.get("isPinned") === "true",
     type: String(formData.get("type")) as NewsType,
     removeCoverPhoto: formData.get("removeCoverPhoto") === "true",
   };
 }
 
-async function createPhotoRecord(photo: Blob, tx: { photo: typeof prisma.photo }) {
-  const uploadResult = await uploadImages([photo]);
-
-  if (Array.isArray(uploadResult)) {
-    throw new Error("Prišlo je do napake pri nalaganju slike");
+async function createPhotoRecord(photoUrl: string, tx: { photo: typeof prisma.photo }) {
+  if (!photoUrl) {
+    throw new Error("Manjka URL slike");
   }
-
-  if (!uploadResult.success) {
-    throw new Error(uploadResult.error);
-  }
-
-  const [url] = uploadResult.data.data as string[];
 
   return tx.photo.create({
     data: {
-      url,
+      url: photoUrl,
     },
   });
 }
@@ -76,21 +66,9 @@ function revalidateNewsPaths(eventId?: string) {
   }
 }
 
-async function cleanupImages(imageUrls: string[]) {
-  if (imageUrls.length === 0) {
-    return;
-  }
-
-  const deleteResult = await deleteImages(imageUrls);
-
-  if (!deleteResult.success) {
-    console.error("Failed to delete remote images:", deleteResult.error, imageUrls);
-  }
-}
-
 export async function createEvent(formData: FormData): Promise<ActionResult<AdminEventSummary>> {
   const user = await requireAdmin();
-  const { title, date, text, photo, isPinned, type } = parseEventFormData(formData);
+  const { title, date, text, photoUrl, isPinned, type } = parseEventFormData(formData);
 
   if (!title || !text) {
     return err("Manjkajoči podatki");
@@ -101,8 +79,8 @@ export async function createEvent(formData: FormData): Promise<ActionResult<Admi
       async (tx) => {
         let uploadedPhoto: Photo | null = null;
 
-        if (photo) {
-          uploadedPhoto = await createPhotoRecord(photo, tx);
+        if (photoUrl) {
+          uploadedPhoto = await createPhotoRecord(photoUrl, tx);
         }
 
         return tx.event.create({
@@ -141,7 +119,7 @@ export async function createEvent(formData: FormData): Promise<ActionResult<Admi
 export async function updateEvent(id: string, formData: FormData): Promise<ActionResult<AdminEventSummary>> {
   await requireAdmin();
 
-  const { title, date, text, photo, isPinned, type, removeCoverPhoto } = parseEventFormData(formData);
+  const { title, date, text, photoUrl, isPinned, type, removeCoverPhoto } = parseEventFormData(formData);
 
   if (!title || !text) {
     return err("Manjkajoči podatki");
@@ -167,8 +145,8 @@ export async function updateEvent(id: string, formData: FormData): Promise<Actio
         let oldCoverPhotoIdToDelete: string | null = null;
         let oldCoverPhotoUrlToDelete: string | null = null;
 
-        if (photo) {
-          const newPhoto = await createPhotoRecord(photo, tx);
+        if (photoUrl) {
+          const newPhoto = await createPhotoRecord(photoUrl, tx);
           nextCoverPhotoId = newPhoto.id;
           oldCoverPhotoIdToDelete = existingEvent.coverPhotoId;
           oldCoverPhotoUrlToDelete = existingEvent.coverPhoto?.url ?? null;
@@ -217,7 +195,7 @@ export async function updateEvent(id: string, formData: FormData): Promise<Actio
       { timeout: 30000 },
     );
 
-    await cleanupImages(deletedPhotoUrls);
+    await deleteImages(deletedPhotoUrls);
 
     revalidateNewsPaths(updatedEvent.id);
 
@@ -268,7 +246,7 @@ export async function deleteEvent(id: string): Promise<ActionResult<string>> {
       return event.coverPhoto?.url ? [event.coverPhoto.url] : [];
     });
 
-    await cleanupImages(deletedPhotoUrls);
+    await deleteImages(deletedPhotoUrls);
 
     revalidateNewsPaths(id);
 

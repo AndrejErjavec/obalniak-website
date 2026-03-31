@@ -1,8 +1,11 @@
 import { getComments } from "@/lib/actions/comment";
 import CommentItem from "@/components/comments/CommentItem";
 import CommentForm from "./CommentForm";
+import { checkAuth } from "@/lib/actions/auth";
 
 export default async function CommentSection({ ascentId }: { ascentId: string }) {
+  const { user } = await checkAuth();
+
   const response = await getComments(ascentId);
 
   if (!response.success) {
@@ -17,7 +20,7 @@ export default async function CommentSection({ ascentId }: { ascentId: string })
       {comments.length > 0 ? (
         <div className="flex flex-col gap-3">
           {comments.map((comment) => (
-            <CommentItem comment={comment} key={comment.id} />
+            <CommentItem comment={comment} key={comment.id} userId={user?.id} />
           ))}
         </div>
       ) : (

@@ -1,24 +1,23 @@
 "use client";
 
+import { Photo } from "@/app/generated/prisma";
+import { EditablePhotoItem, NewPhotoItem } from "@/types";
 import Image from "next/image";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import type { ChangeEvent, Dispatch, DragEvent, SetStateAction } from "react";
 import { FaTrashAlt } from "react-icons/fa";
 
-export type UploadPhoto = {
-  id: string;
-  file: File;
-  previewUrl: string;
-};
-
 type PhotoUploadMultiProps = {
-  photos: UploadPhoto[];
-  setPhotos: Dispatch<SetStateAction<UploadPhoto[]>>;
+  existingPhotos: Photo[];
+  removedPhotoIds: string[];
+  newPhotos: NewPhotoItem[];
+  setRemovedPhotoIds: Dispatch<SetStateAction<string[]>>;
+  setNewPhotos: Dispatch<SetStateAction<NewPhotoItem[]>>;
 };
 
 type PreviewImageProps = {
-  item: UploadPhoto;
-  onRemove: (id: string) => void;
+  item: EditablePhotoItem;
+  onRemove: (item: EditablePhotoItem) => void;
 };
 
 const PreviewImage = memo(function PreviewImage({ item, onRemove }: PreviewImageProps) {
@@ -26,15 +25,15 @@ const PreviewImage = memo(function PreviewImage({ item, onRemove }: PreviewImage
     <div className="relative">
       <button
         type="button"
-        onClick={() => onRemove(item.id)}
+        onClick={() => onRemove(item)}
         className="absolute top-2 right-2 z-10 rounded-full bg-white/90 p-1.5 shadow-sm hover:bg-white cursor-pointer"
         aria-label="Odstrani sliko"
       >
         <FaTrashAlt className="fill-red-500" />
       </button>
       <Image
-        src={item.previewUrl}
-        alt={item.file.name}
+        src={item.kind === "new" ? item.previewUrl : item.url}
+        alt={item.kind === "new" ? item.file.name : item.name}
         width={500}
         height={500}
         className="w-full object-contain border border-gray-300 rounded-md shadow-sm"
@@ -43,19 +42,43 @@ const PreviewImage = memo(function PreviewImage({ item, onRemove }: PreviewImage
   );
 });
 
-export default function PhotoUploadMulti({ photos, setPhotos }: PhotoUploadMultiProps) {
+export default function PhotoUploadMulti({
+  existingPhotos,
+  removedPhotoIds,
+  newPhotos,
+  setRemovedPhotoIds,
+  setNewPhotos,
+}: PhotoUploadMultiProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const photosRef = useRef<UploadPhoto[]>([]);
+  const newPhotosRef = useRef<NewPhotoItem[]>([]);
+
+  const visiblePhotos: EditablePhotoItem[] = [
+    ...existingPhotos
+      .filter((photo) => !removedPhotoIds.includes(photo.id))
+      .map((photo) => ({
+        id: photo.id,
+        kind: "existing" as const,
+        url: photo.url,
+        name: `Photo ${photo.id}`,
+      })),
+    ...newPhotos.map((photo) => ({
+      id: photo.id,
+      kind: "new" as const,
+      file: photo.file,
+      previewUrl: photo.previewUrl,
+      name: photo.file.name,
+    })),
+  ];
 
   useEffect(() => {
-    photosRef.current = photos;
-  }, [photos]);
+    newPhotosRef.current = newPhotos;
+  }, [newPhotos]);
 
   useEffect(() => {
     return () => {
-      photosRef.current.forEach((photo) => {
+      newPhotosRef.current.forEach((photo) => {
         URL.revokeObjectURL(photo.previewUrl);
       });
     };
@@ -80,28 +103,42 @@ export default function PhotoUploadMulti({ photos, setPhotos }: PhotoUploadMulti
         return;
       }
 
-      const existingKeys = new Set(photos.map((photo) => getFileKey(photo.file)));
+      setNewPhotos((prev) => {
+        const existingKeys = new Set(prev.map((photo) => getFileKey(photo.file)));
+        const appendedKeys = new Set<string>();
 
-      const uniqueNewFiles = imageFiles.filter((file) => !existingKeys.has(getFileKey(file)));
+        const uniqueNewFiles = imageFiles.filter((file) => {
+          const key = getFileKey(file);
 
-      if (uniqueNewFiles.length === 0) {
-        setError("Te slike so že dodane.");
-        return;
-      }
+          if (existingKeys.has(key) || appendedKeys.has(key)) {
+            return false;
+          }
 
-      const newPhotos: UploadPhoto[] = uniqueNewFiles.map((file) => ({
-        id: crypto.randomUUID(),
-        file,
-        previewUrl: URL.createObjectURL(file),
-      }));
+          appendedKeys.add(key);
+          return true;
+        });
 
-      setPhotos((prev) => [...prev, ...newPhotos]);
+        if (uniqueNewFiles.length === 0) {
+          setError("Te slike so že dodane.");
+          return prev;
+        }
+
+        const newPhotoItems: NewPhotoItem[] = uniqueNewFiles.map((file) => ({
+          id: crypto.randomUUID(),
+          kind: "new",
+          file,
+          previewUrl: URL.createObjectURL(file),
+          name: file.name,
+        }));
+
+        return [...prev, ...newPhotoItems];
+      });
 
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
     },
-    [photos, setPhotos],
+    [setNewPhotos],
   );
 
   const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
@@ -132,21 +169,15 @@ export default function PhotoUploadMulti({ photos, setPhotos }: PhotoUploadMulti
     appendFiles(files);
   };
 
-  const handleRemoveImage = useCallback(
-    (id: string) => {
-      setPhotos((prev) => {
-        const itemToRemove = prev.find((photo) => photo.id === id);
+  const handleRemove = (item: EditablePhotoItem) => {
+    if (item.kind === "existing") {
+      setRemovedPhotoIds((prev) => (prev.includes(item.id) ? prev : [...prev, item.id]));
+      return;
+    }
 
-        if (!itemToRemove) {
-          return prev;
-        }
-
-        URL.revokeObjectURL(itemToRemove.previewUrl);
-        return prev.filter((photo) => photo.id !== id);
-      });
-    },
-    [setPhotos],
-  );
+    URL.revokeObjectURL(item.previewUrl);
+    setNewPhotos((prev) => prev.filter((photo) => photo.id !== item.id));
+  };
 
   return (
     <div className="space-y-6">
@@ -183,11 +214,11 @@ export default function PhotoUploadMulti({ photos, setPhotos }: PhotoUploadMulti
         {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
       </div>
 
-      {photos.length > 0 && (
+      {visiblePhotos.length > 0 && (
         <div>
           <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {photos.map((item) => (
-              <PreviewImage key={item.id} item={item} onRemove={handleRemoveImage} />
+            {visiblePhotos.map((item) => (
+              <PreviewImage key={item.id} item={item} onRemove={handleRemove} />
             ))}
           </div>
         </div>

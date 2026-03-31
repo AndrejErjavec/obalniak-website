@@ -94,13 +94,12 @@ model Event {
   createdAt       DateTime  @default(now())
   author          User      @relation(fields: [authorId], references: [id])
   authorId        String
-  coverPhoto      Photo?    @relation(fields: [coverPhotoId], references: [id])
-  coverPhotoId    String?
+  coverPhoto      Photo?  @relation(fields: [coverPhotoId], references: [id])
+  coverPhotoId    String? 
   type            String
   isPinned        Boolean   @default(false)
 
   @@index([authorId])
-  @@index([coverPhotoId])
 }
 
 // enum ExperienceLevel {

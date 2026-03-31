@@ -24,6 +24,23 @@ export type PaginatedData<D> = {
   };
 };
 
+export type ExistingPhotoItem = {
+  id: string;
+  kind: "existing";
+  url: string;
+  name: string;
+};
+
+export type NewPhotoItem = {
+  id: string;
+  kind: "new";
+  file: File;
+  previewUrl: string;
+  name: string;
+};
+
+export type EditablePhotoItem = ExistingPhotoItem | NewPhotoItem;
+
 export type AscentFilterType = "route" | "climbers";
 
 export type CoClimber = User | string;

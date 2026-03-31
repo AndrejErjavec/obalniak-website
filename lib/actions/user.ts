@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { type ActionResult } from "@/types";
 import { User } from "@/app/generated/prisma";
-import { err, ok } from "../action.utils";
+import { err, ok } from "../action-utils";
 
 export async function createUser(
   prevState: ActionResult<User> | null,

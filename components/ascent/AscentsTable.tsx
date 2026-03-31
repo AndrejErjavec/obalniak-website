@@ -6,25 +6,66 @@ import { MdCalendarMonth } from "react-icons/md";
 import { FiCameraOff } from "react-icons/fi";
 import Badge from "../Badge";
 import AscentParticipantsList from "./AscentParticipantsList";
-import { useState } from "react";
 import Button from "../ui/Button";
-import { HiOutlinePencilAlt } from "react-icons/hi";
+import { HiOutlinePencilAlt, HiOutlineTrash } from "react-icons/hi";
 import Link from "next/link";
 import { UnregisteredParticipation, User } from "@/app/generated/prisma";
-import { AscentWithData } from "@/lib/actions/ascent";
+import { AscentWithData, deleteAscent } from "@/lib/actions/ascent";
+import { toast } from "react-toastify";
+import { useState } from "react";
+import Divider from "../ui/Divider";
 
-function AscentsTable({ ascents }: { ascents: AscentWithData[] }) {
-  const [editMode, setEditMode] = useState(true);
-
+function AscentsTable({
+  ascents,
+  totalAscents,
+  withHeader,
+}: {
+  ascents: AscentWithData[];
+  totalAscents?: number;
+  withHeader: boolean;
+}) {
+  const [editMode, setEditMode] = useState(false);
   const toggleEditMode = () => {
     setEditMode((curr) => !curr);
   };
 
+  const handleDeleteAscent = async (id: string) => {
+    const result = await deleteAscent(id);
+
+    if (!result.success) {
+      toast.error(result.error);
+      return;
+    }
+
+    toast.success("Objava izbrisana");
+  };
+
   return (
     <>
-      <Button className="my-3" onClick={toggleEditMode} variant={editMode === false ? "primary" : "danger"}>
-        <span>{editMode === false ? "Uredi" : "Prekliči urejanje"}</span>
-      </Button>
+      {withHeader && (
+        <>
+          <div className="flex items-center justify-between">
+            <div className="flex flex-row gap-3 items-center py-5">
+              <h3 className="text-xl font-semibold">Vzponi</h3>
+              <div className="flex w-8 h-8 rounded-full bg-slate-500 text-white justify-center items-center">
+                <p className="text-sm font-medium">{totalAscents}</p>
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <div className="flex gap-3 items-center">
+                <Link href="/ascent/create">
+                  <Button>Novo poročilo</Button>
+                </Link>
+                <Button className="my-3" onClick={toggleEditMode} variant={editMode === false ? "primary" : "danger"}>
+                  <span>{editMode === false ? "Uredi" : "Prekliči urejanje"}</span>
+                </Button>
+              </div>
+            </div>
+          </div>
+          <Divider />
+        </>
+      )}
+
       <div className="rounded-md border border-gray-200">
         <table className="table-auto min-w-full text-gray-900 md:table">
           <tbody className="divide-y divide-gray-200 text-gray-900">
@@ -89,14 +130,22 @@ function AscentsTable({ ascents }: { ascents: AscentWithData[] }) {
                   </td>
                   {editMode && (
                     <td>
-                      <Link
-                        href={`/ascent/${ascent.id}/edit/`}
-                        type="button"
-                        className="inline-flex rounded-full bg-white/90 p-1.5 border border-gray-200 hover:bg-white cursor-pointer"
-                        aria-label="uredi"
-                      >
-                        <HiOutlinePencilAlt size={20} />
-                      </Link>
+                      <div className="flex gap-4">
+                        <Link
+                          href={`/ascent/${ascent.id}/edit/`}
+                          type="button"
+                          className="inline-flex rounded-full bg-white/90 p-1.5 border border-gray-200 hover:bg-white cursor-pointer"
+                          aria-label="uredi"
+                        >
+                          <HiOutlinePencilAlt size={20} />
+                        </Link>
+                        <button
+                          type="button"
+                          className="inline-flex rounded-full bg-white/90 p-1.5 border border-gray-200 hover:bg-white cursor-pointer"
+                        >
+                          <HiOutlineTrash size={20} color={"red"} onClick={() => handleDeleteAscent(ascent.id)} />
+                        </button>
+                      </div>
                     </td>
                   )}
                 </tr>

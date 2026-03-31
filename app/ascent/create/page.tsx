@@ -1,5 +1,5 @@
+import AscentEditorForm from "@/components/ascent/AscentEditorForm";
 import { checkAuth } from "@/lib/actions/auth";
-import CreateAscentForm from "./CreateAscentForm";
 
 export default async function CreateAscentPage() {
   const { user } = await checkAuth();
@@ -12,5 +12,5 @@ export default async function CreateAscentPage() {
     );
   }
 
-  return <CreateAscentForm userId={user.id} />;
+  return <AscentEditorForm mode="create" userId={user.id} />;
 }

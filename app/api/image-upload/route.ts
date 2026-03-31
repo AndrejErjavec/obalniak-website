@@ -72,9 +72,12 @@ export async function POST(request: Request) {
       }),
     );
 
-    return NextResponse.json({
-      data: uploaded,
-    });
+    return NextResponse.json(
+      {
+        data: uploaded,
+      },
+      { status: 200 },
+    );
   } catch (error) {
     console.error(error);
 

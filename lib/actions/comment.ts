@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import { checkAuth } from "./auth";
 import { revalidatePath } from "next/cache";
 import { ActionResult } from "@/types";
-import { err, ok } from "../action.utils";
+import { err, ok } from "../action-utils";
 import { Comment } from "@/app/generated/prisma";
 
 type CommentWithAuthor = Comment & {
