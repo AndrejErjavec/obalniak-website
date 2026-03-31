@@ -8,14 +8,14 @@ export default function Rules() {
       <h1 className="text-3xl font-semibold my-8">Pravila</h1>
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2">
-          <FaRegFilePdf className="text-red-500/90" size={24} />
-          <Link href="rules/pravilnik" className="text-lg text-slate-800 underline">
+          <FaRegFilePdf className="text-red-600/90" size={22} />
+          <Link href="rules/pravilnik" className="text-slate-800 underline">
             Pravilnik o delovanju članov
           </Link>
         </div>
         <div className="flex items-center gap-2">
-          <FaRegFilePdf className="text-red-500/90" size={24} />
-          <Link href="rules/statut" className="text-lg text-slate-800 underline">
+          <FaRegFilePdf className="text-red-600/90" size={22} />
+          <Link href="rules/statut" className="text-slate-800 underline">
             Status Obalnega alpinističnega kluba
           </Link>
         </div>

@@ -123,16 +123,18 @@ const Header = () => {
               )}
 
               {isAuthenticated && currentUser && (
-                <button onClick={handleToggleUserDropdown} className="flex items-center gap-2 ml-3 cursor-pointer">
-                  <ProfileBanner name={`${currentUser.firstName} ${currentUser.lastName}`} />
-                </button>
+                <div className="relative ml-3">
+                  <button onClick={handleToggleUserDropdown} className="flex items-center gap-2 cursor-pointer">
+                    <ProfileBanner name={`${currentUser.firstName} ${currentUser.lastName}`} />
+                  </button>
+                  {userDropdownOpen && (
+                    <UserDropdown user={currentUser} setIsOpen={setUserDropdownOpen} handleLogout={handleLogout} />
+                  )}
+                </div>
               )}
             </div>
           </div>
         </div>
-        {userDropdownOpen && (
-          <UserDropdown user={currentUser} setIsOpen={setUserDropdownOpen} handleLogout={handleLogout} />
-        )}
       </nav>
 
       {/* <!-- Mobile header --> */}

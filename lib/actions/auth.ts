@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { ActionResult } from "@/types";
-import { User } from "@/app/generated/prisma";
+import { MembershipRequestStatus, User } from "@/app/generated/prisma";
 import { err, ok } from "../action-utils";
 
 export async function checkAuth() {
@@ -79,7 +79,7 @@ export async function createSession(
       return err("Napačno geslo");
     }
 
-    if (!user.accepted) {
+    if (user.status !== MembershipRequestStatus.ACCEPTED) {
       return err("Vaš profil še ni bil potrjen s strani administratorja.");
     }
 

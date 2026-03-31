@@ -15,7 +15,7 @@ function AscentListSimple({ ascents }) {
         return (
           <Link
             href={`/ascent/${ascent.id}`}
-            className="flex flex-col gap-5 px-2 py-3 hover:bg-gray-100"
+            className="flex flex-col gap-5 px-2 py-3 hover:bg-gray-100 rounded-md"
             key={ascent.id}
           >
             {/* title & date */}

@@ -15,7 +15,7 @@ model User {
   lastName            String
   password            String
   experienceLevel     String?
-  accepted            Boolean                  @default(false)
+  status              MembershipRequestStatus  @default(PENDING)
   isAdmin             Boolean                  @default(false)
   createdAt           DateTime                 @default(now())
   authoredAscents     Ascent[]                 @relation("authoredAscents")
@@ -102,10 +102,8 @@ model Event {
   @@index([authorId])
 }
 
-// enum ExperienceLevel {
-//   TECAJNIK
-//   MLAJSI_PRIPRAVNIK
-//   STAREJSI_PRIPRAVNIK
-//   ALPINIST
-//   ALPINISTICNI_INSTRUKTOR
-// }
+enum MembershipRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}

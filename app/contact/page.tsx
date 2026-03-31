@@ -8,7 +8,7 @@ export default function ContactPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 items-start gap-5">
         <div className="flex flex-col border border-gray-200 p-5 rounded-lg shadow-sm">
           <div className="flex gap-3 items-center mb-3">
-            <div className="rounded-full p-3 bg-blue-800 text-white">
+            <div className="rounded-full p-3 bg-primary text-white">
               <FiMail />
             </div>
             <h3 className="font-medium text-2xl text-slate-800">Naslov</h3>
@@ -22,7 +22,7 @@ export default function ContactPage() {
 
         <div className="flex flex-col items-start justify-start border border-gray-200 p-5 rounded-lg shadow-sm">
           <div className="flex gap-3 items-center mb-3">
-            <div className="rounded-full p-3 bg-blue-800 text-white">
+            <div className="rounded-full p-3 bg-primary text-white">
               <FiUser />
             </div>
             <h3 className="font-medium text-2xl leading-10 text-slate-800">Upravni odbor</h3>
@@ -39,7 +39,7 @@ export default function ContactPage() {
 
         <div className="flex flex-col items-start justify-start border border-gray-200 p-5 rounded-lg shadow-sm">
           <div className="flex gap-3 items-center mb-3">
-            <div className="rounded-full p-3 bg-blue-800 text-white">
+            <div className="rounded-full p-3 bg-primary text-white">
               <FiMail />
             </div>
             <h3 className="font-medium text-2xl leading-10 text-slate-800">Email</h3>

@@ -3,7 +3,7 @@
 import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { type ActionResult } from "@/types";
-import { User } from "@/app/generated/prisma";
+import { MembershipRequestStatus, User } from "@/app/generated/prisma";
 import { err, ok } from "../action-utils";
 
 export async function createUser(
@@ -88,7 +88,11 @@ type BulkUpdateMembersData = {
   }>;
 };
 
-export async function updateMember(id: string, experienceLevel: string | null): Promise<ActionResult<User>> {
+export async function updateMember(
+  id: string,
+  experienceLevel: string | null,
+  status: MembershipRequestStatus,
+): Promise<ActionResult<User>> {
   if (!experienceLevel) {
     return err("Izberite izkušenost");
   }
@@ -100,7 +104,7 @@ export async function updateMember(id: string, experienceLevel: string | null): 
       },
       data: {
         experienceLevel,
-        accepted: true,
+        status,
       },
     });
 
@@ -111,11 +115,13 @@ export async function updateMember(id: string, experienceLevel: string | null): 
   }
 }
 
-export async function updateMembersBulk(updates: { id: string; experienceLevel: string | null }[]) {
+export async function updateMembersBulk(
+  updates: { id: string; experienceLevel: string | null; status: MembershipRequestStatus }[],
+) {
   try {
     const results = await Promise.all(
-      updates.map(async ({ id, experienceLevel }) => {
-        const result = await updateMember(id, experienceLevel);
+      updates.map(async ({ id, experienceLevel, status }) => {
+        const result = await updateMember(id, experienceLevel, status);
         return { id, result };
       }),
     );
@@ -183,7 +189,7 @@ export async function getAllUsers(): Promise<ActionResult<User[]>> {
       //   accepted: false,
       // },
       orderBy: {
-        accepted: "asc",
+        status: "asc",
       },
     });
 

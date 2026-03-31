@@ -56,9 +56,11 @@ function AscentsTable({
                 <Link href="/ascent/create">
                   <Button>Novo poročilo</Button>
                 </Link>
-                <Button className="my-3" onClick={toggleEditMode} variant={editMode === false ? "primary" : "danger"}>
-                  <span>{editMode === false ? "Uredi" : "Prekliči urejanje"}</span>
-                </Button>
+                {ascents.length > 0 && (
+                  <Button className="my-3" onClick={toggleEditMode} variant={editMode === false ? "primary" : "danger"}>
+                    <span>{editMode === false ? "Uredi" : "Prekliči urejanje"}</span>
+                  </Button>
+                )}
               </div>
             </div>
           </div>

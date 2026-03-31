@@ -9,13 +9,19 @@ import { useAuth } from "@/context/authContext";
 import Label from "@/components/ui/Label";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
+import { isAbsoluteUrl } from "next/dist/shared/lib/utils";
 
 const LoginPage = () => {
-  const { setIsAuthenticated, setCurrentUser } = useAuth();
   const [message, setMessage] = useState(null);
 
   const [state, formAction, loading] = useActionState(createSession, null);
   const router = useRouter();
+
+  const { isAuthenticated, setIsAuthenticated, setCurrentUser } = useAuth();
+
+  if (isAuthenticated) {
+    router.replace("/");
+  }
 
   useEffect(() => {
     if (!state) return;

@@ -17,6 +17,7 @@ interface DropdownMenuProps {
 
 function DropdownMenu({ title, items, setParentOpen }: DropdownMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   const isMdScreen = useMediaQuery("(min-width: 768px)");
 
@@ -27,13 +28,17 @@ function DropdownMenu({ title, items, setParentOpen }: DropdownMenuProps) {
     setParentOpen(false);
   };
 
-  const dropdownRef = useRef(null);
-
   // Close the menu if you click outside of it
   useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
+      const target = event.target as Node | null;
+
+      if (dropdownRef.current && target && !dropdownRef.current.contains(target)) {
+        closeMenu();
       }
     };
 
@@ -44,7 +49,7 @@ function DropdownMenu({ title, items, setParentOpen }: DropdownMenuProps) {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [isOpen, setParentOpen]);
 
   return (
     <div className="md:relative py-3 px-4 md:p-0" ref={dropdownRef}>
