@@ -1,7 +1,6 @@
 "use client";
 
-import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { BsPinAngleFill } from "react-icons/bs";
 import PhotoUploadSingle from "@/components/photoUpload/PhotoUploadSingle";
@@ -10,11 +9,12 @@ import Input from "@/components/ui/Input";
 import TextArea from "@/components/ui/TextArea";
 import Button from "@/components/ui/Button";
 import Option from "@/components/Option";
-import { NewsType } from "@/types";
+import { NewPhotoItem, NewsType } from "@/types";
 import { AdminEventSummary, createEvent, updateEvent } from "@/lib/actions/news";
 import { uploadPhotos } from "@/lib/api-service";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Photo } from "@/app/generated/prisma";
 
 type FormState = {
   title: string;
@@ -55,10 +55,14 @@ function getInitialState(event?: AdminEventSummary): FormState {
 export default function NewsEditorForm({ mode, event }: NewsEditorFormProps) {
   const router = useRouter();
   const [formState, setFormState] = useState<FormState>(getInitialState(event));
-  const [photo, setPhoto] = useState<File | null>(null);
+  const [existingPhoto] = useState<Photo | null>(event?.coverPhoto ?? null);
+  const [newPhoto, setNewPhoto] = useState<NewPhotoItem | null>(null);
+  const [replaceRemove, setReplaceRemove] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const showExistingCover = mode === "edit" && event?.coverPhoto && !formState.removeCoverPhoto && !photo;
+  useEffect(() => {
+    console.log(existingPhoto, newPhoto);
+  }, [existingPhoto, newPhoto]);
 
   const handleInputChange = (field: keyof FormState, value: string | boolean) => {
     setFormState((prev) => ({
@@ -75,7 +79,6 @@ export default function NewsEditorForm({ mode, event }: NewsEditorFormProps) {
     nextFormData.append("text", formState.text);
     nextFormData.append("isPinned", String(formState.isPinned));
     nextFormData.append("type", formState.type);
-    nextFormData.append("removeCoverPhoto", String(formState.removeCoverPhoto));
 
     return nextFormData;
   };
@@ -85,16 +88,21 @@ export default function NewsEditorForm({ mode, event }: NewsEditorFormProps) {
     setIsSubmitting(true);
 
     const payload = buildFormData();
-    const uploadedPhotosResult = await uploadPhotos(photo ? [photo] : []);
 
-    if (!uploadedPhotosResult.success) {
-      toast.error(uploadedPhotosResult.error);
-      setIsSubmitting(false);
-      return;
-    }
+    payload.append("replaceRemove", replaceRemove.toString());
 
-    if (uploadedPhotosResult.data[0]) {
-      payload.append("photoUrl", uploadedPhotosResult.data[0]);
+    if (newPhoto) {
+      const uploadedPhotosResult = await uploadPhotos(newPhoto ? [newPhoto.file] : []);
+
+      if (!uploadedPhotosResult.success) {
+        toast.error(uploadedPhotosResult.error);
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (uploadedPhotosResult.data[0]) {
+        payload.append("photoUrl", uploadedPhotosResult.data[0]);
+      }
     }
 
     const result = mode === "edit" && event ? await updateEvent(event.id, payload) : await createEvent(payload);
@@ -139,26 +147,6 @@ export default function NewsEditorForm({ mode, event }: NewsEditorFormProps) {
           </div>
         </div>
       </div>
-
-      {/* <div className="flex flex-col gap-5 lg:flex-row lg:justify-between lg:items-center py-5">
-        <div>
-          <Label>Tip novice</Label>
-          <div className="inline-flex flex-row border border-gray-300 rounded-md overflow-hidden">
-            <Option
-              title="Običajna novica"
-              value="Običajna novica"
-              selectedType={formState.type}
-              setSelectedType={(value) => handleInputChange("type", value)}
-            />
-            <Option
-              title="Alpinistična šola"
-              value="Alpinistična šola"
-              selectedType={formState.type}
-              setSelectedType={(value) => handleInputChange("type", value)}
-            />
-          </div>
-        </div>
-      </div> */}
 
       <div className="flex flex-col gap-8 lg:flex-row">
         <section className="flex flex-col gap-8 lg:gap-3 lg:w-1/3">
@@ -228,42 +216,13 @@ export default function NewsEditorForm({ mode, event }: NewsEditorFormProps) {
       <div className="mt-7">
         <Label className="mb-1">Naslovna slika</Label>
         <PhotoUploadSingle
-          photo={photo}
-          setPhoto={(file) => {
-            setPhoto(file);
-            if (file) {
-              handleInputChange("removeCoverPhoto", false);
-            }
-          }}
+          existingPhoto={existingPhoto}
+          newPhoto={newPhoto}
+          setNewPhoto={setNewPhoto}
+          replaceRemove={replaceRemove}
+          setReplaceRemove={setReplaceRemove}
         />
       </div>
-
-      {showExistingCover && event?.coverPhoto && (
-        <div className="mt-5 rounded-xl border border-gray-200 bg-gray-50 p-4">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <div>
-              <p className="font-medium text-gray-900">Trenutna naslovna slika</p>
-              <p className="text-sm text-gray-500">Če izberete novo sliko, bo obstoječa zamenjana.</p>
-            </div>
-            <Button type="button" variant="secondary" onClick={() => handleInputChange("removeCoverPhoto", true)}>
-              Odstrani sliko
-            </Button>
-          </div>
-          <Image
-            src={event.coverPhoto.url}
-            alt={event.title}
-            width={1200}
-            height={800}
-            className="max-h-72 w-full rounded-lg object-cover"
-          />
-        </div>
-      )}
-
-      {mode === "edit" && event?.coverPhoto && formState.removeCoverPhoto && !photo && (
-        <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          Trenutna naslovna slika bo odstranjena ob shranjevanju.
-        </div>
-      )}
 
       <div className="lg:hidden flex flex-col gap-2">
         <div className="flex flex-row items-center gap-2 rounded-md bg-gray-100 px-4 py-3 text-gray-900 border border-gray-200 mt-5">

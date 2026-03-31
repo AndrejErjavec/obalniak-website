@@ -28,7 +28,7 @@ type ParsedEventFormData = {
   photoUrl: string | null;
   isPinned: boolean;
   type: NewsType;
-  removeCoverPhoto: boolean;
+  replaceRemove: boolean;
 };
 
 function parseEventFormData(formData: FormData): ParsedEventFormData {
@@ -39,7 +39,7 @@ function parseEventFormData(formData: FormData): ParsedEventFormData {
     photoUrl: String(formData.get("photoUrl") ?? "").trim() || null,
     isPinned: formData.get("isPinned") === "true",
     type: String(formData.get("type")) as NewsType,
-    removeCoverPhoto: formData.get("removeCoverPhoto") === "true",
+    replaceRemove: formData.get("replaceRemove") === "true",
   };
 }
 
@@ -81,6 +81,7 @@ export async function createEvent(formData: FormData): Promise<ActionResult<Admi
 
         if (photoUrl) {
           uploadedPhoto = await createPhotoRecord(photoUrl, tx);
+          console.log(uploadedPhoto);
         }
 
         return tx.event.create({
@@ -119,14 +120,16 @@ export async function createEvent(formData: FormData): Promise<ActionResult<Admi
 export async function updateEvent(id: string, formData: FormData): Promise<ActionResult<AdminEventSummary>> {
   await requireAdmin();
 
-  const { title, date, text, photoUrl, isPinned, type, removeCoverPhoto } = parseEventFormData(formData);
+  const { title, date, text, photoUrl, isPinned, type, replaceRemove } = parseEventFormData(formData);
+
+  console.log(parseEventFormData(formData));
 
   if (!title || !text) {
     return err("Manjkajoči podatki");
   }
 
   try {
-    const { event: updatedEvent, deletedPhotoUrls } = await prisma.$transaction(
+    const { event: updatedEvent, deletedPhotoUrl } = await prisma.$transaction(
       async (tx) => {
         const existingEvent = await tx.event.findUnique({
           where: {
@@ -141,19 +144,18 @@ export async function updateEvent(id: string, formData: FormData): Promise<Actio
           throw new Error("EVENT_NOT_FOUND");
         }
 
-        let nextCoverPhotoId = existingEvent.coverPhotoId;
+        let newCoverPhotoId = existingEvent.coverPhotoId;
         let oldCoverPhotoIdToDelete: string | null = null;
         let oldCoverPhotoUrlToDelete: string | null = null;
 
+        if (replaceRemove) {
+          oldCoverPhotoIdToDelete = existingEvent.coverPhotoId;
+          oldCoverPhotoUrlToDelete = existingEvent.coverPhoto?.url ?? null;
+        }
+
         if (photoUrl) {
           const newPhoto = await createPhotoRecord(photoUrl, tx);
-          nextCoverPhotoId = newPhoto.id;
-          oldCoverPhotoIdToDelete = existingEvent.coverPhotoId;
-          oldCoverPhotoUrlToDelete = existingEvent.coverPhoto?.url ?? null;
-        } else if (removeCoverPhoto && existingEvent.coverPhotoId) {
-          nextCoverPhotoId = null;
-          oldCoverPhotoIdToDelete = existingEvent.coverPhotoId;
-          oldCoverPhotoUrlToDelete = existingEvent.coverPhoto?.url ?? null;
+          newCoverPhotoId = newPhoto.id;
         }
 
         const event = await tx.event.update({
@@ -166,7 +168,7 @@ export async function updateEvent(id: string, formData: FormData): Promise<Actio
             text,
             type,
             isPinned,
-            coverPhotoId: nextCoverPhotoId,
+            coverPhotoId: newCoverPhotoId,
           },
           include: {
             coverPhoto: true,
@@ -189,13 +191,15 @@ export async function updateEvent(id: string, formData: FormData): Promise<Actio
 
         return {
           event,
-          deletedPhotoUrls: oldCoverPhotoUrlToDelete ? [oldCoverPhotoUrlToDelete] : [],
+          deletedPhotoUrl: oldCoverPhotoUrlToDelete,
         };
       },
       { timeout: 30000 },
     );
 
-    await deleteImages(deletedPhotoUrls);
+    if (deletedPhotoUrl) {
+      await deleteImages([deletedPhotoUrl]);
+    }
 
     revalidateNewsPaths(updatedEvent.id);
 
