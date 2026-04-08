@@ -41,7 +41,7 @@ function Badge({
   return (
     <div
       className={cn(
-        "text-white inline-flex self-start justify-center items-center pr-2.5 py-1 rounded-full bg-gray-100/30 border border-gray-200",
+        "text-white inline-flex self-start justify-center shrink-0 items-center pr-2.5 py-1 rounded-full bg-gray-100/30 border border-gray-200",
         Icon ? "pl-1" : "pl-2.5",
         className,
       )}

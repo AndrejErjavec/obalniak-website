@@ -9,7 +9,6 @@ import { useAuth } from "@/context/authContext";
 import Label from "@/components/ui/Label";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
-import { isAbsoluteUrl } from "next/dist/shared/lib/utils";
 
 const LoginPage = () => {
   const [message, setMessage] = useState(null);
