@@ -154,16 +154,6 @@ export async function updateMembersBulk(
   }
 }
 
-export async function getUsers(): Promise<ActionResult<User[]>> {
-  try {
-    const users = await prisma.user.findMany();
-    return ok(users);
-  } catch (error) {
-    console.log(error);
-    return err("Napaka pri pridobivanju podatkov");
-  }
-}
-
 export async function getUser(id: string): Promise<ActionResult<User>> {
   try {
     const user = await prisma.user.findUnique({
@@ -185,12 +175,25 @@ export async function getUser(id: string): Promise<ActionResult<User>> {
 export async function getAllUsers(): Promise<ActionResult<User[]>> {
   try {
     const users = await prisma.user.findMany({
-      // where: {
-      //   accepted: false,
-      // },
       orderBy: {
         status: "asc",
       },
+    });
+
+    return ok(users);
+  } catch (error) {
+    console.error("Error fetching pending members:", error);
+    return err("Could not retrieve pending members");
+  }
+}
+
+export async function getAllAcceptedUsers(): Promise<ActionResult<User[]>> {
+  try {
+    const users = await prisma.user.findMany({
+      where: {
+        status: "ACCEPTED",
+      },
+      orderBy: [{ firstName: "asc" }, { lastName: "asc" }],
     });
 
     return ok(users);

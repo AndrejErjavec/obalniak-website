@@ -1,9 +1,9 @@
-import { getUsers } from "@/lib/actions/user";
+import { getAllAcceptedUsers } from "@/lib/actions/user";
 import ProfileBanner from "@/components/profile/ProfileBanner";
 import ExperienceLevelTicket from "@/components/ExperienceLevelTicket";
 
 export default async function Members() {
-  const result = await getUsers();
+  const result = await getAllAcceptedUsers();
 
   if ("error" in result) {
     return <div>result.error</div>;
