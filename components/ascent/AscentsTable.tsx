@@ -117,6 +117,7 @@ function AscentsTable({
                       </div>
                     </div>
                   </td>
+
                   {/* desktop ascent details */}
                   <td className="hidden md:table-cell py-5">
                     <AscentParticipantsList names={participants} limit={3} />

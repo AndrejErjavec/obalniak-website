@@ -5,7 +5,7 @@ import AscentParticipantsList from "./AscentParticipantsList";
 
 function AscentListSimple({ ascents }) {
   return (
-    <div className=" flex flex-col divide-y divide-gray-300">
+    <div className=" flex flex-col rounded-lg shadow-sm divide-y divide-gray-300 border border-gray-200">
       {ascents.map((ascent) => {
         const participants = [
           `${ascent.author.firstName} ${ascent.author.lastName}`,
@@ -15,12 +15,12 @@ function AscentListSimple({ ascents }) {
         return (
           <Link
             href={`/ascent/${ascent.id}`}
-            className="flex flex-col gap-5 px-2 py-3 hover:bg-gray-100 rounded-md"
+            className="flex flex-col gap-3 px-3 py-3 hover:bg-gray-100"
             key={ascent.id}
           >
             {/* title & date */}
-            <div className="flex flex-row justify-between gap-2 items-center">
-              <p className="font-medium text-lg md:text-base">
+            <div className="flex flex-row justify-between gap-2 items-center min-w-0">
+              <p className="font-medium text-lg md:text-base min-w-0 flex-1 truncate">
                 {ascent.route} ({ascent.difficulty})
               </p>
               <Badge content={formatDate(ascent.date)} bgColor="#f9f9f9" textClassName="text-gray-900" textSize="xs" />
