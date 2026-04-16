@@ -7,6 +7,7 @@ import Divider from "@/components/ui/Divider";
 import NewsGrid from "@/components/news/NewsGrid";
 import { GiBookCover } from "react-icons/gi";
 import RegisterNotification from "@/components/RegisterNotification";
+import FacebookPageFeed from "@/components/FacebookEmbed";
 
 export default async function Home({
   searchParams,
@@ -58,7 +59,10 @@ export default async function Home({
       <div className="px-5 mx-auto md:container mb-10">
         <div className="flex flex-col md:flex-row gap-10">
           {/* Facebook feed */}
-          <iframe
+          <div className="w-125">
+            <FacebookPageFeed></FacebookPageFeed>
+          </div>
+          {/* <iframe
             src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fprofile.php%3Fid%3D100086123649589&tabs=timeline&width=340&height=500&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true&appId=806201063924077"
             width="340"
             height="500"
@@ -67,7 +71,7 @@ export default async function Home({
             frameBorder="0"
             allowFullScreen={true}
             allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-          ></iframe>
+          ></iframe> */}
           {/* Links */}
           <section>
             <h3 className="text-2xl font-semibold mb-5">Povezave</h3>
