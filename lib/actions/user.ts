@@ -187,8 +187,8 @@ export async function getAllUsers(): Promise<ActionResult<User[]>> {
 
     return ok(users);
   } catch (error) {
-    console.error("Error fetching pending members:", error);
-    return err("Could not retrieve pending members");
+    console.error("Error fetching members:", error);
+    return err("Could not retrieve members");
   }
 }
 
@@ -203,8 +203,8 @@ export async function getAllAcceptedUsers(): Promise<ActionResult<User[]>> {
 
     return ok(users);
   } catch (error) {
-    console.error("Error fetching pending members:", error);
-    return err("Could not retrieve pending members");
+    console.error("Error fetching members:", error);
+    return err("Could not retrieve members");
   }
 }
 
@@ -224,7 +224,7 @@ export async function getUsersByName(nameQuery: string): Promise<ActionResult<Us
 
     return ok(users);
   } catch (error) {
-    console.error("Error fetching pending members:", error);
-    return err("Could not retrieve pending members");
+    console.error("Error fetching members:", error);
+    return err("Could not retrieve members");
   }
 }
