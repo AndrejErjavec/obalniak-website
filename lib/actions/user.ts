@@ -175,6 +175,11 @@ export async function getUser(id: string): Promise<ActionResult<User>> {
 export async function getAllUsers(): Promise<ActionResult<User[]>> {
   try {
     const users = await prisma.user.findMany({
+      where: {
+        NOT: {
+          status: "REJECTED",
+        },
+      },
       orderBy: {
         status: "asc",
       },
