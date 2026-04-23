@@ -59,7 +59,7 @@ export default async function Home({
       <div className="px-5 mx-auto md:container mb-10">
         <div className="flex flex-col md:flex-row gap-10">
           {/* Facebook feed */}
-          <div className="w-125">
+          <div className="w-full md:w-125">
             <FacebookPageFeed></FacebookPageFeed>
           </div>
           {/* <iframe
