@@ -16,6 +16,7 @@ interface HeaderLink {
   title: string;
   href: string;
   items?: HeaderLink[];
+  authOnly?: boolean;
 }
 
 const Header = () => {
@@ -43,6 +44,7 @@ const Header = () => {
         {
           title: "Člani",
           href: "/members",
+          authOnly: true,
         },
       ],
     },
@@ -58,6 +60,15 @@ const Header = () => {
   const router = useRouter();
 
   const { isAuthenticated, setIsAuthenticated, currentUser, setCurrentUser } = useAuth();
+
+  const canViewLink = (link: HeaderLink) => !link.authOnly || isAuthenticated;
+
+  const visibleLinks: HeaderLink[] = links
+    .filter(canViewLink)
+    .map((link) => ({
+      ...link,
+      items: link.items?.filter(canViewLink),
+    }));
 
   const handleToggleMenu = () => {
     setMenuOpen((currentState) => !currentState);
@@ -103,8 +114,8 @@ const Header = () => {
           {/* <!-- Right Side Menu --> */}
           <div>
             <div className="ml-4 flex items-center gap-4 md:ml-6">
-              {links.map((link) =>
-                link.items ? (
+              {visibleLinks.map((link) =>
+                link.items && link.items.length > 0 ? (
                   <DropdownMenu title={link.title} items={link.items} key={link.title} setParentOpen={setMenuOpen} />
                 ) : (
                   <Link href={link.href} className="font-medium text-gray-800 hover:text-gray-600" key={link.href}>
@@ -159,8 +170,8 @@ const Header = () => {
         {menuOpen && (
           <div className="absolute z-50 left-0 top-15 bg-white w-full border-t border-gray-300 shadow-md">
             <div className="flex flex-col">
-              {links.map((link) =>
-                link.items ? (
+              {visibleLinks.map((link) =>
+                link.items && link.items.length > 0 ? (
                   <DropdownMenu title={link.title} items={link.items} key={link.title} setParentOpen={setMenuOpen} />
                 ) : (
                   <Link

@@ -1,23 +1,8 @@
-import { getAllAcceptedUsers } from "@/lib/actions/user";
-import ProfileBanner from "@/components/profile/ProfileBanner";
-import ExperienceLevelTicket from "@/components/ExperienceLevelTicket";
-import { checkAuth } from "@/lib/actions/auth";
+import { User } from "@/app/generated/prisma";
+import ProfileBanner from "./profile/ProfileBanner";
+import ExperienceLevelTicket from "./ExperienceLevelTicket";
 
-export default async function Members() {
-  const { isAuthenticated } = await checkAuth();
-
-  if (!isAuthenticated) {
-    return <div>Nimate dostopa do te strani</div>;
-  }
-
-  const result = await getAllAcceptedUsers();
-
-  if ("error" in result) {
-    return <div>result.error</div>;
-  }
-
-  const members = result.data;
-
+export default async function MembersGrid({ members }: { members: User[] }) {
   return (
     <div className="px-5 mx-auto md:container">
       <h1 className="text-3xl font-semibold my-8">Člani</h1>
