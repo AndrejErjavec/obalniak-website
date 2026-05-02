@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { type ActionResult } from "@/types";
 import { MembershipRequestStatus, User } from "@/app/generated/prisma";
 import { err, ok } from "../action-utils";
+import { revalidatePath } from "next/cache";
 
 export async function createUser(
   prevState: ActionResult<User> | null,
@@ -108,6 +109,7 @@ export async function updateMember(
       },
     });
 
+    revalidatePath("/members");
     return ok(updatedMember);
   } catch (error) {
     console.error("Error in accept member", error);
@@ -140,6 +142,7 @@ export async function updateMembersBulk(
       }
     }
 
+    revalidatePath("/members");
     return {
       data: {
         updated,
