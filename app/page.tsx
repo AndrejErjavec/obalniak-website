@@ -37,9 +37,9 @@ export default async function Home({
 
       <div className="px-5 py-10 mx-auto md:container">
         {/* Events and ascents grid */}
-        <div className="md:grid lg:grid-cols-4 gap-10 mb-20">
+        <div className="md:grid lg:grid-cols-3 gap-10 mb-20">
           {/* News */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-2">
             <div className="flex flex-col">
               <h3 className="text-2xl font-semibold mb-2">Novice</h3>
               <Divider />
@@ -47,10 +47,12 @@ export default async function Home({
             </div>
           </div>
           {/* Ascents */}
-          <div className="w-full flex flex-col mt-10 md:mt-0">
-            <h3 className="text-2xl font-semibold mb-2">Zadnji vzponi</h3>
-            <Divider />
-            <AscentListSimple ascents={ascents} />
+          <div className="lg:col-span-1">
+            <div className="w-full flex flex-col mt-10 md:mt-0">
+              <h3 className="text-2xl font-semibold mb-2">Zadnji vzponi</h3>
+              <Divider />
+              <AscentListSimple ascents={ascents} />
+            </div>
           </div>
         </div>
       </div>
