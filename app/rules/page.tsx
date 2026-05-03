@@ -16,7 +16,7 @@ export default function Rules() {
         <div className="flex items-center gap-2">
           <FaRegFilePdf className="text-red-600/90" size={22} />
           <Link href="rules/statut" className="text-slate-800 underline">
-            Status Obalnega alpinističnega kluba
+            Statut Obalnega alpinističnega kluba
           </Link>
         </div>
       </div>
