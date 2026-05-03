@@ -112,7 +112,8 @@ function AscentsTable({
                           icon={MdCalendarMonth}
                           iconColor="#fff"
                           iconBgColor="#117ec6"
-                          textClassName="text-gray-800 font-medium"
+                          textSize="sm"
+                          textClassName="text-gray-700"
                         />
                       </div>
                     </div>
@@ -128,7 +129,7 @@ function AscentsTable({
                       icon={MdCalendarMonth}
                       iconColor="#fff"
                       iconBgColor="#117ec6"
-                      textClassName="text-gray-800 font-medium"
+                      textClassName="text-gray-700"
                     />
                   </td>
                   {editMode && (

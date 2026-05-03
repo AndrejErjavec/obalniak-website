@@ -12,32 +12,22 @@ function AscentListSimple({ ascents }) {
           ...ascent.registeredParticipants.map((p) => `${p.firstName} ${p.lastName}`),
           ...ascent.unregisteredParticipants.map((p) => `${p.name}`),
         ];
+
         return (
           <Link
             href={`/ascent/${ascent.id}`}
             className="flex flex-col gap-3 px-3 py-3 hover:bg-gray-100"
             key={ascent.id}
           >
-            {/* title & date */}
-            <div className="flex flex-row justify-between gap-2 items-center min-w-0">
-              <p className="font-medium text-lg md:text-base min-w-0 flex-1 truncate">
+            <div className="flex flex-row lg:flex-col items-center lg:items-start justify-between gap-2 min-w-0">
+              <p className="font-medium truncate min-w-0 max-w-full">
                 {ascent.route} ({ascent.difficulty})
               </p>
-              <Badge content={formatDate(ascent.date)} bgColor="#f9f9f9" textClassName="text-gray-900" textSize="xs" />
+
+              <span className="text-sm lg:text-xs text-gray-600 shrink-0">{formatDate(ascent.date)}</span>
             </div>
+
             <AscentParticipantsList names={participants} limit={2} />
-            {/* <div className="flex flex-row items-center gap-2">
-              <ProfileBanner
-                name={`${ascent.author.firstName} ${ascent.author.lastName}`}
-                iconSize={25}
-                textSize={14}
-              />
-              {otherParticipants > 0 && (
-                <div className="flex items-center justify-center bg-gray-100/30 border border-gray-200 text-xs rounded-md px-1.5 py-0.5">
-                  <span>+{otherParticipants}</span>
-                </div>
-              )}
-            </div> */}
           </Link>
         );
       })}

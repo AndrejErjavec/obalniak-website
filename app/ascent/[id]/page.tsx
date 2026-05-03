@@ -50,7 +50,7 @@ export default async function Ascent({ params }: { params: Promise<{ id: string 
                     icon={MdCalendarMonth}
                     iconColor="#fff"
                     iconBgColor="#117ec6"
-                    textClassName="text-gray-800 font-medium"
+                    textClassName="text-gray-700 font-medium"
                     iconSize="base"
                   />
                   <Badge
@@ -58,7 +58,7 @@ export default async function Ascent({ params }: { params: Promise<{ id: string 
                     icon={MdAltRoute}
                     iconColor="#fff"
                     iconBgColor="#e29212"
-                    textClassName="text-gray-800 font-medium"
+                    textClassName="text-gray-700 font-medium"
                     iconSize="base"
                   />
                 </div>

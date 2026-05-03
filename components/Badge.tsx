@@ -56,7 +56,7 @@ function Badge({
             <Icon size={iconSizeClasses[iconSize]} color={iconColor} />
           </div>
         )}
-        <p className={cn(textClassName, textSizeClasses[textSize])}>{content}</p>
+        <span className={cn(textSizeClasses[textSize], textClassName)}>{content}</span>
       </div>
     </div>
   );
