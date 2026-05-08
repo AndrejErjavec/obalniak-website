@@ -179,7 +179,7 @@ function AscentEditorForm({ userId, mode, ascent }: AscentEditorFormProps) {
 
             <div>
               <Label htmlFor="routeLength" className="mb-1">
-                Dolžina
+                Dolžina (m)
               </Label>
               <Input
                 type="number"
