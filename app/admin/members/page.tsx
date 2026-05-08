@@ -116,9 +116,13 @@ export default function AdminPage() {
       return;
     }
 
-    const { data: updatedMember } = result;
+    const { user: updatedMember, status: updateStatus } = result.data;
 
-    setMembers((prev) => prev.map((member) => (member.id === updatedMember.id ? updatedMember : member)));
+    setMembers((prev) =>
+      updateStatus === "REJECTED"
+        ? prev.filter((member) => member.id !== updatedMember.id)
+        : prev.map((member) => (member.id === updatedMember.id ? { ...updatedMember, changed: false } : member)),
+    );
   };
 
   const handleSaveChanges = async () => {
@@ -131,25 +135,20 @@ export default function AdminPage() {
       return;
     }
 
-    const { updated, failed } = result.data;
+    const { updated, rejected, failed } = result.data;
 
     if (failed.length > 0) {
       toast.error(`Failed to update ${failed.length} member(s).`);
     }
 
     setMembers((prev) =>
-      prev.map((member) => {
-        const updatedMember = updated.find((updatedItem) => updatedItem.id === member.id);
+      prev
+        .filter((member) => !rejected.some((rejectedMember) => rejectedMember.id === member.id))
+        .map((member) => {
+          const updatedMember = updated.find((updatedItem) => updatedItem.id === member.id);
 
-        if (!updatedMember) {
-          return member;
-        }
-
-        return {
-          ...updatedMember,
-          changed: false,
-        };
-      }),
+          return updatedMember ? { ...updatedMember, changed: false } : member;
+        }),
     );
   };
 
@@ -197,8 +196,8 @@ export default function AdminPage() {
                           className="cursor-pointer"
                         >
                           {!member.experienceLevel && (
-                            <option disabled selected value>
-                              izberite izkušenost
+                            <option disabled value="">
+                              Izberite izkušenost
                             </option>
                           )}
                           {Object.entries(experienceLevel).map(([key, level]) => (

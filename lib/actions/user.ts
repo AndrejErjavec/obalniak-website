@@ -83,34 +83,48 @@ export async function createUser(
 
 type BulkUpdateMembersData = {
   updated: User[];
+  rejected: User[];
   failed: Array<{
     id: string;
     error: string;
   }>;
 };
 
+type UpdateMemberResult = "UPDATED" | "REJECTED";
+
 export async function updateMember(
   id: string,
   experienceLevel: string | null,
   status: MembershipRequestStatus,
-): Promise<ActionResult<User>> {
-  if (!experienceLevel) {
-    return err("Izberite izkušenost");
-  }
-
+): Promise<ActionResult<{ user: User; status: UpdateMemberResult }>> {
+  let updatedMember: User;
+  let updateStatus: UpdateMemberResult;
   try {
-    const updatedMember = await prisma.user.update({
-      where: {
-        id,
-      },
-      data: {
-        experienceLevel,
-        status,
-      },
-    });
+    if (status === "REJECTED") {
+      updateStatus = "REJECTED";
+      updatedMember = await prisma.user.delete({
+        where: {
+          id,
+        },
+      });
+    } else {
+      if (!experienceLevel) {
+        return err("Izberite izkušenost");
+      }
+      updateStatus = "UPDATED";
+      updatedMember = await prisma.user.update({
+        where: {
+          id,
+        },
+        data: {
+          experienceLevel,
+          status,
+        },
+      });
+    }
 
     revalidatePath("/members");
-    return ok(updatedMember);
+    return ok({ user: updatedMember, status: updateStatus });
   } catch (error) {
     console.error("Error in accept member", error);
     return err("Error in accept member");
@@ -127,10 +141,9 @@ export async function updateMembersBulk(
         return { id, result };
       }),
     );
-
     const updated: User[] = [];
+    const rejected: User[] = [];
     const failed: BulkUpdateMembersData["failed"] = [];
-
     for (const { id, result } of results) {
       if (!result.success) {
         failed.push({
@@ -138,14 +151,20 @@ export async function updateMembersBulk(
           error: result.error!,
         });
       } else {
-        updated.push(result.data);
+        if (result.data.status === "UPDATED") {
+          updated.push(result.data.user);
+        } else if (result.data.status === "REJECTED") {
+          rejected.push(result.data.user);
+        } else {
+        }
       }
     }
-
+    console.log("success");
     revalidatePath("/members");
     return {
       data: {
         updated,
+        rejected,
         failed,
       },
     };
@@ -215,6 +234,7 @@ export async function getUsersByName(nameQuery: string): Promise<ActionResult<Us
   try {
     const users = await prisma.user.findMany({
       where: {
+        status: "ACCEPTED",
         OR: [
           { firstName: { startsWith: nameQuery, mode: "insensitive" } },
           { lastName: { startsWith: nameQuery, mode: "insensitive" } },

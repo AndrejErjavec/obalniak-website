@@ -51,6 +51,7 @@ const Header = () => {
     {
       title: "Pravila",
       href: "/rules",
+      authOnly: true,
     },
   ];
 
@@ -63,12 +64,10 @@ const Header = () => {
 
   const canViewLink = (link: HeaderLink) => !link.authOnly || isAuthenticated;
 
-  const visibleLinks: HeaderLink[] = links
-    .filter(canViewLink)
-    .map((link) => ({
-      ...link,
-      items: link.items?.filter(canViewLink),
-    }));
+  const visibleLinks: HeaderLink[] = links.filter(canViewLink).map((link) => ({
+    ...link,
+    items: link.items?.filter(canViewLink),
+  }));
 
   const handleToggleMenu = () => {
     setMenuOpen((currentState) => !currentState);
