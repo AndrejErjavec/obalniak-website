@@ -1,0 +1,33 @@
+name: Deploy Prisma migrations to production
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "prisma/**"
+
+jobs:
+  migrate-production:
+    runs-on: ubuntu-latest
+
+    concurrency:
+      group: production-database-migration
+      cancel-in-progress: false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Deploy Prisma migrations
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
