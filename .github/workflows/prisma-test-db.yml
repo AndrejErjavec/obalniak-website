@@ -27,7 +27,7 @@ jobs:
           role: oak
           api_key: ${{ secrets.NEON_API_KEY }}
 
-      - run: echo db_url ${{ steps.create_branch.outputs }}
+      - run: echo db_url ${{ steps.create_branch.outputs.db_url }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
