@@ -85,8 +85,8 @@ model Photo {
   event    Event?  @relation(fields: [eventId], references: [id])
   eventId  String?
 
-  @@index([ascentId, position])
-  @@index([eventId, position])
+  @@index([ascentId])
+  @@index([eventId])
 }
 
 model Event {
