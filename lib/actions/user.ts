@@ -7,17 +7,24 @@ import { MembershipRequestStatus, User } from "@/app/generated/prisma";
 import { err, ok } from "../action-utils";
 import { revalidatePath } from "next/cache";
 
+type UpdateMemberData = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  experienceLevel: string | null;
+  status: MembershipRequestStatus;
+};
+
 export async function createUser(
   prevState: ActionResult<User> | null,
   formData: FormData,
 ): Promise<ActionResult<User>> {
-  const firstName = String(formData.get("firstName"));
-  const lastName = String(formData.get("lastName"));
-  const email = String(formData.get("email"));
+  const firstName = formData.get("firstName")?.toString().trim() ?? "";
+  const lastName = formData.get("lastName")?.toString().trim() ?? "";
+  const email = formData.get("email")?.toString().trim() ?? "";
   const password = String(formData.get("password"));
   const confirmPassword = String(formData.get("confirm-password"));
 
-  // Validate required fields
   if (!email || !firstName || !lastName || !password) {
     return {
       success: false,
@@ -25,12 +32,12 @@ export async function createUser(
     };
   }
 
-  if (password.length < 8) {
-    return {
-      success: false,
-      error: "Password must be at least 8 characters long",
-    };
-  }
+  // if (password.length < 8) {
+  //   return {
+  //     success: false,
+  //     error: "Password must be at least 8 characters long",
+  //   };
+  // }
 
   if (password !== confirmPassword) {
     return {
@@ -81,24 +88,27 @@ export async function createUser(
   }
 }
 
-type BulkUpdateMembersData = {
-  updated: User[];
-  rejected: User[];
-  failed: Array<{
-    id: string;
-    error: string;
-  }>;
-};
-
 type UpdateMemberResult = "UPDATED" | "REJECTED";
 
 export async function updateMember(
   id: string,
-  experienceLevel: string | null,
-  status: MembershipRequestStatus,
+  data: UpdateMemberData,
 ): Promise<ActionResult<{ user: User; status: UpdateMemberResult }>> {
   let updatedMember: User;
   let updateStatus: UpdateMemberResult;
+  const firstName = data.firstName.trim();
+  const lastName = data.lastName.trim();
+  const email = data.email.trim().toLowerCase();
+  const { experienceLevel, status } = data;
+
+  if (status !== "REJECTED" && (!firstName || !lastName || !email)) {
+    return err("Izpolnite vsa polja");
+  }
+
+  if (status === "ACCEPTED" && !experienceLevel) {
+    return err("Izberite izkušenost");
+  }
+
   try {
     if (status === "REJECTED") {
       updateStatus = "REJECTED";
@@ -108,15 +118,31 @@ export async function updateMember(
         },
       });
     } else {
-      if (!experienceLevel) {
-        return err("Izberite izkušenost");
+      const existingUser = await prisma.user.findFirst({
+        where: {
+          email: {
+            equals: email,
+            mode: "insensitive",
+          },
+          NOT: {
+            id,
+          },
+        },
+      });
+
+      if (existingUser) {
+        return err("Email je že registriran");
       }
+
       updateStatus = "UPDATED";
       updatedMember = await prisma.user.update({
         where: {
           id,
         },
         data: {
+          firstName,
+          lastName,
+          email,
           experienceLevel,
           status,
         },
@@ -124,55 +150,11 @@ export async function updateMember(
     }
 
     revalidatePath("/members");
+    revalidatePath("/admin/members");
     return ok({ user: updatedMember, status: updateStatus });
   } catch (error) {
-    console.error("Error in accept member", error);
-    return err("Error in accept member");
-  }
-}
-
-export async function updateMembersBulk(
-  updates: { id: string; experienceLevel: string | null; status: MembershipRequestStatus }[],
-) {
-  try {
-    const results = await Promise.all(
-      updates.map(async ({ id, experienceLevel, status }) => {
-        const result = await updateMember(id, experienceLevel, status);
-        return { id, result };
-      }),
-    );
-    const updated: User[] = [];
-    const rejected: User[] = [];
-    const failed: BulkUpdateMembersData["failed"] = [];
-    for (const { id, result } of results) {
-      if (!result.success) {
-        failed.push({
-          id,
-          error: result.error!,
-        });
-      } else {
-        if (result.data.status === "UPDATED") {
-          updated.push(result.data.user);
-        } else if (result.data.status === "REJECTED") {
-          rejected.push(result.data.user);
-        } else {
-        }
-      }
-    }
-    console.log("success");
-    revalidatePath("/members");
-    return {
-      data: {
-        updated,
-        rejected,
-        failed,
-      },
-    };
-  } catch (error) {
-    console.error("Error in updateMembersBulk", error);
-    return {
-      error: "Failed to update members",
-    };
+    console.error("Error in updateMember", error);
+    return err("Uporabnika ni bilo mogoče posodobiti");
   }
 }
 

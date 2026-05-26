@@ -117,7 +117,7 @@ export default async function Ascent({ params }: { params: Promise<{ id: string 
           {/* Text section */}
           <section className="px-5 md:px-20">
             <div className="mt-7">
-              <p className="text-justify">{ascent.text}</p>
+              <p className="whitespace-pre-line text-justify">{ascent.text}</p>
             </div>
           </section>
 

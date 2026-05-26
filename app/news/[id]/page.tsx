@@ -72,7 +72,7 @@ export default async function Event({ params }: { params: Promise<{ id: string }
           {/* Text section */}
           <section className="px-5 md:px-20">
             <div className="mt-7">
-              <p className="text-justify">{event.text}</p>
+              <p className="whitespace-pre-line text-justify">{event.text}</p>
             </div>
           </section>
         </div>

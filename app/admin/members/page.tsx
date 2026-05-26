@@ -1,62 +1,13 @@
 "use client";
 
-import Button from "@/components/ui/Button";
-import { getAllUsers, updateMember, updateMembersBulk } from "@/lib/actions/user";
+import EditMemberForm from "@/components/admin/EditMemberForm";
+import { getAllUsers } from "@/lib/actions/user";
 import { experienceLevel } from "@/util";
-import { ChangeEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
 import { MembershipRequestStatus, User } from "@/app/generated/prisma";
-import { HiOutlineCheckCircle, HiOutlineClock, HiOutlineXCircle } from "react-icons/hi";
-
-type UserWithChanaged = User & { changed?: boolean };
-
-type StatusIndicatorProps = {
-  id: string;
-  experienceLevel: string | null;
-  status: MembershipRequestStatus;
-  handler: (id: string, experienceLevel: string | null, status: MembershipRequestStatus) => void;
-};
-
-function StatusAction({ id, experienceLevel, status, handler }: StatusIndicatorProps) {
-  switch (status) {
-    case MembershipRequestStatus.ACCEPTED:
-      return (
-        <button
-          className="bg-red-600/90 text-white font-medium cursor-pointer rounded px-2 py-1"
-          onClick={() => handler(id, experienceLevel, MembershipRequestStatus.REJECTED)}
-        >
-          Zavrni
-        </button>
-      );
-    case MembershipRequestStatus.PENDING:
-      return (
-        <div className="flex items-center gap-2">
-          <button
-            className="bg-green-600/90 text-white font-medium cursor-pointer rounded px-2 py-1"
-            onClick={() => handler(id, experienceLevel, MembershipRequestStatus.ACCEPTED)}
-          >
-            Sprejmi
-          </button>
-          <button
-            className="bg-red-600/90 text-white font-medium cursor-pointer rounded px-2 py-1"
-            onClick={() => handler(id, experienceLevel, MembershipRequestStatus.REJECTED)}
-          >
-            Zavrni
-          </button>
-        </div>
-      );
-    case MembershipRequestStatus.REJECTED:
-      return (
-        <button
-          className="bg-green-600/90 text-white font-medium cursor-pointer rounded px-2 py-1"
-          onClick={() => handler(id, experienceLevel, MembershipRequestStatus.ACCEPTED)}
-        >
-          Sprejmi
-        </button>
-      );
-  }
-}
+import { HiOutlineCheckCircle, HiOutlineClock, HiOutlinePencil, HiOutlineXCircle } from "react-icons/hi";
 
 function StatusIndicator({ status }: { status: MembershipRequestStatus }) {
   switch (status) {
@@ -85,9 +36,8 @@ function StatusIndicator({ status }: { status: MembershipRequestStatus }) {
 }
 
 export default function AdminPage() {
-  const [members, setMembers] = useState<UserWithChanaged[]>([]);
-
-  const hasChanges = members.some((member) => member.changed);
+  const [members, setMembers] = useState<User[]>([]);
+  const [editingMember, setEditingMember] = useState<User | null>(null);
 
   useEffect(() => {
     const fetchMembers = async () => {
@@ -104,61 +54,30 @@ export default function AdminPage() {
     fetchMembers();
   }, []);
 
-  const updateExperienceLevel = (e: ChangeEvent, id: string) => {
-    setMembers((prev) => prev.map((m) => (m.id === id ? { ...m, experienceLevel: e.target.value, changed: true } : m)));
+  const openEditMember = (member: User) => {
+    setEditingMember(member);
   };
 
-  const handleAcceptMember = async (id: string, experienceLevel: string | null, status: MembershipRequestStatus) => {
-    const result = await updateMember(id, experienceLevel, status);
+  const closeEditMember = () => {
+    setEditingMember(null);
+  };
 
-    if ("error" in result) {
-      toast.error(result.error);
-      return;
-    }
-
-    const { user: updatedMember, status: updateStatus } = result.data;
-
+  const handleMemberSaved = (updatedMember: User, updateStatus: "UPDATED" | "REJECTED") => {
     setMembers((prev) =>
       updateStatus === "REJECTED"
         ? prev.filter((member) => member.id !== updatedMember.id)
-        : prev.map((member) => (member.id === updatedMember.id ? { ...updatedMember, changed: false } : member)),
+        : prev.map((member) => (member.id === updatedMember.id ? updatedMember : member)),
     );
-  };
-
-  const handleSaveChanges = async () => {
-    const memebersToUpdate = members.filter((member) => member.changed !== null && member.changed == true);
-
-    const result = await updateMembersBulk(memebersToUpdate);
-
-    if ("error" in result) {
-      toast.error(result.error);
-      return;
-    }
-
-    const { updated, rejected, failed } = result.data;
-
-    if (failed.length > 0) {
-      toast.error(`Failed to update ${failed.length} member(s).`);
-    }
-
-    setMembers((prev) =>
-      prev
-        .filter((member) => !rejected.some((rejectedMember) => rejectedMember.id === member.id))
-        .map((member) => {
-          const updatedMember = updated.find((updatedItem) => updatedItem.id === member.id);
-
-          return updatedMember ? { ...updatedMember, changed: false } : member;
-        }),
-    );
+    setEditingMember(null);
+    toast.success(updateStatus === "REJECTED" ? "Uporabnik je bil odstranjen" : "Uporabnik je bil posodobljen");
   };
 
   return (
     <>
+      {editingMember && <EditMemberForm member={editingMember} onClose={closeEditMember} onSaved={handleMemberSaved} />}
+
       <div className="flex justify-between items-center pb-6 md:pb-8">
         <h2 className="text-xl md:text-2xl font-semibold">Upravljanje članov</h2>
-        <Button onClick={handleSaveChanges} disabled={!hasChanges}>
-          Shrani
-        </Button>
       </div>
       <div className="w-full">
         {members.length > 0 ? (
@@ -190,34 +109,22 @@ export default function AdminPage() {
                       </td>
                       <td className="whitespace-nowrap bg-white px-4 py-5 text-sm">{member.email}</td>
                       <td className="whitespace-nowrap bg-white px-4 py-5 text-sm">
-                        <select
-                          onChange={(e) => updateExperienceLevel(e, member.id)}
-                          value={member.experienceLevel || ""}
-                          className="cursor-pointer"
-                        >
-                          {!member.experienceLevel && (
-                            <option disabled value="">
-                              Izberite izkušenost
-                            </option>
-                          )}
-                          {Object.entries(experienceLevel).map(([key, level]) => (
-                            <option value={key} key={key}>
-                              {level.name}
-                            </option>
-                          ))}
-                        </select>
+                        {member.experienceLevel ? experienceLevel[member.experienceLevel]?.name : "-"}
                       </td>
                       <td className="whitespace-nowrap bg-white px-4 py-5 text-sm">
                         <StatusIndicator status={member.status} />
                       </td>
                       <td className="whitespace-nowrap bg-white px-4 py-5 text-sm">
-                        <div className="flex justify-end">
-                          <StatusAction
-                            id={member.id}
-                            experienceLevel={member.experienceLevel}
-                            status={member.status}
-                            handler={handleAcceptMember}
-                          />
+                        <div className="flex justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => openEditMember(member)}
+                            className="rounded p-2 text-gray-700 hover:bg-gray-100"
+                            aria-label={`Uredi ${member.firstName} ${member.lastName}`}
+                            title="Uredi"
+                          >
+                            <HiOutlinePencil size={20} />
+                          </button>
                         </div>
                       </td>
                     </tr>
