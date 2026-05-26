@@ -8,8 +8,9 @@ import Badge from "../Badge";
 import cn from "clsx";
 
 export default function NewsCard({ event }) {
+  const coverPhoto = event.photos[0];
   const showSchoolBadge = event.type === "Alpinistična šola";
-  const needsBadgeSpacing = showSchoolBadge && !event.coverPhoto;
+  const needsBadgeSpacing = showSchoolBadge && !coverPhoto;
 
   return (
     <div
@@ -29,9 +30,9 @@ export default function NewsCard({ event }) {
         </div>
       )}
       <Link href={`/news/${event.id}`} className="block">
-        {event.coverPhoto && (
+        {coverPhoto && (
           <Image
-            src={event.coverPhoto.url}
+            src={coverPhoto.url}
             alt={event.title}
             width={1000}
             height={1000}

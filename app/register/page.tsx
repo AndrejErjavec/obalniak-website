@@ -15,6 +15,7 @@ const RegisterPage = () => {
   const router = useRouter();
 
   useEffect(() => {
+    console.log(state);
     if (!state) return;
 
     if (!state.success) {

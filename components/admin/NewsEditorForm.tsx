@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "react-toastify";
 import { BsPinAngleFill } from "react-icons/bs";
-import PhotoUploadSingle from "@/components/photoUpload/PhotoUploadSingle";
+import PhotoUploadMulti from "@/components/photoUpload/PhotoUploadMulti";
 import Label from "@/components/ui/Label";
 import Input from "@/components/ui/Input";
 import TextArea from "@/components/ui/TextArea";
@@ -22,7 +22,6 @@ type FormState = {
   text: string;
   isPinned: boolean;
   type: NewsType;
-  removeCoverPhoto: boolean;
 };
 
 type NewsEditorFormProps = {
@@ -38,7 +37,6 @@ function getInitialState(event?: AdminEventSummary): FormState {
       text: "",
       isPinned: false,
       type: "Običajna novica",
-      removeCoverPhoto: false,
     };
   }
 
@@ -48,21 +46,16 @@ function getInitialState(event?: AdminEventSummary): FormState {
     text: event.text,
     isPinned: event.isPinned,
     type: event.type as NewsType,
-    removeCoverPhoto: false,
   };
 }
 
 export default function NewsEditorForm({ mode, event }: NewsEditorFormProps) {
   const router = useRouter();
   const [formState, setFormState] = useState<FormState>(getInitialState(event));
-  const [existingPhoto] = useState<Photo | null>(event?.coverPhoto ?? null);
-  const [newPhoto, setNewPhoto] = useState<NewPhotoItem | null>(null);
-  const [replaceRemove, setReplaceRemove] = useState<boolean>(false);
+  const [existingPhotos, setExistingPhotos] = useState<Photo[]>(event?.photos ?? []);
+  const [removedPhotoIds, setRemovedPhotoIds] = useState<string[]>([]);
+  const [newPhotos, setNewPhotos] = useState<NewPhotoItem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    console.log(existingPhoto, newPhoto);
-  }, [existingPhoto, newPhoto]);
 
   const handleInputChange = (field: keyof FormState, value: string | boolean) => {
     setFormState((prev) => ({
@@ -89,19 +82,22 @@ export default function NewsEditorForm({ mode, event }: NewsEditorFormProps) {
 
     const payload = buildFormData();
 
-    payload.append("replaceRemove", replaceRemove.toString());
+    const photoFiles = newPhotos.map((photo) => photo.file);
+    const uploadedPhotosResult = await uploadPhotos(photoFiles);
 
-    if (newPhoto) {
-      const uploadedPhotosResult = await uploadPhotos(newPhoto ? [newPhoto.file] : []);
+    if (!uploadedPhotosResult.success) {
+      toast.error(uploadedPhotosResult.error);
+      setIsSubmitting(false);
+      return;
+    }
 
-      if (!uploadedPhotosResult.success) {
-        toast.error(uploadedPhotosResult.error);
-        setIsSubmitting(false);
-        return;
-      }
+    for (const photoUrl of uploadedPhotosResult.data) {
+      payload.append("photoUrls", photoUrl);
+    }
 
-      if (uploadedPhotosResult.data[0]) {
-        payload.append("photoUrl", uploadedPhotosResult.data[0]);
+    if (mode === "edit") {
+      for (const removedPhotoId of removedPhotoIds) {
+        payload.append("removePhotoIds", removedPhotoId);
       }
     }
 
@@ -113,6 +109,9 @@ export default function NewsEditorForm({ mode, event }: NewsEditorFormProps) {
       return;
     }
 
+    setExistingPhotos([]);
+    setRemovedPhotoIds([]);
+    setNewPhotos([]);
     toast.success(mode === "edit" ? "Novica posodobljena" : "Novica ustvarjena");
     router.push("/admin/news");
     router.refresh();
@@ -214,13 +213,13 @@ export default function NewsEditorForm({ mode, event }: NewsEditorFormProps) {
       </div>
 
       <div className="mt-7">
-        <Label className="mb-1">Naslovna slika</Label>
-        <PhotoUploadSingle
-          existingPhoto={existingPhoto}
-          newPhoto={newPhoto}
-          setNewPhoto={setNewPhoto}
-          replaceRemove={replaceRemove}
-          setReplaceRemove={setReplaceRemove}
+        <Label className="mb-1">Slike</Label>
+        <PhotoUploadMulti
+          existingPhotos={existingPhotos}
+          removedPhotoIds={removedPhotoIds}
+          newPhotos={newPhotos}
+          setRemovedPhotoIds={setRemovedPhotoIds}
+          setNewPhotos={setNewPhotos}
         />
       </div>
 

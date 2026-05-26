@@ -96,11 +96,12 @@ export async function createAscent(formData: FormData): Promise<ActionResult<Asc
 
       if (photoUrls && photoUrls.length > 0) {
         await Promise.all(
-          photoUrls.map((url: string) =>
+          photoUrls.map((url: string, position) =>
             prisma.photo.create({
               data: {
                 url: url,
                 ascentId: ascent.id,
+                position,
               },
             }),
           ),
@@ -127,7 +128,12 @@ export async function getAscents(
   try {
     const ascents = await prisma.ascent.findMany({
       include: {
-        photos: true,
+        photos: {
+          orderBy: {
+            position: "asc",
+          },
+          take: 1,
+        },
         author: true,
         registeredParticipants: true,
         unregisteredParticipants: true,
@@ -163,7 +169,11 @@ export async function getAscent(id: string): Promise<ActionResult<AscentWithData
         id: id,
       },
       include: {
-        photos: true,
+        photos: {
+          orderBy: {
+            position: "asc",
+          },
+        },
         author: true,
         registeredParticipants: true,
         unregisteredParticipants: true,
@@ -213,7 +223,12 @@ export async function getUserAscents(
         },
         include: {
           author: true,
-          photos: true,
+          photos: {
+            orderBy: {
+              position: "asc",
+            },
+            take: 1,
+          },
           registeredParticipants: true,
           unregisteredParticipants: true,
         },
@@ -262,7 +277,11 @@ export async function updateAscent(id: string, formData: FormData): Promise<Acti
             id,
           },
           include: {
-            photos: true,
+            photos: {
+              orderBy: {
+                position: "asc",
+              },
+            },
           },
         });
 
@@ -272,19 +291,10 @@ export async function updateAscent(id: string, formData: FormData): Promise<Acti
 
         await requireUserWithId(existingAscent.authorId);
 
-        // add new photos
-        if (photoUrls.length > 0) {
-          await tx.photo.createMany({
-            data: photoUrls.map((url) => ({
-              url,
-              ascentId: id,
-            })),
-          });
-        }
-
         // delete removed photos
         const photosToDelete = existingAscent.photos.filter((photo) => removedPhotoIds.includes(photo.id));
         deletedPhotoUrls = photosToDelete.map((photo) => photo.url);
+        const remainingExistingPhotos = existingAscent.photos.filter((photo) => !removedPhotoIds.includes(photo.id));
 
         if (photosToDelete.length > 0) {
           await tx.photo.deleteMany({
@@ -293,6 +303,30 @@ export async function updateAscent(id: string, formData: FormData): Promise<Acti
                 in: photosToDelete.map((photo) => photo.id),
               },
             },
+          });
+        }
+
+        await Promise.all(
+          remainingExistingPhotos.map((photo, position) =>
+            tx.photo.update({
+              where: {
+                id: photo.id,
+              },
+              data: {
+                position,
+              },
+            }),
+          ),
+        );
+
+        // add new photos
+        if (photoUrls.length > 0) {
+          await tx.photo.createMany({
+            data: photoUrls.map((url, index) => ({
+              url,
+              ascentId: id,
+              position: remainingExistingPhotos.length + index,
+            })),
           });
         }
 
@@ -353,14 +387,14 @@ export async function deleteAscent(id: string): Promise<ActionResult<string>> {
 
       await requireUserWithId(existingAscent.authorId);
 
-      const deleteResult = await prisma.ascent.delete({ where: { id }, include: { photos: true } });
-      // await tx.photo.deleteMany({
-      //   where: {
-      //     ascentId: id;
-      //   }
-      // });
+      await tx.photo.deleteMany({
+        where: {
+          ascentId: id,
+        },
+      });
 
-      console.log(deleteResult);
+      await tx.ascent.delete({ where: { id } });
+
       return existingAscent.photos.map((p) => p.url);
     });
 
