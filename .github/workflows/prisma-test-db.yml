@@ -2,6 +2,8 @@ name: Test Prisma migrations
 
 on:
   pull_request:
+    branches:
+      - main
     paths:
       - "prisma/**"
       - "package.json"
@@ -17,10 +19,11 @@ jobs:
 
       - name: Create Neon preview branch
         id: create_branch
-        uses: neondatabase/create-branch-action@v5
+        uses: neondatabase/create-branch-action@v6
         with:
           project_id: ${{ secrets.NEON_PROJECT_ID }}
           branch_name: pr-${{ github.event.pull_request.number }}
+          role: oak
           api_key: ${{ secrets.NEON_API_KEY }}
 
       - name: Setup Node
