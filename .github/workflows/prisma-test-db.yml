@@ -23,7 +23,9 @@ jobs:
         with:
           project_id: ${{ secrets.NEON_PROJECT_ID }}
           branch_name: pr-${{ github.event.pull_request.number }}
+          database: oak-website
           role: oak
+          prisma: true
           api_key: ${{ secrets.NEON_API_KEY }}
 
       - name: Setup Node
