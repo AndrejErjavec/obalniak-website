@@ -8,27 +8,27 @@ import { Event, Photo } from "@/app/generated/prisma";
 import { requireAdmin } from "../authMiddleware";
 import { revalidatePath } from "next/cache";
 
-type EventWithCoverPhoto = Event & {
-  coverPhoto: Photo | null;
+type EventWithPhotos = Event & {
+  photos: Photo[];
 };
 
-type EventWithCoverPhotoAndAuthor = EventWithCoverPhoto & {
+type EventWithPhotosAndAuthor = EventWithPhotos & {
   author: {
     firstName: string;
     lastName: string;
   };
 };
 
-export type AdminEventSummary = EventWithCoverPhotoAndAuthor;
+export type AdminEventSummary = EventWithPhotosAndAuthor;
 
 type ParsedEventFormData = {
   title: string;
   date: string | null;
   text: string;
-  photoUrl: string | null;
+  photoUrls: string[];
+  removePhotoIds: string[];
   isPinned: boolean;
   type: NewsType;
-  replaceRemove: boolean;
 };
 
 function parseEventFormData(formData: FormData): ParsedEventFormData {
@@ -36,23 +36,11 @@ function parseEventFormData(formData: FormData): ParsedEventFormData {
     title: String(formData.get("title") ?? "").trim(),
     date: String(formData.get("date") ?? "").trim() || null,
     text: String(formData.get("text") ?? "").trim(),
-    photoUrl: String(formData.get("photoUrl") ?? "").trim() || null,
+    photoUrls: formData.getAll("photoUrls").map((url) => String(url).trim()).filter(Boolean),
+    removePhotoIds: formData.getAll("removePhotoIds").map((id) => String(id).trim()).filter(Boolean),
     isPinned: formData.get("isPinned") === "true",
     type: String(formData.get("type")) as NewsType,
-    replaceRemove: formData.get("replaceRemove") === "true",
   };
-}
-
-async function createPhotoRecord(photoUrl: string, tx: { photo: typeof prisma.photo }) {
-  if (!photoUrl) {
-    throw new Error("Manjka URL slike");
-  }
-
-  return tx.photo.create({
-    data: {
-      url: photoUrl,
-    },
-  });
 }
 
 function revalidateNewsPaths(eventId?: string) {
@@ -68,7 +56,7 @@ function revalidateNewsPaths(eventId?: string) {
 
 export async function createEvent(formData: FormData): Promise<ActionResult<AdminEventSummary>> {
   const user = await requireAdmin();
-  const { title, date, text, photoUrl, isPinned, type } = parseEventFormData(formData);
+  const { title, date, text, photoUrls, isPinned, type } = parseEventFormData(formData);
 
   if (!title || !text) {
     return err("Manjkajoči podatki");
@@ -77,25 +65,37 @@ export async function createEvent(formData: FormData): Promise<ActionResult<Admi
   try {
     const createdEvent = await prisma.$transaction(
       async (tx) => {
-        let uploadedPhoto: Photo | null = null;
-
-        if (photoUrl) {
-          uploadedPhoto = await createPhotoRecord(photoUrl, tx);
-          console.log(uploadedPhoto);
-        }
-
-        return tx.event.create({
+        const event = await tx.event.create({
           data: {
             title,
             date,
             text,
             type,
             authorId: user.id,
-            coverPhotoId: uploadedPhoto?.id,
             isPinned,
           },
+        });
+
+        if (photoUrls.length > 0) {
+          await tx.photo.createMany({
+            data: photoUrls.map((url, position) => ({
+              url,
+              position,
+              eventId: event.id,
+            })),
+          });
+        }
+
+        return tx.event.findUniqueOrThrow({
+          where: {
+            id: event.id,
+          },
           include: {
-            coverPhoto: true,
+            photos: {
+              orderBy: {
+                position: "asc",
+              },
+            },
             author: {
               select: {
                 firstName: true,
@@ -120,23 +120,25 @@ export async function createEvent(formData: FormData): Promise<ActionResult<Admi
 export async function updateEvent(id: string, formData: FormData): Promise<ActionResult<AdminEventSummary>> {
   await requireAdmin();
 
-  const { title, date, text, photoUrl, isPinned, type, replaceRemove } = parseEventFormData(formData);
-
-  console.log(parseEventFormData(formData));
+  const { title, date, text, photoUrls, removePhotoIds, isPinned, type } = parseEventFormData(formData);
 
   if (!title || !text) {
     return err("Manjkajoči podatki");
   }
 
   try {
-    const { event: updatedEvent, deletedPhotoUrl } = await prisma.$transaction(
+    const { event: updatedEvent, deletedPhotoUrls } = await prisma.$transaction(
       async (tx) => {
         const existingEvent = await tx.event.findUnique({
           where: {
             id,
           },
           include: {
-            coverPhoto: true,
+            photos: {
+              orderBy: {
+                position: "asc",
+              },
+            },
           },
         });
 
@@ -144,18 +146,41 @@ export async function updateEvent(id: string, formData: FormData): Promise<Actio
           throw new Error("EVENT_NOT_FOUND");
         }
 
-        let newCoverPhotoId = existingEvent.coverPhotoId;
-        let oldCoverPhotoIdToDelete: string | null = null;
-        let oldCoverPhotoUrlToDelete: string | null = null;
+        const photosToDelete = existingEvent.photos.filter((photo) => removePhotoIds.includes(photo.id));
+        const deletedPhotoUrls = photosToDelete.map((photo) => photo.url);
+        const remainingExistingPhotos = existingEvent.photos.filter((photo) => !removePhotoIds.includes(photo.id));
 
-        if (replaceRemove) {
-          oldCoverPhotoIdToDelete = existingEvent.coverPhotoId;
-          oldCoverPhotoUrlToDelete = existingEvent.coverPhoto?.url ?? null;
+        if (photosToDelete.length > 0) {
+          await tx.photo.deleteMany({
+            where: {
+              id: {
+                in: photosToDelete.map((photo) => photo.id),
+              },
+            },
+          });
         }
 
-        if (photoUrl) {
-          const newPhoto = await createPhotoRecord(photoUrl, tx);
-          newCoverPhotoId = newPhoto.id;
+        await Promise.all(
+          remainingExistingPhotos.map((photo, position) =>
+            tx.photo.update({
+              where: {
+                id: photo.id,
+              },
+              data: {
+                position,
+              },
+            }),
+          ),
+        );
+
+        if (photoUrls.length > 0) {
+          await tx.photo.createMany({
+            data: photoUrls.map((url, index) => ({
+              url,
+              eventId: id,
+              position: remainingExistingPhotos.length + index,
+            })),
+          });
         }
 
         const event = await tx.event.update({
@@ -168,10 +193,13 @@ export async function updateEvent(id: string, formData: FormData): Promise<Actio
             text,
             type,
             isPinned,
-            coverPhotoId: newCoverPhotoId,
           },
           include: {
-            coverPhoto: true,
+            photos: {
+              orderBy: {
+                position: "asc",
+              },
+            },
             author: {
               select: {
                 firstName: true,
@@ -181,24 +209,16 @@ export async function updateEvent(id: string, formData: FormData): Promise<Actio
           },
         });
 
-        if (oldCoverPhotoIdToDelete) {
-          await tx.photo.delete({
-            where: {
-              id: oldCoverPhotoIdToDelete,
-            },
-          });
-        }
-
         return {
           event,
-          deletedPhotoUrl: oldCoverPhotoUrlToDelete,
+          deletedPhotoUrls,
         };
       },
       { timeout: 30000 },
     );
 
-    if (deletedPhotoUrl) {
-      await deleteImages([deletedPhotoUrl]);
+    if (deletedPhotoUrls.length > 0) {
+      await deleteImages(deletedPhotoUrls);
     }
 
     revalidateNewsPaths(updatedEvent.id);
@@ -225,7 +245,7 @@ export async function deleteEvent(id: string): Promise<ActionResult<string>> {
           id,
         },
         include: {
-          coverPhoto: true,
+          photos: true,
         },
       });
 
@@ -239,15 +259,17 @@ export async function deleteEvent(id: string): Promise<ActionResult<string>> {
         },
       });
 
-      if (event.coverPhotoId) {
-        await tx.photo.delete({
+      if (event.photos.length > 0) {
+        await tx.photo.deleteMany({
           where: {
-            id: event.coverPhotoId,
+            id: {
+              in: event.photos.map((photo) => photo.id),
+            },
           },
         });
       }
 
-      return event.coverPhoto?.url ? [event.coverPhoto.url] : [];
+      return event.photos.map((photo) => photo.url);
     });
 
     await deleteImages(deletedPhotoUrls);
@@ -281,7 +303,11 @@ export async function getAdminEvent(id: string): Promise<ActionResult<AdminEvent
             lastName: true,
           },
         },
-        coverPhoto: true,
+        photos: {
+          orderBy: {
+            position: "asc",
+          },
+        },
       },
     });
 
@@ -308,7 +334,12 @@ export async function getAdminEvents(
       skip: (currentPage - 1) * pageSize,
       take: pageSize,
       include: {
-        coverPhoto: true,
+        photos: {
+          orderBy: {
+            position: "asc",
+          },
+          take: 1,
+        },
         author: {
           select: {
             firstName: true,
@@ -339,7 +370,7 @@ export async function getEvents(
   currentPage: number,
   pageSize: number,
   type?: NewsType,
-): Promise<ActionResult<PaginatedData<EventWithCoverPhoto[]>>> {
+): Promise<ActionResult<PaginatedData<EventWithPhotos[]>>> {
   try {
     const events = await prisma.event.findMany({
       where: {
@@ -349,7 +380,12 @@ export async function getEvents(
       skip: (currentPage - 1) * pageSize,
       take: pageSize,
       include: {
-        coverPhoto: true,
+        photos: {
+          orderBy: {
+            position: "asc",
+          },
+          take: 1,
+        },
       },
     });
 
@@ -373,7 +409,7 @@ export async function getEvents(
   }
 }
 
-export async function getEvent(id: string): Promise<ActionResult<EventWithCoverPhotoAndAuthor>> {
+export async function getEvent(id: string): Promise<ActionResult<EventWithPhotosAndAuthor>> {
   try {
     const event = await prisma.event.findUnique({
       where: {
@@ -386,7 +422,11 @@ export async function getEvent(id: string): Promise<ActionResult<EventWithCoverP
             lastName: true,
           },
         },
-        coverPhoto: true,
+        photos: {
+          orderBy: {
+            position: "asc",
+          },
+        },
       },
     });
 

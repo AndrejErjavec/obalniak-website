@@ -5,6 +5,8 @@ import { format } from "date-fns";
 import { sl } from "date-fns/locale";
 import { getEvent } from "@/lib/actions/news";
 import Badge from "@/components/Badge";
+import PhotoGallery from "@/components/PhotoGallery";
+import Divider from "@/components/ui/Divider";
 
 export default async function Event({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -16,16 +18,17 @@ export default async function Event({ params }: { params: Promise<{ id: string }
   }
 
   const event = eventResponse.data;
+  const coverPhoto = event.photos[0];
 
   return (
     <>
       {event && (
         <div>
           {/* Cover Photo */}
-          {event.coverPhoto && (
+          {coverPhoto && (
             <section className="w-full md:h-80">
               <Image
-                src={event.coverPhoto.url}
+                src={coverPhoto.url}
                 alt={"image"}
                 width={1000}
                 height={1000}
@@ -75,6 +78,16 @@ export default async function Event({ params }: { params: Promise<{ id: string }
               <p className="whitespace-pre-line text-justify">{event.text}</p>
             </div>
           </section>
+
+          {event.photos.length > 0 && (
+            <section className="mt-10 px-5 md:px-20">
+              <div>
+                <p className="text-xl font-medium mb-4">Fotogalerija</p>
+                <Divider />
+                <PhotoGallery photos={event.photos} />
+              </div>
+            </section>
+          )}
         </div>
       )}
     </>

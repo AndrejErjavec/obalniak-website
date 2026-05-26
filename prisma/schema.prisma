@@ -79,25 +79,27 @@ model Comment {
 model Photo {
   id       String  @id @default(cuid())
   url      String
+  position Int     @default(0)
   ascent   Ascent? @relation(fields: [ascentId], references: [id])
   ascentId String?
-  Event    Event[]
+  event    Event?  @relation(fields: [eventId], references: [id])
+  eventId  String?
 
-  @@index([ascentId])
+  @@index([ascentId, position])
+  @@index([eventId, position])
 }
 
 model Event {
-  id              String    @id @default(cuid())
-  title           String
-  text            String
-  date            String?   
-  createdAt       DateTime  @default(now())
-  author          User      @relation(fields: [authorId], references: [id])
-  authorId        String
-  coverPhoto      Photo?    @relation(fields: [coverPhotoId], references: [id])
-  coverPhotoId    String? 
-  type            String
-  isPinned        Boolean   @default(false)
+  id        String   @id @default(cuid())
+  title     String
+  text      String
+  date      String?
+  createdAt DateTime @default(now())
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  String
+  photos    Photo[]
+  type      String
+  isPinned  Boolean  @default(false)
 
   @@index([authorId])
 }
