@@ -146,7 +146,7 @@ export async function getAscents(
       },
     });
 
-    const totalAscents = ascents.length; //await prisma.ascent.count();
+    const totalAscents = await prisma.ascent.count();
     const totalPages = Math.ceil(totalAscents / pageSize);
 
     return ok({
