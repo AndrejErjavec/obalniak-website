@@ -45,7 +45,7 @@ export default function ContactPage() {
             <h3 className="font-medium text-2xl leading-10 text-slate-800">Email</h3>
           </div>
           <div className="flex flex-col gap-1 text-slate-700 leading-6 mt-3 font-medium">
-            <p>info@obalniak.si</p>
+            <p>obalnialpinisticniklub@gmail.com</p>
           </div>
         </div>
       </div>
